@@ -1,0 +1,2797 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>dinakar notes — Executive Suite</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #05070A;
+  --surface: #0D1117;
+  --elevated: #141B24;
+  --elevated-hover: #1C2634;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(56, 189, 248, 0.25);
+  --text: #F8FAFC;
+  --muted: #94A3B8;
+  --accent: #38BDF8;
+  --accent-hover: #0EA5E9;
+  --accent-glow: rgba(56, 189, 248, 0.2);
+  --indigo: #6366F1;
+  --green: #34C759;
+  --amber: #FF9500;
+  --danger: #FF3B30;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-float: 28px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.8);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+[data-theme="light"] {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --elevated: #F1F5F9;
+  --elevated-hover: #E2E8F0;
+  --border: rgba(0, 0, 0, 0.12);
+  --border-hover: rgba(2, 132, 199, 0.4);
+  --text: #0F172A;
+  --muted: #475569;
+  --accent: #0284C7;
+  --accent-hover: #0369A1;
+  --accent-glow: rgba(2, 132, 199, 0.15);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  color-scheme: light;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .note-card,
+[data-theme="light"] .panel,
+[data-theme="light"] .cal-sidebar,
+[data-theme="light"] .cal-toolbar,
+[data-theme="light"] .cal-day-cell,
+[data-theme="light"] .task-item,
+[data-theme="light"] .planner-progress-card {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .secondary {
+  background: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .secondary:hover {
+  background: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  background-image: 
+    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.08), transparent 60%),
+    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.06), transparent 50%),
+    radial-gradient(circle at 15% 70%, rgba(52, 199, 89, 0.04), transparent 50%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  letter-spacing: -0.2px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.app-wrapper { display: flex; min-height: 100vh; }
+
+/* ====================================================
+   APPLE LIQUID GLASS DESIGN ARCHITECTURE (macOS 26 & VisionOS)
+   ==================================================== */
+
+/* Level 1 — Thin Glass (Framing, Sidebar Rail, Top Toolbar, Search Bar) */
+.glass-level-1, .side-rail, .header, .cal-toolbar {
+  background: rgba(13, 17, 23, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Level 2 — Floating Glass (Command Palette, Menus, Context Dropdowns, Tooltips) */
+.glass-level-2, .task-card-menu-dropdown, #commandPaletteModal {
+  background: rgba(20, 27, 36, 0.82) !important;
+  backdrop-filter: blur(40px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* Level 3 — Frosted Overlay (Vault Authentication, Dialogs, StandBy Focus) */
+.glass-level-3, dialog, .event-modal-dialog, #vaultAuthPane {
+  background: rgba(5, 7, 10, 0.88) !important;
+  backdrop-filter: blur(60px) saturate(220%) !important;
+  -webkit-backdrop-filter: blur(60px) saturate(220%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75) !important;
+}
+
+/* SOLID CONTENT SURFACES (Zero Blur for 100% Text Legibility & 60 FPS) */
+.task-card-redesign,
+.note-card,
+.panel,
+.stat-card,
+.cal-day-cell,
+.editor-paper,
+#noteContentEditor,
+.analytics-chart-card,
+.vault-workspace-card,
+.confirm-dialog {
+  background: var(--surface) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms ease, border-color 200ms ease !important;
+}
+
+.task-card-redesign:hover,
+.note-card:hover,
+.panel:hover,
+.stat-card:hover,
+.vault-workspace-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+button, .secondary {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, box-shadow 180ms ease !important;
+}
+
+button:hover, .secondary:hover {
+  transform: translateY(-1px) !important;
+}
+
+button:active, .secondary:active {
+  transform: scale(0.97) !important;
+}
+
+input, textarea, select {
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  font-family: var(--font) !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Arc-Style Floating Sidebar Rail */
+.side-rail {
+  width: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.rail-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rail-btn svg { stroke-width: 1.8; transition: transform 0.18s ease, stroke 0.18s ease; }
+.rail-btn:hover { background: rgba(255, 255, 255, 0.04); color: var(--text); border-color: var(--border); }
+.rail-btn:hover svg { transform: scale(1.08); }
+.rail-btn.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
+  border-color: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+.rail-btn.active svg { stroke: var(--accent); }
+
+/* Main App Container & View Clearance */
+.main-content { flex: 1; padding: 24px 32px 140px 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+main { padding-bottom: 140px !important; }
+
+/* Floating Glass Header Chrome */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-float);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  box-shadow: var(--shadow);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #05070A;
+  font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+.brand h1 { font-size: 1.25rem; font-weight: 700; margin: 0; letter-spacing: -0.4px; }
+
+/* Navigation Tabs */
+.nav-tabs {
+  display: inline-flex;
+  background: rgba(0,0,0,0.3);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 2px;
+  border: 1px solid var(--border);
+}
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  background: var(--elevated);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+.avatar-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.18s;
+}
+.avatar-badge:hover { border-color: var(--accent); }
+
+.cmd-k-badge {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.18s;
+}
+.cmd-k-badge:hover { border-color: var(--accent); color: var(--text); }
+.kbd {
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-code);
+  font-size: 0.72rem;
+}
+
+/* Contextual Top Header Cards */
+.stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: border-color 0.18s;
+}
+.stat-card:hover { border-color: rgba(255,255,255,0.12); }
+.stat-card b { font-size: 1.5rem; font-weight: 700; line-height: 1.1; margin-bottom: 4px; color: var(--text); }
+.stat-card span { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Main Layout Grid */
+.layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .panel { position: relative !important; top: 0 !important; margin-bottom: 16px; }
+}
+
+/* Sidebar Panels & Forms */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.panel-title { font-size: 1.1rem; font-weight: 700; margin: 0; }
+
+.field-group { margin-bottom: 16px; }
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+input, textarea, select {
+  width: 100%;
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  transition: all 0.18s ease;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: #090D14;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 36px !important;
+}
+
+/* Rich Format Bar */
+.format-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  background: rgba(0,0,0,0.3);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.fmt-btn {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: none;
+  font-family: var(--font-code);
+}
+.fmt-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); transform: none; }
+
+.editor-modes {
+  display: inline-flex;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+  border: 1px solid var(--border);
+}
+.mode-btn {
+  border: none;
+  background: transparent;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: none;
+}
+.mode-btn.active { background: var(--elevated); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+
+.textarea-wrap { position: relative; }
+.voice-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(255,255,255,0.06);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: none;
+}
+.voice-btn:hover { background: var(--elevated); color: var(--accent); border-color: var(--accent); transform: none; }
+
+.markdown-preview-pane {
+  min-height: 140px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Custom Checkboxes */
+input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+  vertical-align: middle;
+  transition: transform 0.15s ease;
+}
+input[type="checkbox"]:hover { transform: scale(1.08); }
+
+.checkbox-field { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.85rem; font-weight: 500; }
+
+/* Tactile Buttons */
+button {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #05070A;
+  background: var(--accent);
+  box-shadow: 0 4px 16px var(--accent-glow);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+button:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+button:active { transform: scale(0.98); }
+
+.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.secondary:hover { background: rgba(255,255,255,0.06); color: var(--text); border-color: rgba(255,255,255,0.12); transform: translateY(-1px); }
+
+.toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+.toolbar-actions button { font-size: 0.78rem; padding: 6px 10px; }
+
+/* Toolbar & Filters */
+.toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 240px; position: relative; }
+.search-box input { padding-left: 36px; margin: 0; transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.search-box input:focus { width: 100%; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; pointer-events: none; }
+.toolbar select { width: auto; margin: 0; min-width: 140px; }
+
+/* Floating Surfaces & Linear-Style Note Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.note-card {
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.note-card:hover {
+  background: var(--elevated-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.note-card.is-pinned { border-left: 3px solid var(--amber); }
+
+.note-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.note-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.badge-pin { background: rgba(255, 149, 0, 0.15); color: var(--amber); border-color: rgba(255, 149, 0, 0.3); }
+
+.note-title { margin: 4px 0 6px; font-size: 1.1rem; font-weight: 700; line-height: 1.35; color: var(--text); }
+.note-date { font-size: 0.72rem; color: var(--muted); font-family: var(--font-code); }
+.read-time { font-size: 0.72rem; color: var(--muted); display: inline-flex; align-items: center; gap: 3px; font-family: var(--font-code); }
+
+.note-body { font-size: 0.9rem; color: var(--muted); line-height: 1.6; margin: 10px 0 14px; flex: 1; word-break: break-word; }
+.note-body h1, .note-body h2, .note-body h3 { font-size: 0.98rem; font-weight: 700; margin: 8px 0 4px; color: var(--text); }
+.note-body p { margin: 4px 0; }
+.note-body ul, .note-body ol { margin: 4px 0; padding-left: 18px; }
+.note-body blockquote { margin: 6px 0; padding-left: 10px; border-left: 2px solid var(--accent); color: var(--muted); font-style: italic; }
+.note-body code { font-family: var(--font-code); font-size: 0.85em; background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 4px; color: var(--accent); }
+
+.code-block-wrap { position: relative; margin: 8px 0; background: var(--bg); border-radius: var(--radius-sm); padding: 10px; color: #F8FAFC; font-family: var(--font-code); font-size: 0.8rem; overflow-x: auto; border: 1px solid var(--border); }
+.code-copy-btn { position: absolute; top: 6px; right: 6px; padding: 2px 6px; font-size: 0.68rem; background: rgba(255,255,255,0.1); color: #fff; border-radius: 4px; box-shadow: none; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 10px; }
+.tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; background: rgba(0,0,0,0.3); color: var(--muted); font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: all 0.18s; border: 1px solid var(--border); font-family: var(--font-code); }
+.tag:hover { background: rgba(56, 189, 248, 0.12); color: var(--accent); border-color: rgba(56, 189, 248, 0.25); }
+
+/* macOS / visionOS Liquid Glass Floating Dock System */
+.macos-dock-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(50px) saturate(210%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(50px) saturate(210%) contrast(110%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 28px;
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.5), 
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.2) !important;
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .macos-dock-container {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.12),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Official macOS App Squircle Icon Styling */
+.macos-app-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 200ms ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dock-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+}
+
+.dock-item:hover .macos-app-icon {
+  transform: scale(1.25) translateY(-8px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Individual Apple macOS System App Gradients & Colors */
+.icon-app-dashboard { background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%); color: #FFF; }
+.icon-app-planner   { background: linear-gradient(135deg, #22C55E 0%, #15803D 100%); color: #FFF; }
+.icon-app-calendar  { background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%); color: #0F172A; position: relative; overflow: hidden; }
+.icon-app-notes     { background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%); color: #FFF; }
+.icon-app-vault     { background: linear-gradient(135deg, #A855F7 0%, #6B21A8 100%); color: #FFF; }
+.icon-app-analytics { background: linear-gradient(135deg, #F97316 0%, #C2410C 100%); color: #FFF; }
+.icon-app-standby   { background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.icon-app-search    { background: linear-gradient(135deg, #475569 0%, #1E293B 100%); color: #F8FAFC; }
+.icon-app-add       { background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); color: #FFF; }
+
+.dock-active-dot {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.dock-item.active .dock-active-dot {
+  opacity: 1;
+}
+
+.dock-tooltip {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(13, 17, 23, 0.9);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: all 180ms ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.dock-item:hover .dock-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Things 3 & Linear-inspired Minimalist Task Cards */
+.task-card-redesign {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.task-card-redesign:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow);
+}
+
+.task-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.task-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+}
+
+.task-card-subtitle {
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-family: var(--font-code);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.85;
+  transition: opacity 180ms ease;
+}
+
+.task-card-redesign:hover .task-card-actions {
+  opacity: 1;
+}
+
+.task-progress-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-progress-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.task-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 300ms ease;
+}
+
+.task-details-collapsible {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 6px;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeIn 200ms ease;
+}
+
+.task-details-collapsible.open {
+  display: flex;
+}
+
+.task-card-menu-dropdown {
+  position: absolute;
+  top: 42px;
+  right: 16px;
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  z-index: 100;
+  min-width: 160px;
+}
+
+.task-card-menu-item {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 150ms ease;
+}
+
+.task-card-menu-item:hover {
+  background: var(--elevated-hover);
+  color: var(--accent);
+}
+
+.card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.card-btns { display: flex; gap: 6px; }
+.card-btn { padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; box-shadow: none; font-weight: 600; }
+.card-btn.delete { background: rgba(255, 59, 48, 0.12); color: var(--danger); }
+.card-btn.delete:hover { background: var(--danger); color: #fff; }
+.card-btn.edit { background: rgba(56, 189, 248, 0.12); color: var(--accent); }
+.card-btn.edit:hover { background: var(--accent); color: #05070A; }
+
+/* Planner Component with Circular Progress Meter */
+.planner-progress-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: var(--shadow);
+}
+.ring-wrap { position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
+.ring-text { position: absolute; font-size: 1.1rem; font-weight: 800; color: var(--text); font-family: var(--font-code); }
+
+.task-item {
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  transition: all 0.18s ease;
+}
+.task-item:hover { background: var(--elevated-hover); border-color: var(--border-hover); }
+.task-item.completed { opacity: 0.5; text-decoration: line-through; }
+.task-item .card-btn.delete { opacity: 0; transition: opacity 0.18s ease; }
+.task-item:hover .card-btn.delete { opacity: 1; }
+
+.task-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.task-title { font-weight: 600; font-size: 0.92rem; }
+.priority-tag { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; cursor: pointer; user-select: none; transition: all 0.18s ease; display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-code); }
+.priority-tag:hover { transform: scale(1.05); }
+.priority-High { background: rgba(255, 59, 48, 0.15); color: var(--danger); border: 1px solid rgba(255, 59, 48, 0.3); }
+.priority-Medium { background: rgba(255, 149, 0, 0.15); color: var(--amber); border: 1px solid rgba(255, 149, 0, 0.3); }
+.priority-Low { background: rgba(52, 199, 89, 0.15); color: var(--green); border: 1px solid rgba(52, 199, 89, 0.3); }
+
+/* StandBy Screen & CSS Variables for Fullscreen Scaling */
+:root {
+  --clock-unit-w: 72px;
+  --clock-unit-h: 96px;
+  --clock-unit-font: 4.2rem;
+  --clock-custom-font: 5.2rem;
+  --analog-size: 210px;
+}
+
+/* Fluid Apple Glass StandBy Fullscreen Expansion Animation */
+@keyframes appleStandbyEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.standby-screen {
+  background: var(--surface);
+  color: #fff;
+  border-radius: 20px;
+  padding: 40px 24px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease, padding 450ms cubic-bezier(0.16, 1, 0.3, 1), background 300ms ease !important;
+  animation: appleStandbyEnter 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* Fullscreen Mode Overrides (Triggered by Native Fullscreen or .is-fullscreen class) */
+.standby-screen:fullscreen,
+.standby-screen:-webkit-full-screen,
+.standby-screen.is-fullscreen {
+  border-radius: 0 !important;
+  border: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  padding: 40px 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  animation: appleStandbyEnter 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  --clock-unit-w: clamp(110px, 14vw, 200px);
+  --clock-unit-h: clamp(150px, 20vw, 280px);
+  --clock-unit-font: clamp(6.5rem, 11vw, 15rem);
+  --clock-custom-font: clamp(8rem, 14vw, 18rem);
+  --analog-size: clamp(320px, 45vh, 580px);
+}
+
+.standby-screen.is-fullscreen .standby-top-controls,
+.standby-screen:fullscreen .standby-top-controls {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+.standby-screen.is-fullscreen .standby-top-controls:hover,
+.standby-screen:fullscreen .standby-top-controls:hover {
+  opacity: 1;
+}
+
+.standby-screen.is-fullscreen .flip-clock-wrap,
+.standby-screen.is-fullscreen .clock-display-container,
+.standby-screen:fullscreen .flip-clock-wrap,
+.standby-screen:fullscreen .clock-display-container {
+  transform: scale(1.35) translateY(-2vh);
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.standby-screen.is-fullscreen .apple-standby-digits,
+.standby-screen:fullscreen .apple-standby-digits {
+  font-size: clamp(9rem, 20vw, 25rem) !important;
+  letter-spacing: -8px !important;
+}
+
+.standby-screen.is-fullscreen .apple-standby-date,
+.standby-screen:fullscreen .apple-standby-date {
+  font-size: clamp(1.2rem, 2.5vw, 2.2rem) !important;
+  letter-spacing: 5px !important;
+  margin-top: 24px !important;
+}
+
+.standby-screen.is-fullscreen .standby-date,
+.standby-screen:fullscreen .standby-date {
+  font-size: clamp(1.2rem, 2.5vw, 2.2rem);
+  letter-spacing: 4px;
+  opacity: 0.85;
+  transform: translateY(-2vh);
+}
+
+.standby-screen.night-mode { background: #000; color: #FF3B30; }
+.standby-screen.night-mode * { color: #FF3B30 !important; border-color: rgba(255, 59, 48, 0.3) !important; }
+
+.standby-clock { display: none; }
+.standby-date { font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 16px; font-family: var(--font-code); transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Mechanical 3D Split-Flap Clock Styling with Variables */
+.flip-clock-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 10px 0 20px;
+  user-select: none;
+  perspective: 1000px;
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.flip-group {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+.flip-unit {
+  position: relative;
+  width: var(--clock-unit-w);
+  height: var(--clock-unit-h);
+  background: #090d16;
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), inset 0 0 2px rgba(255, 255, 255, 0.15);
+  font-family: var(--font-code);
+  font-size: var(--clock-unit-font);
+  font-weight: 800;
+  color: #ffffff;
+  perspective: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              height 300ms cubic-bezier(0.16, 1, 0.3, 1),
+              font-size 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Horizontal mechanical split seam & hinge pins */
+.flip-unit::after {
+  content: '';
+  position: absolute;
+  top: 49%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #000;
+  z-index: 10;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.flip-unit::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  right: -4px;
+  height: 8px;
+  margin-top: -4px;
+  border-left: 4px solid #64748b;
+  border-right: 4px solid #64748b;
+  z-index: 11;
+  border-radius: 2px;
+}
+
+.flip-top-static, .flip-bottom-static, .flip-top-fold, .flip-bottom-fold {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  background: #111827;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Top panels */
+.flip-top-static, .flip-top-fold {
+  top: 0;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.flip-top-static span, .flip-top-fold span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--clock-unit-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Bottom panels */
+.flip-bottom-static, .flip-bottom-fold {
+  bottom: 0;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.flip-bottom-static span, .flip-bottom-fold span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--clock-unit-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Apple StandBy Mode Bedside OLED Aesthetics */
+@keyframes appleColonGlow {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)); }
+  50% { opacity: 0.25; filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1)); }
+}
+
+@keyframes appleBedsideFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.apple-standby-clock-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: appleBedsideFloat 6s ease-in-out infinite;
+  user-select: none;
+  padding: 20px 0;
+}
+
+.apple-standby-digits {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+  font-size: calc(var(--clock-custom-font) * 1.4);
+  font-weight: 200;
+  letter-spacing: -6px;
+  color: #ffffff;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.15);
+  transition: font-size 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-standby-colon {
+  display: inline-block;
+  animation: appleColonGlow 2s ease-in-out infinite;
+  font-weight: 100;
+  margin: 0 -2px;
+}
+
+.apple-standby-date {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  margin-top: 16px;
+}
+
+/* Clock Display Transition Container (250ms crossfade + scale) */
+.clock-display-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1), transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 1;
+  transform: scale(1);
+}
+.clock-display-container.style-switching {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* 3D Fold Leaves Animation */
+.flip-top-fold {
+  z-index: 3;
+  transform-origin: bottom;
+  transform: rotateX(0deg);
+  transition: transform 160ms ease-in;
+}
+
+.flip-top-fold.fold-down {
+  transform: rotateX(-90deg);
+}
+
+.flip-bottom-fold {
+  z-index: 2;
+  transform-origin: top;
+  transform: rotateX(90deg);
+  transition: transform 160ms ease-out 160ms;
+}
+
+.flip-bottom-fold.fold-down {
+  transform: rotateX(0deg);
+}
+
+.no-anim {
+  transition: none !important;
+}
+
+.flip-divider {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent);
+  opacity: 0.8;
+  animation: flipBlink 1s infinite;
+  margin: 0 2px;
+}
+
+@keyframes flipBlink {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.2; }
+}
+
+/* StandBy Top Controls Bar */
+.standby-top-controls {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+
+/* Glass Pill Buttons */
+.timer-toggle-pill {
+  position: relative;
+  top: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  outline: none;
+}
+.timer-toggle-pill:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: var(--accent);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+}
+.timer-toggle-pill.active {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+}
+
+/* macOS Control Center Theme Popover Panel */
+.theme-popover {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 440px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 16px;
+  opacity: 0;
+  transform: scale(0.95) translateY(-8px);
+  pointer-events: none;
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 200;
+}
+.theme-popover.is-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.popover-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Theme Cards Responsive Grid */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.theme-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  outline: none;
+}
+.theme-card:hover, .theme-card:focus-visible {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+}
+.theme-card.selected {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.theme-preview-box {
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.theme-desc {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.theme-checkmark {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #05070a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+/* Clock Face Display Container & Custom Clock Styles */
+.clock-display-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 20px;
+  width: 100%;
+}
+
+/* Analog Clock */
+.analog-clock-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08) 0%, rgba(10, 15, 26, 0.95) 70%);
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.analog-clock-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.analog-center-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  z-index: 10;
+  box-shadow: 0 0 10px var(--accent);
+}
+.analog-hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.analog-hand.hour {
+  width: 6px;
+  height: 60px;
+  background: #ffffff;
+  margin-left: -3px;
+}
+.analog-hand.minute {
+  width: 4px;
+  height: 85px;
+  background: #cbd5e1;
+  margin-left: -2px;
+}
+.analog-hand.second {
+  width: 2px;
+  height: 95px;
+  background: #ff3b30;
+  margin-left: -1px;
+}
+
+/* Cyber HUD Clock */
+.cyber-hud-wrap {
+  position: relative;
+  padding: 28px 50px;
+  border: 1px solid var(--accent);
+  background: rgba(5, 10, 25, 0.85);
+  border-radius: 16px;
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.25), inset 0 0 20px rgba(56, 189, 248, 0.15);
+  font-family: var(--font-code);
+}
+.cyber-hud-wrap::before {
+  content: 'SYSTEM ACTIVE // TELEMETRY_v3.0';
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  font-size: 0.65rem;
+  letter-spacing: 2.5px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+/* Retro LCD Clock */
+.lcd-clock-wrap {
+  background: linear-gradient(180deg, #8ba883 0%, #76966e 100%);
+  color: #122410;
+  padding: 20px 42px;
+  border-radius: 10px;
+  border: 5px solid #283626;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 12px 30px rgba(0,0,0,0.4);
+  font-family: monospace;
+  font-size: 4.5rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Glass Clock */
+.glass-clock-wrap {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 28px;
+  padding: 24px 50px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  font-size: 5.2rem;
+  font-weight: 800;
+  font-family: var(--font-code);
+  color: var(--text);
+}
+
+/* Collapsible Pomodoro Panel with Raycast/Apple Easing */
+.pomodoro-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition: max-height 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+              margin 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 480px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.pomodoro-panel.is-open {
+  max-height: 480px;
+  opacity: 1;
+  transform: translateY(0);
+  margin: 20px auto 10px;
+  pointer-events: auto;
+}
+
+.pomodoro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 8px;
+}
+.pomodoro-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.85;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pomodoro-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.pomodoro-close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.timer-display { font-size: 3.8rem; font-weight: 800; font-family: var(--font-code); margin: 8px 0; color: var(--accent); }
+.timer-controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.standby-btn { background: rgba(255,255,255,0.06); color: #fff; padding: 8px 18px; border-radius: 999px; font-size: 0.9rem; border: 1px solid var(--border); transition: all 0.18s; }
+.standby-btn:hover { background: rgba(255,255,255,0.12); border-color: var(--accent); color: var(--accent); }
+
+/* Knowledge Graph */
+.graph-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow); position: relative; }
+#graphCanvas { width: 100%; height: 560px; display: block; border-radius: var(--radius-md); background: var(--bg); cursor: grab; }
+
+/* Analytics */
+.analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.analytics-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow); }
+.analytics-card h3 { margin-top: 0; font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; }
+.chart-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.82rem; }
+.bar-label { width: 110px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; font-weight: 600; font-family: var(--font-code); }
+.bar-track { flex: 1; height: 8px; background: rgba(0,0,0,0.4); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+.bar-val { width: 32px; text-align: right; color: var(--muted); font-size: 0.78rem; font-family: var(--font-code); }
+
+/* Command Palette Dialog */
+.cmd-dialog { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; width: 90%; max-width: 540px; background: var(--surface); backdrop-filter: blur(32px); box-shadow: var(--shadow-lg); overflow: hidden; }
+.cmd-dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); }
+.cmd-input-wrap { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.cmd-input-wrap input { border: none !important; background: transparent !important; box-shadow: none !important; font-size: 1rem; padding: 0; margin: 0; }
+.cmd-list { max-height: 320px; overflow-y: auto; padding: 8px; margin: 0; list-style: none; }
+.cmd-item { padding: 10px 14px; border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 0.88rem; transition: background 0.12s; }
+.cmd-item:hover { background: rgba(255, 255, 255, 0.06); color: var(--accent); }
+
+/* Toast & Dialogs */
+.toast { position: fixed; right: 20px; bottom: 20px; min-width: 280px; max-width: 420px; padding: 12px 16px; border-radius: var(--radius-sm); background: var(--elevated); color: #fff; border: 1px solid var(--border-hover); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; z-index: 999; font-size: 0.88rem; font-weight: 600; }
+.toast.visible { opacity: 1; transform: translateY(0); pointer-events: auto !important; }
+.toast[data-tone="error"] { background: var(--danger); }
+.toast[data-tone="success"] { background: var(--green); color: #05070A; }
+
+.confirm-dialog { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; max-width: 380px; width: 90%; background: var(--surface); box-shadow: var(--shadow-lg); }
+.confirm-dialog::backdrop { background: rgba(0,0,0,0.7); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(--muted); grid-column: 1 / -1; }
+.empty-state h3 { font-size: 1.2rem; margin: 10px 0 4px; color: var(--text); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* Interconnected Relational System CSS */
+.chip-relationship-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+.chip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-code);
+  cursor: pointer;
+  transition: all 150ms ease;
+  user-select: none;
+}
+.chip-pill.project { background: rgba(99, 102, 241, 0.18); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+.chip-pill.goal { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.chip-pill.calendar { background: rgba(56, 189, 248, 0.18); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
+.chip-pill.note { background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.chip-pill.vault { background: rgba(244, 63, 94, 0.18); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+.chip-pill:hover { transform: translateY(-1px); filter: brightness(1.25); box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
+
+.mention-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font-code);
+  cursor: pointer;
+  margin: 0 2px;
+  transition: opacity 150ms ease;
+}
+.mention-chip.task { background: rgba(56, 189, 248, 0.2); color: var(--accent); }
+.mention-chip.project { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
+.mention-chip.goal { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.mention-chip:hover { opacity: 0.85; text-decoration: underline; }
+
+/* Premium macOS Desktop Calendar System */
+.cal-app-container { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.cal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 18px; box-shadow: var(--shadow); }
+.cal-toolbar-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cal-view-switcher { display: inline-flex; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; gap: 2px; }
+.cal-view-btn { background: transparent; border: none; color: var(--muted); font-size: 0.78rem; font-weight: 600; padding: 5px 12px; border-radius: 4px; cursor: pointer; transition: all 180ms ease; }
+.cal-view-btn.active, .cal-view-btn:hover { background: var(--accent); color: #05070a; font-weight: 700; }
+.cal-main-layout { display: grid; grid-template-columns: 270px 1fr; gap: 18px; align-items: start; }
+@media (max-width: 900px) { .cal-main-layout { grid-template-columns: 1fr; } }
+.cal-sidebar { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
+.mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 0.75rem; }
+.mini-cal-day { padding: 6px 0; border-radius: 50%; cursor: pointer; color: var(--muted); transition: background 150ms ease; }
+.mini-cal-day:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+.mini-cal-day.today { background: rgba(56, 189, 248, 0.18); color: var(--accent); font-weight: 700; }
+.mini-cal-day.selected { background: var(--accent); color: #05070a; font-weight: 700; }
+.mini-cal-day.other-month { opacity: 0.3; }
+.cal-category-item { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.82rem; transition: background 150ms ease; }
+.cal-category-item:hover { background: rgba(255, 255, 255, 0.05); }
+.cal-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+.cal-event-card { font-size: 0.72rem; border-radius: 5px; padding: 3px 6px; margin-top: 4px; display: flex; align-items: center; justify-content: space-between; gap: 4px; cursor: grab; transition: transform 150ms ease, box-shadow 150ms ease; user-select: none; border-left: 3px solid transparent; }
+.cal-event-card:active { cursor: grabbing; transform: scale(0.97); }
+.cal-event-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+.cal-day-cell { min-height: 108px; background: #111827; border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-sm); padding: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; transition: border-color 150ms ease, background 150ms ease; position: relative; }
+.cal-day-cell:hover { border-color: rgba(255,255,255,0.18); }
+.cal-day-cell.drag-over { background: rgba(56, 189, 248, 0.14) !important; border-color: var(--accent) !important; }
+.cal-day-cell.is-today { border: 1.5px solid var(--accent); box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.15); }
+.cal-day-number { font-weight: 700; font-family: var(--font-code); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
+.cal-day-cell.is-today .cal-day-number { background: var(--accent); color: #05070a; }
+.cal-week-num { font-size: 0.7rem; color: var(--muted); font-family: var(--font-code); text-align: center; padding-top: 10px; opacity: 0.6; }
+.cal-more-btn { font-size: 0.68rem; color: var(--accent); font-weight: 700; cursor: pointer; margin-top: 4px; padding: 2px 4px; border-radius: 3px; background: rgba(56, 189, 248, 0.1); display: inline-block; width: max-content; }
+.cal-more-btn:hover { background: rgba(56, 189, 248, 0.2); }
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+  <!-- Minimal Arc Workspace Selector Rail -->
+  <aside class="side-rail">
+    <div class="logo-icon" style="width:38px; height:38px; border-radius:12px; background:var(--accent); color:#05070a; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer;" onclick="switchView('dashboard')" title="Dinakar OS">D</div>
+    <div style="width:24px; height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
+    <button type="button" class="rail-btn" title="Toggle Light/Dark Theme" onclick="toggleTheme()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+    <div style="position:relative; margin-top:auto;">
+      <button type="button" class="rail-btn" id="syncStatusPill" title="Cloud & Offline Sync Status" onclick="toggleSyncPopover(event)">
+        <span class="sync-status-dot" id="syncStatusDot"></span>
+      </button>
+
+      <!-- Sync & Auth Popover -->
+      <div id="syncPopover" class="sync-popover" style="display:none; left:50px; top:-80px;" onclick="event.stopPropagation();">
+        <div class="sync-popover-header">
+          <strong>⚡ Cloud & Offline Sync</strong>
+          <button type="button" class="pomodoro-close-btn" onclick="closeSyncPopover()">&times;</button>
+        </div>
+        <div class="sync-popover-body">
+          <div class="sync-row"><span>Status:</span><strong id="syncStatusLabel">Synced</strong></div>
+          <div class="sync-row"><span>Connection:</span><strong id="syncPopoverConnection">Online</strong></div>
+          <div class="sync-row"><span>Last Synced:</span><span id="syncPopoverLastSync">Just now</span></div>
+          <div class="sync-row"><span>Pending Queue:</span><span id="syncPopoverQueueCount">0 items</span></div>
+          <div class="sync-row" id="syncUserRow"><span>Account:</span><span id="syncUserEmail">Guest (Local)</span></div>
+        </div>
+        <div class="sync-popover-actions" style="margin-top:6px;">
+          <button type="button" class="secondary" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem;">🔑 Account / Cloud Login</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Layout (Extends seamlessly to top of viewport with bottom clearance for dock) -->
+  <div class="main-content" style="padding:24px 32px 100px 32px;">
+
+    <!-- Contextual Section Metrics -->
+    <div class="stats" id="statsRow">
+      <div class="stat-card" id="cardTotalNotes"><b id="statTotal">0</b><span>Total Notes</span></div>
+      <div class="stat-card" id="cardTasksDone" style="display:none; flex-direction:column; min-width:280px; flex:1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div>
+            <b id="statTasks">0/0</b>
+            <span>Tasks Completed</span>
+          </div>
+          <b id="taskProgressPercent" style="font-size:1.4rem; color:var(--accent);">0%</b>
+        </div>
+        <div style="display:flex; gap:16px; margin-top:8px; font-size:0.78rem; color:var(--muted); font-family:var(--font-code);">
+          <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Streak: <strong id="streakCount" style="color:var(--amber);">0 days</strong></span>
+          <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Productivity: <strong id="productivityScore" style="color:var(--accent);">0%</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 0: Intelligent Executive Command Center Dashboard -->
+    <main id="viewDashboard" style="display:block;">
+      <div style="display:flex; flex-direction:column; gap:24px; padding-bottom:140px;">
+        <!-- Top Executive Header: Greeting, Date, Quick Search & Add Cards -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px 24px; position:relative;">
+          <div>
+            <h2 id="execGreetingText" style="margin:0; font-size:1.5rem; font-weight:800; letter-spacing:-0.5px;">Good Morning, Dinakar</h2>
+            <div id="execDateText" style="font-size:0.88rem; color:var(--muted); font-family:var(--font-code); margin-top:4px;">Tuesday, Aug 4 • 🌤️ 24°C High Focus Opportunity</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; position:relative;">
+            <button type="button" onclick="toggleAddCardMenu()" class="secondary" style="display:inline-flex; align-items:center; gap:6px; font-weight:700; background:rgba(56, 189, 248, 0.15); color:var(--accent); border-color:rgba(56, 189, 248, 0.3);">
+              ➕ Add Card
+            </button>
+            <div id="addCardMenuDropdown" class="glass-level-2 task-card-menu-dropdown" style="display:none; top:44px; right:120px; min-width:240px; z-index:1100;"></div>
+            
+            <button type="button" onclick="openCommandPalette()" class="secondary" style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search (⌘K)
+            </button>
+            <button type="button" onclick="switchView('planner')" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">+ Quick Add Task</button>
+          </div>
+        </div>
+
+        <!-- Unified Auto-Reflowing Self-Adjusting Executive Dashboard Grid -->
+        <div id="execDashboardCardsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:24px; align-items:start;">
+          <!-- Section 1: Today's Focus (Top 3 MITs) -->
+          <div class="panel" id="cardBox-mits" style="display:flex; flex-direction:column; gap:14px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                🎯 Today's Focus (Top 3 MITs)
+              </h3>
+              <button type="button" onclick="hideDashboardCard('mits')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execTopMITsContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+          </div>
+
+          <!-- Section 2: Today's Live Timeline -->
+          <div class="panel" id="cardBox-timeline" style="display:flex; flex-direction:column; gap:14px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                ⏱️ Today's Schedule & Timeline
+              </h3>
+              <button type="button" onclick="hideDashboardCard('timeline')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execTimelineContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+
+          <!-- Section 3: Current OKR Goal -->
+          <div class="panel" id="cardBox-goal" style="display:flex; flex-direction:column; gap:12px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800;">🎯 Active Goal</h3>
+              <button type="button" onclick="hideDashboardCard('goal')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execCurrentGoalCard"></div>
+          </div>
+
+          <!-- Section 4: Current Project Workspace -->
+          <div class="panel" id="cardBox-project" style="display:flex; flex-direction:column; gap:12px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800;">🏢 Active Project</h3>
+              <button type="button" onclick="hideDashboardCard('project')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execCurrentProjectCard"></div>
+          </div>
+
+          <!-- Section 5: Upcoming Deadlines -->
+          <div class="panel" id="cardBox-deadlines" style="display:flex; flex-direction:column; gap:14px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800;">⏳ Upcoming Deadlines</h3>
+              <button type="button" onclick="hideDashboardCard('deadlines')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execDeadlinesContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+
+          <!-- Section 7: Intelligent Activity Insights Engine -->
+          <div class="panel" id="cardBox-insights" style="display:flex; flex-direction:column; gap:14px; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800;">🧠 Intelligent Workspace Insights</h3>
+              <button type="button" onclick="hideDashboardCard('insights')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
+            </div>
+            <div id="execInsightsContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 1: Notes Editor & Grid -->
+    <main id="viewNotes" class="layout" style="display:none;">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title" id="formTitle">New Note</h2>
+          <div class="editor-modes">
+            <button type="button" class="mode-btn active" id="modeWriteBtn" onclick="setEditorMode('write')">Write</button>
+            <button type="button" class="mode-btn" id="modePreviewBtn" onclick="setEditorMode('preview')">Preview</button>
+          </div>
+        </div>
+
+        <form id="noteForm" onsubmit="handleSaveNote(event)" novalidate>
+          <div class="field-group">
+            <label class="field-label" for="templateSelect">Quick Template</label>
+            <select id="templateSelect" onchange="applyTemplate(this.value)">
+              <option value="">-- Blank Note --</option>
+              <option value="meeting">📋 Meeting Summary</option>
+              <option value="book">📚 Book / Article Note</option>
+              <option value="bug">🐛 Bug / Solution Note</option>
+              <option value="journal">✍️ Daily Reflection</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="topic">Topic Title</label>
+            <input id="topic" placeholder="e.g., Executive Strategy 2026">
+          </div>
+
+          <div class="form-row">
+            <div class="field-group">
+              <label class="field-label" for="category">Category</label>
+              <select id="category">
+                <option value="General">General</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Ideas">Ideas</option>
+                <option value="Code">Code</option>
+                <option value="Reference">Reference</option>
+              </select>
+            </div>
+            <div class="field-group" style="display:flex; align-items:flex-end; padding-bottom:12px;">
+              <label class="checkbox-field">
+                <input type="checkbox" id="isPinned"> 📌 Pin to Top
+              </label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="field-label">
+              <span>Takeaway (Markdown)</span>
+              <span id="charCount">0/1000</span>
+            </div>
+            <div class="format-bar">
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('bold')" title="Bold">B</button>
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('italic')" title="Italic">I</button>
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('heading')" title="Heading">H1</button>
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('code')" title="Code">&lt;/&gt;</button>
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('list')" title="List">• List</button>
+              <button type="button" class="fmt-btn" onclick="formatMarkdown('quote')" title="Quote">“ Quote</button>
+            </div>
+            <div class="textarea-wrap" id="writePane">
+              <textarea id="takeaway" rows="7" maxlength="1000" placeholder="Write notes here..."></textarea>
+              <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceDictation()" title="Voice Dictation">
+                🎤 Voice
+              </button>
+            </div>
+            <div id="previewPane" class="markdown-preview-pane" style="display:none;"></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="tags">Tags</label>
+            <input id="tags" placeholder="strategy, growth, meeting (comma-separated)">
+          </div>
+
+          <div class="button-row" style="display:flex; gap:10px; margin-top:16px;">
+            <button type="button" style="flex:1" id="saveBtn" onclick="handleSaveNote(event)">Save Note</button>
+            <button type="button" class="secondary" id="cancelEditBtn" onclick="cancelEditing()" hidden>Cancel</button>
+          </div>
+        </form>
+
+        <div class="toolbar-actions">
+          <button type="button" class="secondary" onclick="exportNotesJSON()">Export JSON</button>
+          <button type="button" class="secondary" onclick="exportNotesMarkdown()">Export MD</button>
+          <button type="button" class="secondary" onclick="importFile.click()">Import</button>
+          <input class="sr-only" id="importFile" type="file" accept=".json" onchange="handleImportFile(event)">
+        </div>
+      </aside>
+
+      <section>
+        <div class="toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input id="search" placeholder="Search notes, markdown, tags... (Cmd+K)" oninput="render()">
+          </div>
+          <select id="filterCategory" onchange="render()">
+            <option value="ALL">All Categories</option>
+            <option value="General">General</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+            <option value="Ideas">Ideas</option>
+            <option value="Code">Code</option>
+            <option value="Reference">Reference</option>
+          </select>
+          <select id="sortMode" onchange="render()">
+            <option value="pinned">Pinned & Newest</option>
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="topic">Topic A-Z</option>
+          </select>
+        </div>
+
+        <div id="notesGrid" class="grid"></div>
+      </section>
+    </main>
+
+    <!-- VIEW 2: To-Do Planner with Circular SVG Progress Ring -->
+    <main id="viewPlanner" class="layout" style="display:none;">
+      <aside class="panel">
+        <h2 class="panel-title" style="margin-bottom:16px">Add New Task</h2>
+        <form id="taskForm" onsubmit="createTask(event)">
+          <div class="field-group">
+            <label class="field-label" for="taskTitle">Task Title</label>
+            <input id="taskTitle" placeholder="e.g., Finalize Q3 Roadmap deck" required>
+          </div>
+          <div class="field-group" style="margin-bottom:10px;">
+            <label class="field-label" for="taskCalendarSelect">Calendar / Category</label>
+            <select id="taskCalendarSelect" style="font-weight:700;">
+              <option value="work">🔵 Work</option>
+              <option value="personal">🟢 Personal</option>
+              <option value="study" selected>🟣 Study</option>
+              <option value="goals">🟠 Goals</option>
+              <option value="habits">🔴 Habits</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="field-group">
+              <label class="field-label" for="taskPriority">Priority</label>
+              <select id="taskPriority">
+                <option value="High">🔴 High</option>
+                <option value="Medium" selected>🟡 Medium</option>
+                <option value="Low">🔵 Low</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="taskDueDate">Due Date (Calendar)</label>
+              <input type="date" id="taskDueDate">
+            </div>
+          </div>
+          <div class="field-group" style="margin-top:12px;">
+            <label class="checkbox-field">
+              <input type="checkbox" id="taskIsDaily" onchange="toggleDueDateField(this)"> 🔁 Repeat Every Day (Daily Task)
+            </label>
+          <div class="form-row" style="margin-top:10px;">
+            <div class="field-group">
+              <label class="field-label" for="taskLinkProject">Link Project</label>
+              <select id="taskLinkProject">
+                <option value="">(None)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="taskLinkGoal">Link Goal (OKR)</label>
+              <select id="taskLinkGoal">
+                <option value="">(None)</option>
+              </select>
+            </div>
+          </div>
+          <button style="width:100%; margin-top:12px;">Add Task</button>
+          <button type="button" class="secondary" onclick="addDefaultDailyTasks()" style="width:100%; margin-top:8px;">+ Add Default Daily Habits</button>
+        </form>
+
+      </aside>
+
+      <section>
+        <!-- Circular Progress Meter Banner -->
+        <div class="planner-progress-card">
+          <div>
+            <h3 style="margin:0 0 6px; font-size:1.1rem; font-weight:700;">Task Completion Velocity</h3>
+            <p style="margin:0; font-size:0.85rem; color:var(--muted)">Stay focused and maintain your weekly productivity momentum.</p>
+          </div>
+          <div class="ring-wrap">
+            <svg width="84" height="84" viewBox="0 0 36 36" style="transform:rotate(-90deg)">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3.5" />
+              <path id="ringSvgPath" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="0, 100" />
+            </svg>
+            <div class="ring-text" id="ringPercentText">0%</div>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <select id="filterTaskStatus" onchange="renderPlanner()">
+            <option value="ALL">All Tasks</option>
+            <option value="DAILY">Daily Tasks</option>
+            <option value="PENDING">Pending Tasks</option>
+            <option value="COMPLETED">Completed Tasks</option>
+          </select>
+        </div>
+
+        <div id="tasksList"></div>
+      </section>
+    </main>
+
+    <!-- VIEW 3: Encrypted Vault (Executive Private Journal & Secret Store) -->
+    <main id="viewVault" style="display:none;">
+      <!-- Vault Header Panel -->
+      <div class="panel" style="margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); color:var(--accent); margin-bottom:10px;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h2 style="margin:0 0 6px; font-size:1.4rem; font-weight:800;">Encrypted Vault & Private Journal</h2>
+        <p style="margin:0 0 16px; color:var(--muted); font-size:0.88rem;">AES-256 protected local storage for private notes, API keys, passwords, and sensitive strategies.</p>
+        
+        <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div id="vaultLockStatus" style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); padding:6px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:var(--font-code); font-size:0.85rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Status: Locked
+          </div>
+          <button type="button" class="secondary" id="vaultChangePinBtn" onclick="changeVaultPin()" style="display:none; padding:5px 12px; font-size:0.8rem; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-2-2l2 2m2 0l-3 3m0 0l-2 2a2 2 0 0 1-2.83 0l-.34-.34a2 2 0 0 1 0-2.83l2-2m3.17 3.17L9 16.5M9 16.5A4.5 4.5 0 1 1 3.5 11M9 16.5L3 21"/></svg> Change Passcode
+          </button>
+        </div>
+      </div>
+
+      <!-- Vault Authentication Panel -->
+      <div id="vaultAuthPane" class="panel" style="max-width:420px; margin:0 auto 24px; text-align:center;">
+        <h3 id="vaultAuthTitle" style="margin-top:0; font-size:1.1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Enter Master Passcode
+        </h3>
+        <p id="vaultAuthDesc" style="font-size:0.82rem; color:var(--muted)">Enter your private Master Passcode PIN to access vault contents.</p>
+        <form onsubmit="event.preventDefault(); unlockVault();">
+          <div class="field-group">
+            <input type="password" id="vaultPinInput" placeholder="••••" maxlength="12" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:var(--font-code);" required>
+          </div>
+          <button type="submit" id="vaultAuthSubmitBtn" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Unlock Vault
+          </button>
+        </form>
+      </div>
+
+      <!-- Vault Unlocked Content Pane -->
+      <div id="vaultContentPane" style="display:none;">
+        <!-- Vault Sub-Navigation Switcher & Backup Toolbar -->
+        <div class="toolbar" style="margin-bottom:20px; padding:8px 12px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="tab-btn active" id="vaultSubTabSecrets" onclick="switchVaultSubTab('secrets')" style="border-radius:var(--radius-sm); padding:6px 16px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Confidential Secrets & Journal
+            </button>
+            <button type="button" class="tab-btn" id="vaultSubTabWorkspaces" onclick="switchVaultSubTab('workspaces')" style="border-radius:var(--radius-sm); padding:6px 16px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Encrypted Workspaces & Projects
+            </button>
+            <button type="button" class="tab-btn" id="vaultSubTabGoals" onclick="switchVaultSubTab('goals')" style="border-radius:var(--radius-sm); padding:6px 16px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Encrypted OKRs & Goals
+            </button>
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="secondary" onclick="exportVaultBackup()" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Backup
+            </button>
+            <label class="secondary" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px; cursor:pointer; margin:0;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Restore Backup
+              <input type="file" accept=".json" onchange="importVaultBackup(event)" style="display:none;">
+            </label>
+          </div>
+        </div>
+
+        <!-- Vault Sub-Pane 1: Secrets & Journal -->
+        <div id="vaultSubPaneSecrets">
+          <div class="layout">
+            <aside class="panel">
+              <h2 class="panel-title" style="margin-bottom:16px">Add Confidential Secret</h2>
+              <form id="vaultForm" onsubmit="createVaultNote(event)">
+                <div class="field-group">
+                  <label class="field-label" for="vaultTopic">Secret Title</label>
+                  <input id="vaultTopic" placeholder="e.g., AWS Production API Keys" required>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="vaultCategory">Category</label>
+                  <select id="vaultCategory">
+                    <option value="PASSWORD">Password / Credentials</option>
+                    <option value="API_KEY">API Key / Token</option>
+                    <option value="STRATEGY">Strategic Notes</option>
+                    <option value="FINANCIAL">Financial / Account</option>
+                    <option value="JOURNAL" selected>Private Journal</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="vaultContent">Secret Content</label>
+                  <textarea id="vaultContent" rows="5" placeholder="Enter confidential data..." required></textarea>
+                </div>
+                <button style="width:100%;">Save Secret Note</button>
+                <button type="button" class="secondary" onclick="lockVault()" style="width:100%; margin-top:8px; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Lock Vault Now
+                </button>
+              </form>
+            </aside>
+
+            <section>
+              <!-- Vault Search & Filter Bar -->
+              <div class="toolbar" style="margin-bottom:16px;">
+                <input id="vaultSearchInput" placeholder="Search secret notes..." oninput="renderVault()" style="flex:1;">
+                <select id="filterVaultCategory" onchange="renderVault()" style="width:auto;">
+                  <option value="ALL">All Categories</option>
+                  <option value="PASSWORD">Passwords</option>
+                  <option value="API_KEY">API Keys</option>
+                  <option value="STRATEGY">Strategy</option>
+                  <option value="FINANCIAL">Financial</option>
+                  <option value="JOURNAL">Private Journal</option>
+                </select>
+              </div>
+
+              <div id="vaultGrid" class="grid"></div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Vault Sub-Pane 2: Encrypted Workspaces & Projects -->
+        <div id="vaultSubPaneWorkspaces" style="display:none;">
+          <div class="toolbar" style="margin-bottom:20px; padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);">
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2 style="margin:0; font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Encrypted Workspaces & Projects Hub
+                </h2>
+                <span style="font-size:0.82rem; color:var(--muted)">Organize tasks and secret notes by project workspace</span>
+              </div>
+              <button type="button" onclick="createPresetProject()" style="display:inline-flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Project Workspace
+              </button>
+            </div>
+          </div>
+          <div id="workspacesGrid" class="grid"></div>
+        </div>
+
+        <!-- Vault Sub-Pane 3: Encrypted OKRs & Quarterly Goals -->
+        <div id="vaultSubPaneGoals" style="display:none;">
+          <div class="toolbar" style="margin-bottom:20px; padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);">
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2 style="margin:0; font-size:1.2rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Encrypted OKRs & Quarterly Goals
+                </h2>
+                <span style="font-size:0.82rem; color:var(--muted)">Track confidential targets and key results</span>
+              </div>
+              <button type="button" onclick="createPresetOKR()" style="display:inline-flex; align-items:center; gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add OKR Goal
+              </button>
+            </div>
+          </div>
+          <div id="goalsGrid" class="grid"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 5: Premium Desktop Calendar View (Apple / Fantastical / Notion Inspired) -->
+    <main id="viewCalendar" style="display:none;">
+      <div class="cal-app-container">
+        <!-- Top Calendar Navigation & Control Toolbar -->
+        <div class="cal-toolbar">
+          <div class="cal-toolbar-group">
+            <button type="button" class="secondary" onclick="prevMonth()" aria-label="Previous Month" style="padding:6px 12px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="secondary" onclick="todayMonth()" style="padding:6px 14px; font-weight:700;">Today</button>
+            <button type="button" class="secondary" onclick="nextMonth()" aria-label="Next Month" style="padding:6px 12px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <h2 id="calendarMonthTitle" style="margin:0 0 0 12px; font-size:1.3rem; font-weight:800; letter-spacing:-0.5px;">August 2026</h2>
+          </div>
+
+          <!-- View Mode Switcher -->
+          <div class="cal-view-switcher">
+            <button type="button" class="cal-view-btn active" id="calViewMonth" onclick="setCalendarView('month')">Month</button>
+            <button type="button" class="cal-view-btn" id="calViewWeek" onclick="setCalendarView('week')">Week</button>
+            <button type="button" class="cal-view-btn" id="calViewDay" onclick="setCalendarView('day')">Day</button>
+            <button type="button" class="cal-view-btn" id="calViewAgenda" onclick="setCalendarView('agenda')">Agenda</button>
+          </div>
+
+          <!-- Action Controls & Search -->
+          <div class="cal-toolbar-group">
+            <div style="position:relative;">
+              <input type="text" id="calSearchInput" placeholder="Search events..." oninput="renderCalendar()" style="padding:6px 12px 6px 30px; font-size:0.82rem; width:150px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.5;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            
+            <select id="calCategoryFilter" onchange="renderCalendar()" style="width:auto; font-size:0.82rem; padding:6px 10px;">
+              <option value="ALL">All Categories</option>
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+              <option value="Study">Study</option>
+              <option value="Goals">Goals</option>
+              <option value="Habits">Habits</option>
+            </select>
+
+            <button type="button" onclick="openNewEventModal()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Event
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Desktop Grid Layout (Sidebar + Calendar Canvas) -->
+        <div class="cal-main-layout">
+          <!-- Left Sticky Sidebar -->
+          <aside class="cal-sidebar">
+            <!-- Mini Month Calendar Picker -->
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span id="miniCalTitle" style="font-weight:700; font-size:0.85rem; font-family:var(--font-code);">AUG 2026</span>
+                <div style="display:flex; gap:4px;">
+                  <button type="button" class="secondary" onclick="prevMiniMonth()" style="padding:2px 6px; font-size:0.7rem;">◀</button>
+                  <button type="button" class="secondary" onclick="nextMiniMonth()" style="padding:2px 6px; font-size:0.7rem;">▶</button>
+                </div>
+              </div>
+              <div id="miniCalGrid" class="mini-cal-grid"></div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+
+            <!-- Quick Add Natural Language Event Input -->
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">QUICK ADD (NATURAL LANGUAGE)</label>
+              <form onsubmit="event.preventDefault(); handleNaturalLanguageAdd();">
+                <input type="text" id="nlEventInput" placeholder="e.g. Exam tomorrow 10 AM" style="font-size:0.8rem; padding:6px 10px; width:100%;">
+              </form>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+
+            <!-- Calendars & Category Visibility Toggles -->
+            <div>
+              <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:8px;">MY CALENDARS</span>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label class="cal-category-item">
+                  <span><span class="cal-color-dot" style="background:#6366F1;"></span> Work</span>
+                  <input type="checkbox" checked onchange="toggleCalCategory('Work', this.checked)">
+                </label>
+                <label class="cal-category-item">
+                  <span><span class="cal-color-dot" style="background:#14B8A6;"></span> Personal</span>
+                  <input type="checkbox" checked onchange="toggleCalCategory('Personal', this.checked)">
+                </label>
+                <label class="cal-category-item">
+                  <span><span class="cal-color-dot" style="background:#A855F7;"></span> Study</span>
+                  <input type="checkbox" checked onchange="toggleCalCategory('Study', this.checked)">
+                </label>
+                <label class="cal-category-item">
+                  <span><span class="cal-color-dot" style="background:#F59E0B;"></span> Goals</span>
+                  <input type="checkbox" checked onchange="toggleCalCategory('Goals', this.checked)">
+                </label>
+                <label class="cal-category-item">
+                  <span><span class="cal-color-dot" style="background:#F43F5E;"></span> Habits</span>
+                  <input type="checkbox" checked onchange="toggleCalCategory('Habits', this.checked)">
+                </label>
+              </div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+
+            <!-- Upcoming Schedule Sidebar Feed -->
+            <div>
+              <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:8px;">UPCOMING SCHEDULE</span>
+              <div id="sidebarUpcomingEvents" style="display:flex; flex-direction:column; gap:6px;"></div>
+            </div>
+          </aside>
+
+          <!-- Right Calendar Main Canvas -->
+          <section style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; min-height:580px; overflow:hidden;">
+            <!-- Month View Header (Mon-Sun + W#) -->
+            <div id="calCanvasHeader" style="display:grid; grid-template-columns:30px repeat(7, 1fr); gap:6px; margin-bottom:8px;"></div>
+            
+            <!-- Calendar Content Container -->
+            <div id="calendarGrid"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 4: Analytics -->
+    <main id="viewAnalytics" style="display:none;">
+      <div class="toolbar" style="margin-bottom:20px; padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; width:100%;">
+          <label style="font-weight:600; font-size:0.88rem; color:var(--text); display:flex; align-items:center; gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Analytics Timeframe:
+          </label>
+          <select id="analyticsTimeframe" onchange="toggleCustomAnalyticsDates()" style="width:auto; min-width:160px;">
+            <option value="7" selected>Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="ALL">All Time</option>
+            <option value="CUSTOM">Custom Date Range</option>
+          </select>
+          
+          <div id="analyticsCustomDateWrap" style="display:none; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span style="font-size:0.82rem; color:var(--muted); font-weight:500;">From:</span>
+            <input type="date" id="analyticsStartDate" onchange="renderAnalytics()" style="width:auto; padding:6px 10px;">
+            <span style="font-size:0.82rem; color:var(--muted); font-weight:500;">To:</span>
+            <input type="date" id="analyticsEndDate" onchange="renderAnalytics()" style="width:auto; padding:6px 10px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <h3 style="display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Tag Frequency
+          </h3>
+          <div id="analyticsTagChart"></div>
+        </div>
+        <div class="analytics-card">
+          <h3 style="display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Category Breakdown
+          </h3>
+          <div id="analyticsCategoryChart"></div>
+        </div>
+        <div class="analytics-card">
+          <h3 style="display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Note Depth / Word Count
+          </h3>
+          <div id="analyticsDepthChart"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 5: Apple StandBy Mode -->
+    <main id="viewStandby" style="display:none;">
+      <div id="standbyScreen" class="standby-screen">
+        <!-- Top-Left Glass Controls Bar (Timer + Clock Style) -->
+        <div class="standby-top-controls">
+          <button type="button" class="timer-toggle-pill" id="timerTogglePill" onclick="toggleTimerPanel()" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Pomodoro Timer Panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+            Timer
+          </button>
+
+          <button type="button" class="timer-toggle-pill" id="clockStyleTogglePill" onclick="toggleClockStylePanel(event)" aria-expanded="false" aria-controls="clockStylePopover" aria-label="Open Clock Style Panel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Clock Style
+          </button>
+
+          <!-- macOS Control Center Style Clock Style Popover Panel -->
+          <div id="clockStylePopover" class="theme-popover" role="dialog" aria-label="Clock Style Selector" aria-hidden="true" style="left:88px;">
+            <div class="popover-header">
+              <div class="popover-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Clock Face Styles
+              </div>
+              <button type="button" class="pomodoro-close-btn" onclick="closeClockStylePanel()" aria-label="Close Clock Style Panel">&times;</button>
+            </div>
+            <div id="clockStyleGrid" class="theme-grid"></div>
+          </div>
+        </div>
+
+        <!-- Dynamic Clock Render Container -->
+        <div id="clockDisplayContainer" class="clock-display-container"></div>
+
+        <!-- 3D Mechanical Split-Flap Clock -->
+        <div class="flip-clock-wrap" id="flipClockWrap">
+          <!-- Hours -->
+          <div class="flip-group">
+            <div class="flip-unit" id="flipH1">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+            <div class="flip-unit" id="flipH2">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+          </div>
+
+          <div class="flip-divider">:</div>
+
+          <!-- Minutes -->
+          <div class="flip-group">
+            <div class="flip-unit" id="flipM1">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+            <div class="flip-unit" id="flipM2">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+          </div>
+
+          <div class="flip-divider">:</div>
+
+          <!-- Seconds -->
+          <div class="flip-group">
+            <div class="flip-unit" id="flipS1">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+            <div class="flip-unit" id="flipS2">
+              <div class="flip-top-static"><span>0</span></div>
+              <div class="flip-bottom-static"><span>0</span></div>
+              <div class="flip-top-fold"><span>0</span></div>
+              <div class="flip-bottom-fold"><span>0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="standby-clock" id="standbyTime" style="display:none;">00:00:00</div>
+        <div class="standby-date" id="standbyDate">MONDAY, AUG 3</div>
+
+        <!-- Hidden / Collapsible Pomodoro Panel -->
+        <div id="pomodoroPanel" class="pomodoro-panel" aria-hidden="true">
+          <div class="pomodoro-header">
+            <div class="pomodoro-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Pomodoro Focus Timer
+            </div>
+            <button type="button" class="pomodoro-close-btn" onclick="closeTimerPanel()" aria-label="Close Timer Panel">&times;</button>
+          </div>
+
+          <div style="padding:0 20px 20px;">
+            <div class="timer-display" id="timerDisplay" title="Click to edit custom minutes" onclick="editCustomTimer()" style="cursor:pointer;">25:00</div>
+            
+            <div class="timer-controls">
+              <button type="button" class="standby-btn" onclick="adjustTimer(-5)">-5m</button>
+              <button type="button" class="standby-btn" onclick="setTimerPreset(15)">15m</button>
+              <button type="button" class="standby-btn" onclick="setTimerPreset(25)">25m</button>
+              <button type="button" class="standby-btn" onclick="setTimerPreset(45)">45m</button>
+              <button type="button" class="standby-btn" onclick="adjustTimer(5)">+5m</button>
+            </div>
+
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:14px; flex-wrap:wrap;">
+              <label style="font-size:0.82rem; opacity:0.8" for="customMinutes">Custom Mins:</label>
+              <input type="number" id="customMinutes" min="1" max="300" value="25" style="width:80px; text-align:center; padding:6px 8px; border-radius:var(--radius-sm);" placeholder="Mins">
+              <button type="button" class="standby-btn" onclick="setCustomMinutesFromInput()" style="padding:6px 14px; font-size:0.82rem">Set</button>
+            </div>
+            
+            <div class="timer-controls" style="margin-top:14px;">
+              <button type="button" class="standby-btn" id="startTimerBtn" onclick="toggleTimer()" style="background:var(--accent); color:#05070A; font-weight:700;">Start Focus</button>
+              <button type="button" class="standby-btn" onclick="resetTimer()">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:15px; flex-wrap:wrap; justify-content:center;">
+          <button type="button" class="standby-btn" onclick="toggleNightMode()" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Toggle Red Night Mode
+          </button>
+          <button type="button" class="standby-btn" id="fullScreenBtn" onclick="toggleFullscreenStandby()" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Fullscreen StandBy
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Command Palette Modal -->
+<dialog id="cmdModal" class="cmd-dialog">
+  <div class="cmd-input-wrap">
+    <span style="opacity:0.5; display:inline-flex; align-items:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </span>
+    <input id="cmdInput" placeholder="Type a command or search note..." oninput="filterCommandPalette()">
+  </div>
+  <ul id="cmdList" class="cmd-list"></ul>
+</dialog>
+
+<!-- Confirm Dialog -->
+<dialog id="confirmModal" class="confirm-dialog">
+  <h3 id="confirmTitle" style="margin-top:0; font-size:1.1rem; font-weight:700;">Confirm Action</h3>
+  <p id="confirmMessage" style="color:var(--muted); font-size:0.9rem;">Are you sure?</p>
+  <div class="dialog-actions">
+    <button type="button" class="secondary" onclick="resolveConfirm(false)">Cancel</button>
+    <button type="button" id="confirmOkBtn" onclick="resolveConfirm(true)">Confirm</button>
+  </div>
+</dialog>
+
+<!-- Event Detail / Add Modal -->
+<dialog id="eventModal" class="confirm-dialog" style="max-width:480px; width:90%;">
+  <h3 id="eventModalTitle" style="margin-top:0; font-size:1.1rem; font-weight:700;">Event Details</h3>
+  <form id="eventForm" onsubmit="saveEventFromModal(event)">
+    <input type="hidden" id="eventModalId">
+    <div class="field-group">
+      <label class="field-label">Title</label>
+      <input type="text" id="eventModalTitleInput" required placeholder="Event title...">
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="field-group">
+        <label class="field-label">Category / Calendar</label>
+        <select id="eventModalCategory" style="font-weight:700;">
+          <option value="work">🔵 Work</option>
+          <option value="personal">🟢 Personal</option>
+          <option value="study" selected>🟣 Study</option>
+          <option value="goals">🟠 Goals</option>
+          <option value="habits">🔴 Habits</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Priority</label>
+        <select id="eventModalPriority">
+          <option value="Low">Low</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="field-group">
+        <label class="field-label">Date</label>
+        <input type="date" id="eventModalDate" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Time</label>
+        <input type="time" id="eventModalTime" value="09:00">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Notes / Description</label>
+      <textarea id="eventModalNotes" rows="3" placeholder="Add details..."></textarea>
+    </div>
+    <div class="dialog-actions" style="justify-content:space-between; margin-top:16px;">
+      <button type="button" class="card-btn delete" id="eventModalDeleteBtn" onclick="deleteEventFromModal()" style="display:none;">Delete Event</button>
+      <div style="display:flex; gap:8px; margin-left:auto;">
+        <button type="button" class="secondary" onclick="closeEventModal()">Cancel</button>
+        <button type="submit">Save Event</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- Project Sub-Tasks Management Modal -->
+<dialog id="projectTasksModal" class="event-modal-dialog">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h3 id="projectModalTitle" style="margin:0; font-size:1.15rem; font-weight:800; color:var(--text);">Project Sub-Tasks</h3>
+    <button type="button" onclick="closeProjectTasksModal()" style="background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer;">✕</button>
+  </div>
+  <input type="hidden" id="projectModalId">
+  <div style="margin-bottom:16px;">
+    <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--muted); font-family:var(--font-code); margin-bottom:6px;">
+      <span id="projectModalProgressText">0/0 Completed</span>
+      <span id="projectModalPercentText" style="font-weight:700; color:var(--accent);">0%</span>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="projectModalProgressBar" style="width:0%;"></div></div>
+  </div>
+  <form onsubmit="event.preventDefault(); handleAddModalProjectTask();" style="display:flex; gap:8px; margin-bottom:16px;">
+    <input type="text" id="projectModalNewTaskInput" placeholder="Add new task to this project..." style="flex:1;" required>
+    <button type="submit" style="padding:6px 14px; font-weight:700;">+ Add Task</button>
+  </form>
+  <div id="projectModalTaskList" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px;">
+    <!-- Project Sub-tasks rendered dynamically -->
+  </div>
+  <div class="dialog-actions" style="margin-top:20px; justify-content:flex-end;">
+    <button type="button" class="secondary" onclick="closeProjectTasksModal()">Close</button>
+  </div>
+</dialog>
+
+<!-- Relational Global Search Command Palette (Cmd + K) -->
+<dialog id="commandPaletteModal" class="event-modal-dialog" style="max-width:600px; padding:0; overflow:hidden; border:1px solid var(--accent);">
+  <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.02);">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="cmdPaletteInput" placeholder="Type to search across Tasks, Projects, Goals, Notes, Calendar & Vault... (Esc to close)" style="flex:1; border:none; background:transparent; font-size:0.95rem; outline:none; color:var(--text);" oninput="renderCommandPaletteResults(this.value)">
+    <kbd style="font-size:0.7rem; background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; font-family:var(--font-code);">ESC</kbd>
+  </div>
+  <div id="cmdPaletteResults" style="max-height:360px; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+    <!-- Global multi-entity search results rendered dynamically -->
+  </div>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Unified Official macOS Desktop Dock System -->
+<div id="macOSDock" class="macos-dock-container">
+  <div class="dock-item active" id="dockDashboard" onclick="switchView('dashboard')">
+    <div class="macos-app-icon icon-app-dashboard">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+    </div>
+    <div class="dock-tooltip">Dashboard (⌘1)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockPlanner" onclick="switchView('planner')">
+    <div class="macos-app-icon icon-app-planner">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="dock-tooltip">Task Planner (⌘2)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockCalendar" onclick="switchView('calendar')">
+    <div class="macos-app-icon icon-app-calendar">
+      <div style="position:absolute; top:0; left:0; right:0; height:14px; background:#FF3B30; color:#FFF; font-size:0.55rem; font-weight:800; text-align:center; line-height:14px; text-transform:uppercase;">AUG</div>
+      <div style="font-size:1.15rem; font-weight:800; margin-top:10px; color:#0F172A;">4</div>
+    </div>
+    <div class="dock-tooltip">Calendar (⌘3)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockNotes" onclick="switchView('notes')">
+    <div class="macos-app-icon icon-app-notes">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <div class="dock-tooltip">Notes Library (⌘4)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockVault" onclick="switchView('vault')">
+    <div class="macos-app-icon icon-app-vault">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="dock-tooltip">Encrypted Vault (⌘5)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockAnalytics" onclick="switchView('analytics')">
+    <div class="macos-app-icon icon-app-analytics">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <div class="dock-tooltip">Analytics (⌘6)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div class="dock-item" id="dockStandby" onclick="switchView('standby')">
+    <div class="macos-app-icon icon-app-standby">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+    <div class="dock-tooltip">StandBy Focus (⌘7)</div>
+    <div class="dock-active-dot"></div>
+  </div>
+
+  <div style="width:1px; height:28px; background:rgba(255,255,255,0.18); margin:0 6px;"></div>
+
+  <div class="dock-item" onclick="openSupabaseAuthModal()">
+    <div class="macos-app-icon" style="background:linear-gradient(135deg, #0EA5E9, #6366F1); display:flex; align-items:center; justify-content:center; color:#fff;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+    </div>
+    <div class="dock-tooltip">☁️ Cloud Account & Sync</div>
+  </div>
+
+  <div class="dock-item" onclick="openCommandPalette()">
+    <div class="macos-app-icon icon-app-search">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="dock-tooltip">Spotlight Search (⌘K)</div>
+  </div>
+</div>
+
+<!-- Supabase Cloud Authentication & Settings Modal -->
+<dialog id="supabaseAuthModal" class="event-modal">
+  <div style="padding:22px; max-width:420px; width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-lg);">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:16px;">
+      <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:var(--text);" id="authModalTitle">☁️ Productive Cloud Sign In</h3>
+      <button type="button" class="pomodoro-close-btn" onclick="closeSupabaseAuthModal()">&times;</button>
+    </div>
+
+    <!-- Step 1: Request Email Verification Code (OTP) -->
+    <div id="authStepEmail" style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <label style="font-size:0.78rem; color:var(--muted); font-weight:600; display:block; margin-bottom:6px;">Email Address</label>
+        <input type="email" id="authEmailInput" placeholder="user@example.com" required style="width:100%;">
+      </div>
+      
+      <button type="button" id="btnSendOtp" onclick="handleSendOtp(event)" style="width:100%;">
+        ✉️ Send verification code
+      </button>
+
+      <div style="display:flex; align-items:center; margin:4px 0; gap:8px;">
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+        <span style="font-size:0.72rem; color:var(--muted); font-weight:600;">OR PASSWORD / GOOGLE</span>
+        <div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+
+      <div>
+        <input type="password" id="authPasswordInput" placeholder="Password (Optional for OTP)" style="width:100%; margin-bottom:8px;">
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="secondary" onclick="handleAuthSubmit(event)" style="flex:1;">Sign In</button>
+          <button type="button" class="secondary" onclick="executeSignUp(event)" style="flex:1;">Sign Up</button>
+        </div>
+      </div>
+
+      <button type="button" class="secondary" onclick="executeGoogleAuth()" style="width:100%; margin-top:2px;">🌐 Sign In with Google OAuth</button>
+    </div>
+
+    <!-- Step 2: Enter 6-Digit Email Code (OTP) -->
+    <div id="authStepOtp" style="display:none; flex-direction:column; gap:14px;">
+      <div style="background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); padding:10px 12px; border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text);">
+        ✉️ We sent a 6-digit code to <strong id="otpTargetEmail" style="color:var(--accent);">user@example.com</strong>. Check your inbox!
+      </div>
+
+      <div>
+        <label style="font-size:0.78rem; color:var(--muted); font-weight:600; display:block; margin-bottom:6px;">Enter the 6-digit code</label>
+        <input type="text" id="authOtpInput" placeholder="123456" maxlength="6" style="width:100%; font-family:var(--font-code); font-size:1.3rem; letter-spacing:6px; text-align:center; padding:10px;">
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtp(event)" style="flex:2;">Verify Code</button>
+        <button type="button" class="secondary" onclick="handleResendOtp(event)" style="flex:1;">Resend</button>
+      </div>
+
+      <div style="text-align:center; margin-top:4px;">
+        <a href="#" onclick="showAuthEmailStep(event)" style="font-size:0.75rem; color:var(--accent); text-decoration:none; font-weight:600;">← Change Email Address</a>
+      </div>
+    </div>
+
+    <!-- Custom Supabase Credentials Configuration -->
+    <div style="margin-top:16px; padding-top:12px; border-top:1px dashed var(--border);">
+      <details>
+        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer;">⚙️ Custom Supabase Credentials</summary>
+        <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+          <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)" style="font-size:0.75rem;">
+          <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)" style="font-size:0.75rem;">
+          <button type="button" class="secondary" onclick="saveCustomCredentialsFromModal()" style="padding:4px; font-size:0.75rem;">Save Credentials</button>
+        </div>
+      </details>
+    </div>
+  </div>
+</dialog>
+
+<script src="storage/database.js"></script>
+<script src="storage/repositories/baseRepository.js"></script>
+<script src="storage/repositories/notesRepository.js"></script>
+<script src="storage/repositories/tasksRepository.js"></script>
+<script src="storage/repositories/calendarsRepository.js"></script>
+<script src="storage/repositories/timeBlocksRepository.js"></script>
+<script src="storage/repositories/projectsRepository.js"></script>
+<script src="storage/repositories/goalsRepository.js"></script>
+<script src="storage/repositories/activitiesRepository.js"></script>
+<script src="storage/repositories/settingsRepository.js"></script>
+<script src="storage/sync/syncQueue.js"></script>
+<script src="storage/sync/syncEngine.js"></script>
+<script src="storage/sync/conflictResolver.js"></script>
+<script src="storage/migration.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/store.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/vault.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/standby.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
