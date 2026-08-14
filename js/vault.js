@@ -166,9 +166,9 @@ function renderVaultAuthPane() {
     mainPane.style.display = "block";
     if (changePinBtn) changePinBtn.style.display = "inline-flex";
     if (lockBtn) lockBtn.style.display = "inline-flex";
-    switchVaultSubTab(currentVaultSubTab);
+    switchVaultSubTab(currentVaultSubTab || "secrets");
   } else {
-    authPane.style.display = "flex";
+    authPane.style.display = "block";
     mainPane.style.display = "none";
     if (changePinBtn) changePinBtn.style.display = "none";
     if (lockBtn) lockBtn.style.display = "none";
@@ -176,11 +176,15 @@ function renderVaultAuthPane() {
 }
 
 async function unlockVault(e) {
-  if (e) e.preventDefault();
+  if (e) {
+    if (typeof e.preventDefault === "function") e.preventDefault();
+    if (typeof e.stopPropagation === "function") e.stopPropagation();
+  }
   const pwdInput = document.getElementById("vaultPinInput") || document.getElementById("vaultPassInput") || document.getElementById("vaultPasscode");
   const pwd = pwdInput ? pwdInput.value.trim() : "";
   if (!pwd) {
     if (typeof showToast === "function") showToast("Please enter a passcode to unlock vault.", "error");
+    if (pwdInput) pwdInput.focus();
     return;
   }
 
