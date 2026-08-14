@@ -155,24 +155,34 @@ async function decryptVaultPayload(encryptedObj, password) {
 
 function renderVaultAuthPane() {
   const authPane = document.getElementById("vaultAuthPane");
-  const mainPane = document.getElementById("vaultMainContent");
+  const mainPane = document.getElementById("vaultContentPane") || document.getElementById("vaultMainContent");
+  const changePinBtn = document.getElementById("vaultChangePinBtn");
+  const lockBtn = document.getElementById("vaultLockBtn");
+
   if (!authPane || !mainPane) return;
 
   if (isVaultUnlocked) {
     authPane.style.display = "none";
     mainPane.style.display = "block";
+    if (changePinBtn) changePinBtn.style.display = "inline-flex";
+    if (lockBtn) lockBtn.style.display = "inline-flex";
     switchVaultSubTab(currentVaultSubTab);
   } else {
     authPane.style.display = "flex";
     mainPane.style.display = "none";
+    if (changePinBtn) changePinBtn.style.display = "none";
+    if (lockBtn) lockBtn.style.display = "none";
   }
 }
 
 async function unlockVault(e) {
   if (e) e.preventDefault();
-  const pwdInput = document.getElementById("vaultPassInput") || document.getElementById("vaultPasscode");
+  const pwdInput = document.getElementById("vaultPinInput") || document.getElementById("vaultPassInput") || document.getElementById("vaultPasscode");
   const pwd = pwdInput ? pwdInput.value.trim() : "";
-  if (!pwd) return;
+  if (!pwd) {
+    if (typeof showToast === "function") showToast("Please enter a passcode to unlock vault.", "error");
+    return;
+  }
 
   vaultMasterKey = pwd;
   isVaultUnlocked = true;
