@@ -35,14 +35,13 @@ function updateClockVisibility() {
   const standbyDate = document.getElementById("standbyDate");
 
   if (flipClockWrap) {
-    flipClockWrap.style.display = style === "flip" ? "flex" : "none";
+    flipClockWrap.style.setProperty("display", style === "flip" ? "flex" : "none", "important");
   }
   if (clockDisplayContainer) {
-    clockDisplayContainer.style.display = style === "flip" ? "none" : "flex";
+    clockDisplayContainer.style.setProperty("display", style === "flip" ? "none" : "flex", "important");
   }
   if (standbyDate) {
-    // Hide standalone date line when Apple clock face renders its own integrated date
-    standbyDate.style.display = style === "apple" ? "none" : "block";
+    standbyDate.style.setProperty("display", style === "apple" ? "none" : "block", "important");
   }
 }
 
