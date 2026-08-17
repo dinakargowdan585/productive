@@ -6,9 +6,9 @@ let currentVaultSubTab = "secrets";
 
 function switchVaultSubTab(tabName) {
   currentVaultSubTab = tabName;
-  const sec = document.getElementById("vaultTabSecrets");
-  const ws = document.getElementById("vaultTabWorkspaces");
-  const gl = document.getElementById("vaultTabGoals");
+  const sec = document.getElementById("vaultSubPaneSecrets") || document.getElementById("vaultTabSecrets");
+  const ws = document.getElementById("vaultSubPaneWorkspaces") || document.getElementById("vaultTabWorkspaces");
+  const gl = document.getElementById("vaultSubPaneGoals") || document.getElementById("vaultTabGoals");
 
   if (sec) sec.style.display = tabName === "secrets" ? "block" : "none";
   if (ws) ws.style.display = tabName === "workspaces" ? "block" : "none";
@@ -73,6 +73,9 @@ function exportVaultBackup() {
 }
 
 function importVaultBackup(file) {
+  if (file && file.target && file.target.files) {
+    file = file.target.files[0];
+  }
   if (!file) return;
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -211,8 +214,8 @@ async function createVaultNote(e) {
   if (e) e.preventDefault();
   if (!isVaultUnlocked || !vaultMasterKey) return;
 
-  const titleInput = document.getElementById("vaultNoteTitle") || document.getElementById("vaultTitle");
-  const secretInput = document.getElementById("vaultNoteSecret") || document.getElementById("vaultSecret");
+  const titleInput = document.getElementById("vaultTopic") || document.getElementById("vaultNoteTitle") || document.getElementById("vaultTitle");
+  const secretInput = document.getElementById("vaultContent") || document.getElementById("vaultNoteSecret") || document.getElementById("vaultSecret");
   const title = titleInput ? titleInput.value.trim() : "";
   const secret = secretInput ? secretInput.value.trim() : "";
 
@@ -220,10 +223,12 @@ async function createVaultNote(e) {
 
   const encryptedObj = await encryptVaultPayload(secret, vaultMasterKey);
   const notes = loadVaultNotes();
+  const categoryInput = document.getElementById("vaultCategory");
 
   notes.unshift({
     id: uuid(),
     title,
+    category: categoryInput ? categoryInput.value : "JOURNAL",
     encrypted: encryptedObj,
     createdAt: new Date().toISOString()
   });
@@ -236,17 +241,27 @@ async function createVaultNote(e) {
 }
 
 async function renderVaultContent() {
-  const container = document.getElementById("vaultNotesGrid");
+  const container = document.getElementById("vaultGrid") || document.getElementById("vaultNotesGrid");
   if (!container) return;
   const notes = loadVaultNotes();
+  const search = (document.getElementById("vaultSearchInput")?.value || "").trim().toLowerCase();
+  const category = document.getElementById("filterVaultCategory")?.value || "ALL";
   container.innerHTML = "";
 
-  if (!notes.length) {
-    container.innerHTML = `<div class="empty-state"><h3>Vault Empty</h3><p>Store encrypted passwords, API keys & secrets safely.</p></div>`;
+  const filteredNotes = notes.filter(n => {
+    const title = (n.title || "").toLowerCase();
+    const plain = (n.plainText || "").toLowerCase();
+    const matchesSearch = !search || title.includes(search) || plain.includes(search);
+    const matchesCategory = category === "ALL" || (n.category || "JOURNAL") === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  if (!filteredNotes.length) {
+    container.innerHTML = `<div class="empty-state"><h3>${search || category !== "ALL" ? "No Matching Secrets" : "Vault Empty"}</h3><p>Store encrypted passwords, API keys & secrets safely.</p></div>`;
     return;
   }
 
-  for (const n of notes) {
+  for (const n of filteredNotes) {
     const card = document.createElement("div");
     card.className = "vault-workspace-card panel";
     const plainText = await decryptVaultPayload(n.encrypted, vaultMasterKey);
