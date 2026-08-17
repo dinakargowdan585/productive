@@ -155,21 +155,21 @@ async function decryptVaultPayload(encryptedObj, password) {
 
 function renderVaultAuthPane() {
   const authPane = document.getElementById("vaultAuthPane");
-  const mainPane = document.getElementById("vaultContentPane") || document.getElementById("vaultMainContent");
+  const mainPane = document.getElementById("vaultContentPane") || 
+                   document.getElementById("vaultMainContent") || 
+                   document.getElementById("vaultUnlockedPane");
   const changePinBtn = document.getElementById("vaultChangePinBtn");
   const lockBtn = document.getElementById("vaultLockBtn");
 
-  if (!authPane || !mainPane) return;
-
   if (isVaultUnlocked) {
-    authPane.style.display = "none";
-    mainPane.style.display = "block";
+    if (authPane) authPane.style.setProperty("display", "none", "important");
+    if (mainPane) mainPane.style.setProperty("display", "block", "important");
     if (changePinBtn) changePinBtn.style.display = "inline-flex";
     if (lockBtn) lockBtn.style.display = "inline-flex";
     switchVaultSubTab(currentVaultSubTab || "secrets");
   } else {
-    authPane.style.display = "block";
-    mainPane.style.display = "none";
+    if (authPane) authPane.style.setProperty("display", "block", "important");
+    if (mainPane) mainPane.style.setProperty("display", "none", "important");
     if (changePinBtn) changePinBtn.style.display = "none";
     if (lockBtn) lockBtn.style.display = "none";
   }
@@ -180,7 +180,12 @@ async function unlockVault(e) {
     if (typeof e.preventDefault === "function") e.preventDefault();
     if (typeof e.stopPropagation === "function") e.stopPropagation();
   }
-  const pwdInput = document.getElementById("vaultPinInput") || document.getElementById("vaultPassInput") || document.getElementById("vaultPasscode");
+  const pwdInput = document.getElementById("vaultPinInput") || 
+                   document.getElementById("vaultPassInput") || 
+                   document.getElementById("vaultPasscode") || 
+                   document.querySelector("#vaultAuthPane input") ||
+                   document.querySelector("input[type='password']");
+
   const pwd = pwdInput ? pwdInput.value.trim() : "";
   if (!pwd) {
     if (typeof showToast === "function") showToast("Please enter a passcode to unlock vault.", "error");
