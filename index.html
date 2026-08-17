@@ -2079,11 +2079,11 @@ button:active { transform: scale(0.98); }
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Enter Master Passcode
         </h3>
         <p id="vaultAuthDesc" style="font-size:0.82rem; color:var(--muted)">Enter your private Master Passcode PIN to access vault contents.</p>
-        <form onsubmit="unlockVault(event)" novalidate>
+        <form onsubmit="unlockVault(event); return false;" novalidate>
           <div class="field-group">
-            <input type="password" id="vaultPinInput" placeholder="••••" maxlength="32" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:var(--font-code);">
+            <input type="password" id="vaultPinInput" onkeydown="if(event.key === 'Enter'){ unlockVault(event); }" placeholder="••••" maxlength="32" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:var(--font-code);">
           </div>
-          <button type="button" id="vaultAuthSubmitBtn" onclick="unlockVault(event)" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+          <button type="submit" id="vaultAuthSubmitBtn" onclick="unlockVault(event)" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Unlock Vault
           </button>
         </form>
