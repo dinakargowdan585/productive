@@ -619,9 +619,7 @@ button:active { transform: scale(0.98); }
   padding: 8px 16px;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  overflow: visible !important;
   background: rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(50px) saturate(210%) contrast(110%) !important;
   -webkit-backdrop-filter: blur(50px) saturate(210%) contrast(110%) !important;
@@ -632,9 +630,6 @@ button:active { transform: scale(0.98); }
     inset 0 1.5px 0 rgba(255, 255, 255, 0.4),
     inset 0 -1.5px 0 rgba(0, 0, 0, 0.2) !important;
   transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.macos-dock-container::-webkit-scrollbar {
-  display: none;
 }
 
 [data-theme="light"] .macos-dock-container {
@@ -655,7 +650,7 @@ button:active { transform: scale(0.98); }
   justify-content: center;
   position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 200ms ease;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 220ms ease;
   cursor: pointer;
   user-select: none;
 }
@@ -667,11 +662,22 @@ button:active { transform: scale(0.98); }
   align-items: center;
   justify-content: center;
   padding: 2px 4px;
+  overflow: visible !important;
+  z-index: 1;
 }
 
-.dock-item:hover .macos-app-icon {
-  transform: scale(1.25) translateY(-8px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+.dock-item:hover,
+.dock-item:active,
+.dock-item:focus,
+.dock-item:focus-within {
+  z-index: 100 !important;
+}
+
+.dock-item:hover .macos-app-icon,
+.dock-item:active .macos-app-icon,
+.dock-item:focus .macos-app-icon {
+  transform: scale(1.35) translateY(-14px) !important;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Individual Apple macOS System App Gradients & Colors */
@@ -1484,7 +1490,7 @@ button:active { transform: scale(0.98); }
     gap: 8px !important;
   }
 
-  /* 5. Mobile Dock Navigation & Icon Auto-Fit */
+  /* 5. Mobile Dock Navigation & Floating Effect */
   .dock, .macos-dock-container {
     left: 50% !important;
     transform: translateX(-50%) !important;
@@ -1496,9 +1502,7 @@ button:active { transform: scale(0.98); }
     justify-content: center !important;
     border-radius: 24px !important;
     box-sizing: border-box !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
+    overflow: visible !important;
   }
 
   .dock-item {
@@ -1506,12 +1510,14 @@ button:active { transform: scale(0.98); }
     min-height: unset !important;
     padding: 2px 2px !important;
     flex-shrink: 0 !important;
+    overflow: visible !important;
   }
 
   .macos-app-icon {
     width: clamp(34px, 8.5vw, 44px) !important;
     height: clamp(34px, 8.5vw, 44px) !important;
     border-radius: clamp(8px, 2vw, 12px) !important;
+    transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 220ms ease !important;
   }
 
   .macos-app-icon svg {
