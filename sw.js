@@ -1,6 +1,6 @@
 /* Productive OS Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "productive-os-cache-v2";
+const CACHE_NAME = "productive-os-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -35,7 +35,16 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
+  const { request } = e;
+
+  if (request.mode === "navigate" || request.destination === "script" || request.destination === "style") {
+    e.respondWith(
+      fetch(request).catch(() => caches.match(request))
+    );
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
+    caches.match(request).then((res) => res || fetch(request))
   );
 });
