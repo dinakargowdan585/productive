@@ -135,14 +135,14 @@ function toggleClockStylePanel(e) {
   const popover = document.getElementById("clockStylePopover");
   if (!popover) return;
   
-  const isHidden = popover.style.display === "none" || !popover.classList.contains("open");
+  const isHidden = popover.style.display === "none" || !popover.classList.contains("is-open");
   if (isHidden) {
     popover.style.display = "flex";
-    popover.classList.add("open");
+    popover.classList.add("is-open");
     renderClockStyleGrid();
   } else {
     popover.style.display = "none";
-    popover.classList.remove("open");
+    popover.classList.remove("is-open");
   }
 }
 
@@ -150,7 +150,7 @@ function closeClockStylePanel() {
   const popover = document.getElementById("clockStylePopover");
   if (popover) {
     popover.style.display = "none";
-    popover.classList.remove("open");
+    popover.classList.remove("is-open");
   }
 }
 
@@ -167,7 +167,7 @@ function renderClockStyleGrid() {
   ];
 
   grid.innerHTML = styles.map(s => `
-    <div class="theme-card ${activeClockStyle === s.id ? 'active' : ''}" 
+    <div class="theme-card ${activeClockStyle === s.id ? 'selected' : ''}" 
          onclick="selectClockStyle('${s.id}')">
       <div class="theme-title">${s.title}</div>
       <div class="theme-desc">${s.desc}</div>
@@ -178,7 +178,7 @@ function renderClockStyleGrid() {
 document.addEventListener("click", (e) => {
   const popover = document.getElementById("clockStylePopover");
   const btn = document.getElementById("clockStyleTogglePill");
-  if (popover && (popover.style.display === "flex" || popover.classList.contains("open"))) {
+  if (popover && (popover.style.display === "flex" || popover.classList.contains("is-open"))) {
     if (!popover.contains(e.target) && btn && !btn.contains(e.target)) {
       closeClockStylePanel();
     }
