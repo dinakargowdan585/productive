@@ -1,12 +1,15 @@
 {
+  "id": "/index.html",
   "name": "Productive OS — Executive Suite",
   "short_name": "ProductiveOS",
   "description": "Executive Productivity & Relational Workspace",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#05070A",
   "theme_color": "#0D1117",
   "orientation": "any",
+  "categories": ["productivity", "utilities"],
   "icons": [
     {
       "src": "assets/icon-192.png",
@@ -19,6 +22,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Task",
+      "short_name": "Task",
+      "url": "./index.html?action=new-task",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "New Note",
+      "short_name": "Note",
+      "url": "./index.html?action=new-note",
+      "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

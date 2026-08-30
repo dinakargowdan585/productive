@@ -1728,7 +1728,7 @@ button:active { transform: scale(0.98); }
       </button>
 
       <!-- Sync & Auth Popover -->
-      <div id="syncPopover" class="sync-popover" style="display:none; left:50px; top:-80px;" onclick="event.stopPropagation();">
+      <div id="syncPopover" class="sync-popover" style="display:none; left:50px; top:-120px;" onclick="event.stopPropagation();">
         <div class="sync-popover-header">
           <strong>⚡ Cloud & Offline Sync</strong>
           <button type="button" class="pomodoro-close-btn" onclick="closeSyncPopover()">&times;</button>
@@ -1740,10 +1740,16 @@ button:active { transform: scale(0.98); }
           <div class="sync-row"><span>Pending Queue:</span><span id="syncPopoverQueueCount">0 items</span></div>
           <div class="sync-row" id="syncUserRow"><span>Account:</span><span id="syncUserEmail">Guest (Local)</span></div>
         </div>
-        <div class="sync-popover-actions" style="margin-top:6px;">
+        <div class="sync-popover-actions" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
           <button type="button" class="secondary" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem;">🔑 Account / Cloud Login</button>
+          <button type="button" class="pwa-install-btn secondary" onclick="promptPwaInstall()" style="display:none; width:100%; padding:6px; font-size:0.78rem; border-color:var(--accent);">📲 Install Desktop/Mobile App</button>
+          <div style="display:flex; gap:6px; margin-top:2px;">
+            <button type="button" class="secondary" onclick="exportFullDataBackup()" style="flex:1; padding:5px; font-size:0.72rem;" title="Download JSON data snapshot">📦 Backup Data</button>
+            <button type="button" class="secondary" onclick="importFullDataBackupPrompt()" style="flex:1; padding:5px; font-size:0.72rem;" title="Restore from JSON backup file">📥 Restore Data</button>
+          </div>
         </div>
       </div>
+      <input type="file" id="backupFileInput" accept=".json" style="display:none;" onchange="handleBackupFileSelect(event)">
     </div>
   </aside>
 
@@ -2690,6 +2696,13 @@ button:active { transform: scale(0.98); }
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
     </div>
     <div class="dock-tooltip">☁️ Cloud Account & Sync</div>
+  </div>
+
+  <div class="dock-item pwa-install-btn" style="display:none;" onclick="promptPwaInstall()">
+    <div class="macos-app-icon" style="background:linear-gradient(135deg, #10B981, #059669); display:flex; align-items:center; justify-content:center; color:#fff;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <div class="dock-tooltip">📲 Install Desktop/Mobile App</div>
   </div>
 
   <div class="dock-item" onclick="openCommandPalette()">

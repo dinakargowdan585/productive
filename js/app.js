@@ -485,3 +485,137 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
+
+/* PWA Installation Controller */
+let deferredPwaPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+  const pwaBtns = document.querySelectorAll(".pwa-install-btn");
+  pwaBtns.forEach(btn => {
+    btn.style.display = "flex";
+  });
+  console.log("📲 Productive OS PWA install prompt ready.");
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredPwaPrompt = null;
+  const pwaBtns = document.querySelectorAll(".pwa-install-btn");
+  pwaBtns.forEach(btn => {
+    btn.style.display = "none";
+  });
+  if (typeof showToast === "function") {
+    showToast("🎉 Productive OS is now installed on your desktop/mobile!", "success");
+  }
+});
+
+async function promptPwaInstall() {
+  if (!deferredPwaPrompt) {
+    if (typeof showToast === "function") {
+      showToast("📱 App is already installed or open in standalone window.", "info");
+    }
+    return;
+  }
+  deferredPwaPrompt.prompt();
+  const { outcome } = await deferredPwaPrompt.userChoice;
+  if (outcome === "accepted") {
+    if (typeof showToast === "function") {
+      showToast("🚀 Productive OS installation initiated!", "success");
+    }
+  }
+  deferredPwaPrompt = null;
+}
+
+/* Local Data Backup & Restore Controller */
+async function exportFullDataBackup() {
+  try {
+    const backupData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      tasks: typeof loadTasks === "function" ? loadTasks() : [],
+      notes: typeof loadNotes === "function" ? loadNotes() : [],
+      timeBlocks: typeof loadTimeBlocks === "function" ? loadTimeBlocks() : [],
+      projects: typeof loadProjects === "function" ? loadProjects() : [],
+      vaultNotes: typeof loadVaultNotes === "function" ? loadVaultNotes() : []
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    const dateStr = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
+    downloadAnchor.setAttribute("download", `productive-os-backup-${dateStr}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+
+    if (typeof showToast === "function") {
+      showToast("📦 Full backup downloaded successfully!", "success");
+    }
+  } catch (err) {
+    console.error("Backup export error:", err);
+    if (typeof showToast === "function") {
+      showToast("Failed to export backup: " + err.message, "danger");
+    }
+  }
+}
+
+function importFullDataBackupPrompt() {
+  const fileInput = document.getElementById("backupFileInput");
+  if (fileInput) {
+    fileInput.click();
+  }
+}
+
+async function handleBackupFileSelect(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+
+    if (!parsed || (typeof parsed !== "object")) {
+      throw new Error("Invalid JSON file format.");
+    }
+
+    if (parsed.tasks && Array.isArray(parsed.tasks) && typeof TasksRepository !== "undefined") {
+      for (const t of parsed.tasks) {
+        await TasksRepository.save(t);
+      }
+    }
+    if (parsed.notes && Array.isArray(parsed.notes) && typeof NotesRepository !== "undefined") {
+      for (const n of parsed.notes) {
+        await NotesRepository.save(n);
+      }
+    }
+    if (parsed.timeBlocks && Array.isArray(parsed.timeBlocks) && typeof TimeBlocksRepository !== "undefined") {
+      for (const b of parsed.timeBlocks) {
+        await TimeBlocksRepository.save(b);
+      }
+    }
+    if (parsed.projects && Array.isArray(parsed.projects) && typeof ProjectsRepository !== "undefined") {
+      for (const p of parsed.projects) {
+        await ProjectsRepository.save(p);
+      }
+    }
+
+    if (typeof loadAllFromRepositoriesIntoMemory === "function") {
+      await loadAllFromRepositoriesIntoMemory();
+    }
+    if (typeof render === "function") render();
+    if (typeof renderAnalytics === "function") renderAnalytics();
+
+    if (typeof showToast === "function") {
+      showToast("✅ Workspace data restored successfully!", "success");
+    }
+  } catch (err) {
+    console.error("Backup import error:", err);
+    if (typeof showToast === "function") {
+      showToast("Error importing backup: " + err.message, "danger");
+    }
+  } finally {
+    event.target.value = "";
+  }
+}
+

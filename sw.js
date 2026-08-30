@@ -1,10 +1,12 @@
 /* Productive OS Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "productive-os-cache-v3";
+const CACHE_NAME = "productive-os-cache-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/styles.css",
+  "./manifest.json",
+  "./js/config.js",
   "./js/store.js",
   "./js/dashboard.js",
   "./js/planner.js",
@@ -12,8 +14,15 @@ const ASSETS = [
   "./js/vault.js",
   "./js/calendar.js",
   "./js/standby.js",
+  "./js/supabase.js",
   "./js/app.js",
-  "./manifest.json",
+  "./storage/database.js",
+  "./storage/repositories/baseRepository.js",
+  "./storage/repositories/notesRepository.js",
+  "./storage/repositories/tasksRepository.js",
+  "./storage/repositories/calendarsRepository.js",
+  "./storage/repositories/timeBlocksRepository.js",
+  "./storage/repositories/projectsRepository.js",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
 ];
@@ -34,17 +43,48 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
+self.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (e) => {
   const { request } = e;
+  const url = new URL(request.url);
 
+  // Bypass cache for external APIs (Supabase, CDNs, Auth)
+  if (url.origin !== location.origin || url.pathname.includes('/auth/') || url.pathname.includes('/rest/')) {
+    return;
+  }
+
+  // Network-First for navigation & app code to guarantee freshness on deployment
   if (request.mode === "navigate" || request.destination === "script" || request.destination === "style") {
     e.respondWith(
-      fetch(request).catch(() => caches.match(request))
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
 
+  // Cache-First for static assets (images/icons)
   e.respondWith(
-    caches.match(request).then((res) => res || fetch(request))
+    caches.match(request).then((res) => {
+      return res || fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      });
+    })
   );
 });
+
