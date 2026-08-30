@@ -427,13 +427,28 @@ async function executeGoogleAuth() {
   }
 }
 
-function saveCustomCredentialsFromModal() {
+async function saveCustomCredentialsFromModal() {
   const url = document.getElementById("cfgSupabaseUrl")?.value.trim();
   const key = document.getElementById("cfgSupabaseKey")?.value.trim();
   if (url && key) {
     saveSupabaseCredentials(url, key);
-    if (typeof showToast === "function") showToast("Supabase credentials saved!", "success");
+    if (typeof setupRealtimeSync === "function") setupRealtimeSync();
+
+    if (typeof checkSupabaseConnectionHealth === "function") {
+      const health = await checkSupabaseConnectionHealth();
+      if (health.connected) {
+        if (typeof showToast === "function") showToast("⚡ Credentials verified & Supabase connected!", "success");
+        const statusLabel = document.getElementById("syncStatusLabel");
+        if (statusLabel) statusLabel.textContent = "Cloud Synced";
+      } else {
+        if (typeof showToast === "function") showToast(health.message, "danger");
+      }
+    } else {
+      if (typeof showToast === "function") showToast("Supabase credentials saved!", "success");
+    }
     closeSupabaseAuthModal();
+  } else {
+    if (typeof showToast === "function") showToast("Please enter both URL and Anon Key.", "info");
   }
 }
 

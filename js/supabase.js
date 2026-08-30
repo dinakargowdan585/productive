@@ -196,9 +196,67 @@ function subscribeToAuthChanges(callback) {
   });
 }
 
+let realtimeChannel = null;
+
+async function checkSupabaseConnectionHealth() {
+  const client = getSupabase();
+  if (!client) {
+    return {
+      connected: false,
+      message: "Supabase client not initialized. Check URL and Anon Key."
+    };
+  }
+
+  try {
+    const { data, error } = await client.from("notes").select("id").limit(1);
+    if (error && error.code !== "PGRST116" && error.code !== "42P01") {
+      console.warn("[Supabase Health] Query warning:", error);
+    }
+
+    return {
+      connected: true,
+      message: "🟢 Connected to Supabase Cloud API!"
+    };
+  } catch (err) {
+    return {
+      connected: false,
+      message: "🔴 Connection error: " + (err.message || err)
+    };
+  }
+}
+
+function setupRealtimeSync() {
+  const client = getSupabase();
+  if (!client || realtimeChannel) return;
+
+  try {
+    realtimeChannel = client
+      .channel('public-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, async (payload) => {
+        console.log("⚡ Realtime DB change received:", payload);
+        if (typeof loadAllFromRepositoriesIntoMemory === "function") {
+          await loadAllFromRepositoriesIntoMemory();
+        }
+        if (typeof render === "function") render();
+        if (typeof renderAnalytics === "function") renderAnalytics();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log("🟢 Supabase Realtime WebSocket Subscribed.");
+        }
+      });
+  } catch (e) {
+    console.warn("Realtime setup notice:", e);
+  }
+}
+
 // Auto-initialize client on load
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
-    initSupabaseClient();
+    const client = initSupabaseClient();
+    if (client) {
+      setupRealtimeSync();
+    }
   });
 }
+
