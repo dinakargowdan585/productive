@@ -121,28 +121,38 @@ function updateFlipUnit(unitId, val) {
   unit.classList.add("flipping");
 }
 
-function selectClockStyle(styleName) {
+function selectClockStyle(styleName, e) {
+  if (e && typeof e.stopPropagation === "function") e.stopPropagation();
   activeClockStyle = styleName;
   localStorage.setItem("learningClockStyle", styleName);
   updateClockVisibility();
   updateStandbyClock();
   renderClockStyleGrid();
   if (typeof showToast === "function") showToast(`Clock face set to ${styleName.toUpperCase()}`, "info");
+  setTimeout(() => {
+    closeClockStylePanel();
+  }, 150);
 }
 
 function toggleClockStylePanel(e) {
-  if (e && typeof e.stopPropagation === "function") e.stopPropagation();
+  if (e) {
+    if (typeof e.stopPropagation === "function") e.stopPropagation();
+    if (typeof e.preventDefault === "function") e.preventDefault();
+  }
   const popover = document.getElementById("clockStylePopover");
   if (!popover) return;
   
-  const isHidden = popover.style.display === "none" || !popover.classList.contains("is-open");
-  if (isHidden) {
-    popover.style.display = "flex";
-    popover.classList.add("is-open");
-    renderClockStyleGrid();
+  const isOpen = popover.classList.contains("is-open") || popover.classList.contains("open") || (popover.style.display && popover.style.display !== "none");
+  if (isOpen) {
+    closeClockStylePanel();
   } else {
-    popover.style.display = "none";
-    popover.classList.remove("is-open");
+    if (typeof closeTimerPanel === "function") closeTimerPanel();
+    popover.style.display = "flex";
+    popover.classList.add("is-open", "open");
+    popover.setAttribute("aria-hidden", "false");
+    const pill = document.getElementById("clockStyleTogglePill");
+    if (pill) pill.setAttribute("aria-expanded", "true");
+    renderClockStyleGrid();
   }
 }
 
@@ -150,7 +160,10 @@ function closeClockStylePanel() {
   const popover = document.getElementById("clockStylePopover");
   if (popover) {
     popover.style.display = "none";
-    popover.classList.remove("is-open");
+    popover.classList.remove("is-open", "open");
+    popover.setAttribute("aria-hidden", "true");
+    const pill = document.getElementById("clockStyleTogglePill");
+    if (pill) pill.setAttribute("aria-expanded", "false");
   }
 }
 
@@ -167,10 +180,10 @@ function renderClockStyleGrid() {
   ];
 
   grid.innerHTML = styles.map(s => `
-    <div class="theme-card ${activeClockStyle === s.id ? 'selected' : ''}" 
-         onclick="selectClockStyle('${s.id}')">
-      <div class="theme-title">${s.title}</div>
-      <div class="theme-desc">${s.desc}</div>
+    <div class="theme-card ${activeClockStyle === s.id ? 'selected active' : ''}" 
+         onclick="selectClockStyle('${s.id}', event)" role="button" tabindex="0">
+      <div class="theme-title" style="font-weight:700; font-size:0.85rem; color:var(--text);">${s.title}</div>
+      <div class="theme-desc" style="font-size:0.75rem; color:var(--muted); margin-top:2px;">${s.desc}</div>
     </div>
   `).join('');
 }
@@ -178,7 +191,7 @@ function renderClockStyleGrid() {
 document.addEventListener("click", (e) => {
   const popover = document.getElementById("clockStylePopover");
   const btn = document.getElementById("clockStyleTogglePill");
-  if (popover && (popover.style.display === "flex" || popover.classList.contains("is-open"))) {
+  if (popover && (popover.style.display === "flex" || popover.classList.contains("is-open") || popover.classList.contains("open"))) {
     if (!popover.contains(e.target) && btn && !btn.contains(e.target)) {
       closeClockStylePanel();
     }
@@ -346,6 +359,26 @@ function startFocusSessionForBlock(blockId) {
   if (typeof showToast === "function") showToast("Focus session started! ⏱️", "success");
 }
 
+// Global Window Exports
+if (typeof window !== "undefined") {
+  window.toggleClockStylePanel = toggleClockStylePanel;
+  window.closeClockStylePanel = closeClockStylePanel;
+  window.selectClockStyle = selectClockStyle;
+  window.renderClockStyleGrid = renderClockStyleGrid;
+  window.toggleTimerPanel = toggleTimerPanel;
+  window.closeTimerPanel = closeTimerPanel;
+  window.toggleNightMode = toggleNightMode;
+  window.toggleFullscreenStandby = toggleFullscreenStandby;
+  window.updateStandbyClock = updateStandbyClock;
+  window.startPomodoro = startPomodoro;
+  window.pausePomodoro = pausePomodoro;
+  window.resetPomodoro = resetPomodoro;
+  window.toggleTimer = toggleTimer;
+  window.setTimerPreset = setTimerPreset;
+  window.adjustTimer = adjustTimer;
+  window.startFocusSessionForBlock = startFocusSessionForBlock;
+}
+
 // Initial clock visibility & tick timer
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
@@ -355,3 +388,4 @@ if (typeof window !== "undefined") {
 }
 
 setInterval(updateStandbyClock, 1000);
+
