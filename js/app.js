@@ -292,8 +292,89 @@ function updateAuthUI(user) {
   }
 }
 
+let currentAuthMode = "login";
+
+function showAuthError(msg) {
+  const banner = document.getElementById("authErrorBanner");
+  const msgEl = document.getElementById("authErrorMessage");
+  if (banner && msgEl) {
+    msgEl.textContent = msg;
+    banner.style.display = "flex";
+  }
+}
+
+function clearAuthError() {
+  const banner = document.getElementById("authErrorBanner");
+  if (banner) banner.style.display = "none";
+}
+
+function switchAuthMode(mode) {
+  currentAuthMode = mode;
+  clearAuthError();
+
+  const btnLogin = document.getElementById("btnModeLogin");
+  const btnSignup = document.getElementById("btnModeSignup");
+  const btnOtp = document.getElementById("btnModeOtp");
+  const title = document.getElementById("authModalTitle");
+  const subtitle = document.getElementById("authModalSubtitle");
+  const passwordGroup = document.getElementById("authPasswordGroup");
+  const passwordInput = document.getElementById("authPasswordInput");
+  const submitBtnText = document.getElementById("authSubmitBtnText");
+  const form = document.getElementById("authPasswordForm");
+  const stepOtp = document.getElementById("authStepOtp");
+  const stepLoggedIn = document.getElementById("authStepLoggedIn");
+  const modeToggle = document.getElementById("authModeToggle");
+  const divider = document.getElementById("authDivider");
+  const googleBtn = document.getElementById("authGoogleBtn");
+
+  if (stepLoggedIn) stepLoggedIn.style.display = "none";
+  if (stepOtp) stepOtp.style.display = "none";
+  if (form) form.style.display = "grid";
+  if (modeToggle) modeToggle.style.display = "grid";
+
+  if (btnLogin) btnLogin.classList.toggle("active", mode === "login");
+  if (btnSignup) btnSignup.classList.toggle("active", mode === "signup");
+  if (btnOtp) btnOtp.classList.toggle("active", mode === "otp");
+
+  if (mode === "login") {
+    if (title) title.textContent = "Welcome Back";
+    if (subtitle) subtitle.textContent = "Sign in to sync your notes, tasks, time blocks & projects across all your devices.";
+    if (passwordGroup) passwordGroup.style.display = "grid";
+    if (passwordInput) passwordInput.required = true;
+    if (submitBtnText) submitBtnText.textContent = "Sign In";
+    if (divider) divider.style.display = "flex";
+    if (googleBtn) googleBtn.style.display = "flex";
+  } else if (mode === "signup") {
+    if (title) title.textContent = "Begin Your Journey";
+    if (subtitle) subtitle.textContent = "Create an account to backup and sync your personal executive workspace.";
+    if (passwordGroup) passwordGroup.style.display = "grid";
+    if (passwordInput) passwordInput.required = true;
+    if (submitBtnText) submitBtnText.textContent = "Create Account";
+    if (divider) divider.style.display = "flex";
+    if (googleBtn) googleBtn.style.display = "flex";
+  } else if (mode === "otp") {
+    if (title) title.textContent = "Passwordless Login";
+    if (subtitle) subtitle.textContent = "Enter your email address to receive an instant 6-digit verification code.";
+    if (passwordGroup) passwordGroup.style.display = "none";
+    if (passwordInput) passwordInput.required = false;
+    if (submitBtnText) submitBtnText.textContent = "✉️ Send Verification Code";
+    if (divider) divider.style.display = "flex";
+    if (googleBtn) googleBtn.style.display = "flex";
+  }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPass = input.type === "password";
+  input.type = isPass ? "text" : "password";
+  const toggleText = btn.querySelector(".toggle-text");
+  if (toggleText) toggleText.textContent = isPass ? "Hide" : "Show";
+}
+
 async function openSupabaseAuthModal() {
   closeSyncPopover();
+  clearAuthError();
   const cfg = typeof getSupabaseConfig === "function" ? getSupabaseConfig() : { url: "", key: "" };
   const urlInput = document.getElementById("cfgSupabaseUrl");
   const keyInput = document.getElementById("cfgSupabaseKey");
@@ -302,21 +383,24 @@ async function openSupabaseAuthModal() {
 
   const user = typeof getSupabaseUser === "function" ? await getSupabaseUser() : null;
   const stepLoggedIn = document.getElementById("authStepLoggedIn");
-  const stepEmail = document.getElementById("authStepEmail");
+  const form = document.getElementById("authPasswordForm");
   const stepOtp = document.getElementById("authStepOtp");
+  const modeToggle = document.getElementById("authModeToggle");
   const title = document.getElementById("authModalTitle");
+  const subtitle = document.getElementById("authModalSubtitle");
 
   if (user && user.email) {
     if (stepLoggedIn) stepLoggedIn.style.display = "flex";
-    if (stepEmail) stepEmail.style.display = "none";
+    if (form) form.style.display = "none";
     if (stepOtp) stepOtp.style.display = "none";
-    if (title) title.textContent = "☁️ Supabase Cloud Account";
+    if (modeToggle) modeToggle.style.display = "none";
+    if (title) title.textContent = "Supabase Cloud Account";
+    if (subtitle) subtitle.textContent = "Your workspace is securely connected and actively synced to PostgreSQL Cloud.";
     updateAuthUI(user);
   } else {
     if (stepLoggedIn) stepLoggedIn.style.display = "none";
-    if (stepEmail) stepEmail.style.display = "flex";
-    if (stepOtp) stepOtp.style.display = "none";
-    if (title) title.textContent = "☁️ Productive Cloud Sign In";
+    if (modeToggle) modeToggle.style.display = "grid";
+    switchAuthMode(currentAuthMode || "login");
   }
 
   const dlg = document.getElementById("supabaseAuthModal");
@@ -326,7 +410,7 @@ async function openSupabaseAuthModal() {
 function closeSupabaseAuthModal() {
   const dlg = document.getElementById("supabaseAuthModal");
   if (dlg && dlg.close) dlg.close();
-  showAuthEmailStep();
+  clearAuthError();
 }
 
 async function handleSignOut() {
@@ -340,30 +424,91 @@ async function handleSignOut() {
   }
 }
 
-function showAuthEmailStep(e) {
+async function handleAuthFormSubmit(e) {
   if (e) e.preventDefault();
-  const stepLoggedIn = document.getElementById("authStepLoggedIn");
-  const stepEmail = document.getElementById("authStepEmail");
-  const stepOtp = document.getElementById("authStepOtp");
-  const title = document.getElementById("authModalTitle");
-  if (stepLoggedIn) stepLoggedIn.style.display = "none";
-  if (stepEmail) stepEmail.style.display = "flex";
-  if (stepOtp) stepOtp.style.display = "none";
-  if (title) title.textContent = "☁️ Productive Cloud Sign In";
+  clearAuthError();
+
+  const email = document.getElementById("authEmailInput")?.value.trim();
+  const password = document.getElementById("authPasswordInput")?.value.trim();
+  const submitBtn = document.getElementById("authSubmitBtn");
+  const submitBtnText = document.getElementById("authSubmitBtnText");
+
+  if (!email || !email.includes("@")) {
+    showAuthError("Please enter a valid email address.");
+    return;
+  }
+
+  if (currentAuthMode !== "otp" && !password) {
+    showAuthError("Please enter your password.");
+    return;
+  }
+
+  const originalText = submitBtnText ? submitBtnText.textContent : "Submit";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    if (submitBtnText) submitBtnText.textContent = "Processing...";
+  }
+
+  try {
+    if (currentAuthMode === "login") {
+      const data = await signInWithEmail(email, password);
+      if (!data) return;
+      closeSupabaseAuthModal();
+      if (typeof showToast === "function") showToast("Welcome back! Signed in to Cloud. ☁️", "success");
+      const userObj = data?.user || data?.session?.user;
+      if (userObj?.email) updateAuthUI(userObj);
+      if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    } else if (currentAuthMode === "signup") {
+      const data = await signUpWithEmail(email, password);
+      if (!data) return;
+      closeSupabaseAuthModal();
+      if (typeof showToast === "function") showToast("Account created successfully! Check email to confirm. 🎉", "success");
+      const userObj = data?.user || data?.session?.user;
+      if (userObj?.email) updateAuthUI(userObj);
+      if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    } else if (currentAuthMode === "otp") {
+      await requestEmailOtp(email);
+      showAuthOtpStep(email);
+      if (typeof showToast === "function") showToast(`Verification code sent to ${email}`, "success");
+    }
+  } catch (err) {
+    console.error("Auth error:", err);
+    const msg = err.message || String(err);
+    if (msg.includes("Invalid login credentials") || msg.includes("invalid")) {
+      showAuthError("Invalid email or password. Please check your credentials or try Quick OTP.");
+    } else if (msg.includes("User already registered")) {
+      showAuthError("An account with this email already exists. Please switch to Sign In.");
+    } else if (msg.includes("rate limit") || msg.includes("Too many")) {
+      showAuthError("Too many requests. Please wait a minute and try again.");
+    } else {
+      showAuthError(`Authentication error: ${msg}`);
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      if (submitBtnText) submitBtnText.textContent = originalText;
+    }
+  }
 }
 
 function showAuthOtpStep(email) {
-  const stepLoggedIn = document.getElementById("authStepLoggedIn");
-  const stepEmail = document.getElementById("authStepEmail");
+  clearAuthError();
+  const form = document.getElementById("authPasswordForm");
   const stepOtp = document.getElementById("authStepOtp");
+  const stepLoggedIn = document.getElementById("authStepLoggedIn");
+  const modeToggle = document.getElementById("authModeToggle");
   const title = document.getElementById("authModalTitle");
+  const subtitle = document.getElementById("authModalSubtitle");
   const targetEmailEl = document.getElementById("otpTargetEmail");
   const otpInput = document.getElementById("authOtpInput");
 
+  if (form) form.style.display = "none";
   if (stepLoggedIn) stepLoggedIn.style.display = "none";
-  if (stepEmail) stepEmail.style.display = "none";
+  if (modeToggle) modeToggle.style.display = "none";
   if (stepOtp) stepOtp.style.display = "flex";
-  if (title) title.textContent = "✉️ Verify Email Code";
+
+  if (title) title.textContent = "Verify 6-Digit Code";
+  if (subtitle) subtitle.textContent = "Check your email inbox for the single-use verification code.";
   if (targetEmailEl) targetEmailEl.textContent = email;
   if (otpInput) {
     otpInput.value = "";
@@ -371,46 +516,10 @@ function showAuthOtpStep(email) {
   }
 }
 
-async function handleSendOtp(e) {
-  if (e) e.preventDefault();
-  const emailInput = document.getElementById("authEmailInput");
-  const email = emailInput ? emailInput.value.trim() : "";
-  const sendBtn = document.getElementById("btnSendOtp");
-
-  if (!email || !email.includes("@")) {
-    if (typeof showToast === "function") showToast("Please enter a valid email address.", "error");
-    return;
-  }
-
-  if (sendBtn) {
-    sendBtn.disabled = true;
-    sendBtn.textContent = "Sending code...";
-  }
-
-  try {
-    const data = await requestEmailOtp(email);
-    if (!data && typeof ensureSupabaseConfigured === "function" && !getSupabase()) {
-      return;
-    }
-    showAuthOtpStep(email);
-    if (typeof showToast === "function") showToast(`Verification code sent to ${email}`, "success");
-  } catch (err) {
-    const msg = err.message || String(err);
-    if (msg.includes("rate limit") || msg.includes("Too many")) {
-      if (typeof showToast === "function") showToast("Too many OTP requests. Please wait a minute.", "error");
-    } else {
-      if (typeof showToast === "function") showToast(`OTP Error: ${msg}`, "error");
-    }
-  } finally {
-    if (sendBtn) {
-      sendBtn.disabled = false;
-      sendBtn.textContent = "✉️ Send verification code";
-    }
-  }
-}
-
 async function handleVerifyOtp(e) {
   if (e) e.preventDefault();
+  clearAuthError();
+
   const emailInput = document.getElementById("authEmailInput");
   const otpInput = document.getElementById("authOtpInput");
   const email = emailInput ? emailInput.value.trim() : "";
@@ -418,7 +527,7 @@ async function handleVerifyOtp(e) {
   const verifyBtn = document.getElementById("btnVerifyOtp");
 
   if (!email || !token || token.length < 6) {
-    if (typeof showToast === "function") showToast("Please enter the full 6-digit verification code.", "error");
+    showAuthError("Please enter the full 6-digit verification code.");
     return;
   }
 
@@ -442,9 +551,9 @@ async function handleVerifyOtp(e) {
   } catch (err) {
     const msg = err.message || String(err);
     if (msg.includes("invalid") || msg.includes("expired") || msg.includes("Token")) {
-      if (typeof showToast === "function") showToast("Invalid or expired OTP code. Try resending.", "error");
+      showAuthError("Invalid or expired OTP code. Click Resend to get a new code.");
     } else {
-      if (typeof showToast === "function") showToast(`Verification Error: ${msg}`, "error");
+      showAuthError(`Verification error: ${msg}`);
     }
   } finally {
     if (verifyBtn) {
@@ -456,6 +565,7 @@ async function handleVerifyOtp(e) {
 
 async function handleResendOtp(e) {
   if (e) e.preventDefault();
+  clearAuthError();
   const emailInput = document.getElementById("authEmailInput");
   const email = emailInput ? emailInput.value.trim() : "";
   if (!email) return;
@@ -464,58 +574,19 @@ async function handleResendOtp(e) {
     await requestEmailOtp(email);
     if (typeof showToast === "function") showToast(`Resent new 6-digit code to ${email}`, "info");
   } catch (err) {
-    if (typeof showToast === "function") showToast(`Resend Error: ${err.message || String(err)}`, "error");
-  }
-}
-
-async function handleAuthSubmit(e) {
-  if (e) e.preventDefault();
-  const email = document.getElementById("authEmailInput")?.value.trim();
-  const password = document.getElementById("authPasswordInput")?.value.trim();
-  if (!email || !password) return;
-
-  try {
-    const data = await signInWithEmail(email, password);
-    if (!data) return;
-    closeSupabaseAuthModal();
-    if (typeof showToast === "function") showToast("Signed in to Supabase Cloud! ☁️", "success");
-    
-    const userObj = data?.user || data?.session?.user;
-    if (userObj?.email) {
-      if (typeof updateAuthUI === "function") updateAuthUI(userObj);
-    }
-    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  } catch (err) {
-    if (typeof showToast === "function") showToast(`Auth Error: ${err.message || String(err)}`, "error");
-  }
-}
-
-async function executeSignUp() {
-  const email = document.getElementById("authEmailInput")?.value.trim();
-  const password = document.getElementById("authPasswordInput")?.value.trim();
-  if (!email || !password) {
-    if (typeof showToast === "function") showToast("Enter email and password to sign up", "error");
-    return;
-  }
-
-  try {
-    const data = await signUpWithEmail(email, password);
-    if (!data) return;
-    closeSupabaseAuthModal();
-    if (typeof showToast === "function") showToast("Sign-up email sent! Check inbox to confirm.", "info");
-  } catch (err) {
-    if (typeof showToast === "function") showToast(`Sign-Up Error: ${err.message || String(err)}`, "error");
+    showAuthError(`Resend error: ${err.message || String(err)}`);
   }
 }
 
 async function executeGoogleAuth() {
+  clearAuthError();
   try {
     if (typeof showToast === "function") showToast("Connecting to Google...", "info");
     const data = await (typeof signInWithGoogle === "function" ? signInWithGoogle() : window.signInWithGoogle?.());
     if (!data) return;
   } catch (err) {
     console.error("Google login error:", err);
-    if (typeof showToast === "function") showToast(`Google Auth Error: ${err.message || String(err)}`, "error");
+    showAuthError(`Google Auth Error: ${err.message || String(err)}`);
   }
 }
 
@@ -618,6 +689,13 @@ if (typeof window !== "undefined") {
   window.openSupabaseAuthModal = openSupabaseAuthModal;
   window.closeSupabaseAuthModal = closeSupabaseAuthModal;
   window.updateAuthUI = updateAuthUI;
+  window.switchAuthMode = switchAuthMode;
+  window.togglePasswordVisibility = togglePasswordVisibility;
+  window.handleAuthFormSubmit = handleAuthFormSubmit;
+  window.handleVerifyOtp = handleVerifyOtp;
+  window.handleResendOtp = handleResendOtp;
+  window.showAuthError = showAuthError;
+  window.clearAuthError = clearAuthError;
 }
 
 /* PWA Installation Controller */
