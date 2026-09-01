@@ -234,13 +234,69 @@ function closeSyncPopover() {
   if (popover) popover.style.display = "none";
 }
 
-function openSupabaseAuthModal() {
+function updateAuthUI(user) {
+  const emailEl = document.getElementById("syncUserEmail");
+  const authBtn = document.getElementById("btnOpenAuthModal");
+  const loggedInEmailEl = document.getElementById("loggedInUserEmail");
+  const loggedInAvatarEl = document.getElementById("loggedInUserAvatar");
+  const dot = document.getElementById("syncStatusDot");
+  const label = document.getElementById("syncStatusLabel");
+
+  if (user && user.email) {
+    const email = user.email;
+    const initial = email.charAt(0).toUpperCase();
+
+    if (emailEl) {
+      emailEl.innerHTML = `<span style="color:var(--accent); font-weight:700;">🟢 ${escapeHTML(email)}</span>`;
+    }
+    if (loggedInEmailEl) loggedInEmailEl.textContent = email;
+    if (loggedInAvatarEl) loggedInAvatarEl.textContent = initial;
+
+    if (authBtn) {
+      authBtn.innerHTML = `👤 Account (${escapeHTML(email.split('@')[0])})`;
+      authBtn.style.borderColor = "var(--accent)";
+      authBtn.style.color = "var(--accent)";
+    }
+    if (dot) dot.style.background = "var(--green)";
+    if (label) label.textContent = "Synced";
+  } else {
+    if (emailEl) emailEl.textContent = "Guest (Local)";
+    if (authBtn) {
+      authBtn.innerHTML = `🔑 Account / Cloud Login`;
+      authBtn.style.borderColor = "";
+      authBtn.style.color = "";
+    }
+    if (dot) dot.style.background = "var(--muted)";
+    if (label) label.textContent = "Local Mode";
+  }
+}
+
+async function openSupabaseAuthModal() {
   closeSyncPopover();
   const cfg = typeof getSupabaseConfig === "function" ? getSupabaseConfig() : { url: "", key: "" };
   const urlInput = document.getElementById("cfgSupabaseUrl");
   const keyInput = document.getElementById("cfgSupabaseKey");
   if (urlInput) urlInput.value = cfg.url || "";
   if (keyInput) keyInput.value = cfg.key || "";
+
+  const user = typeof getSupabaseUser === "function" ? await getSupabaseUser() : null;
+  const stepLoggedIn = document.getElementById("authStepLoggedIn");
+  const stepEmail = document.getElementById("authStepEmail");
+  const stepOtp = document.getElementById("authStepOtp");
+  const title = document.getElementById("authModalTitle");
+
+  if (user && user.email) {
+    if (stepLoggedIn) stepLoggedIn.style.display = "flex";
+    if (stepEmail) stepEmail.style.display = "none";
+    if (stepOtp) stepOtp.style.display = "none";
+    if (title) title.textContent = "☁️ Supabase Cloud Account";
+    updateAuthUI(user);
+  } else {
+    if (stepLoggedIn) stepLoggedIn.style.display = "none";
+    if (stepEmail) stepEmail.style.display = "flex";
+    if (stepOtp) stepOtp.style.display = "none";
+    if (title) title.textContent = "☁️ Productive Cloud Sign In";
+  }
 
   const dlg = document.getElementById("supabaseAuthModal");
   if (dlg && dlg.showModal) dlg.showModal();
@@ -252,23 +308,38 @@ function closeSupabaseAuthModal() {
   showAuthEmailStep();
 }
 
+async function handleSignOut() {
+  try {
+    if (typeof signOutUser === "function") await signOutUser();
+    if (typeof showToast === "function") showToast("Signed out of Supabase Cloud.", "info");
+    closeSupabaseAuthModal();
+    updateAuthUI(null);
+  } catch (err) {
+    if (typeof showToast === "function") showToast(`Sign out error: ${err.message || String(err)}`, "error");
+  }
+}
+
 function showAuthEmailStep(e) {
   if (e) e.preventDefault();
+  const stepLoggedIn = document.getElementById("authStepLoggedIn");
   const stepEmail = document.getElementById("authStepEmail");
   const stepOtp = document.getElementById("authStepOtp");
   const title = document.getElementById("authModalTitle");
+  if (stepLoggedIn) stepLoggedIn.style.display = "none";
   if (stepEmail) stepEmail.style.display = "flex";
   if (stepOtp) stepOtp.style.display = "none";
   if (title) title.textContent = "☁️ Productive Cloud Sign In";
 }
 
 function showAuthOtpStep(email) {
+  const stepLoggedIn = document.getElementById("authStepLoggedIn");
   const stepEmail = document.getElementById("authStepEmail");
   const stepOtp = document.getElementById("authStepOtp");
   const title = document.getElementById("authModalTitle");
   const targetEmailEl = document.getElementById("otpTargetEmail");
   const otpInput = document.getElementById("authOtpInput");
 
+  if (stepLoggedIn) stepLoggedIn.style.display = "none";
   if (stepEmail) stepEmail.style.display = "none";
   if (stepOtp) stepOtp.style.display = "flex";
   if (title) title.textContent = "✉️ Verify Email Code";
@@ -488,9 +559,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (typeof getSupabaseSession === "function") {
     getSupabaseSession().then(session => {
       const userObj = session?.user;
+      if (typeof updateAuthUI === "function") updateAuthUI(userObj);
       if (userObj?.email) {
-        const emailEl = document.getElementById("syncUserEmail");
-        if (emailEl) emailEl.textContent = userObj.email;
         if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
       }
     }).catch(() => {});
@@ -498,13 +568,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (typeof subscribeToAuthChanges === "function") {
     subscribeToAuthChanges((event, session) => {
-      const emailEl = document.getElementById("syncUserEmail");
       const userObj = session?.user;
-      if (emailEl) {
-        emailEl.textContent = userObj?.email || "Guest (Local)";
-      }
+      if (typeof updateAuthUI === "function") updateAuthUI(userObj);
+
       if (userObj) {
-        if (typeof showToast === "function" && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+        if (typeof showToast === "function" && event === "SIGNED_IN") {
           showToast(`👋 Welcome, ${userObj.email}!`, "success");
           if (typeof closeSupabaseAuthModal === "function") closeSupabaseAuthModal();
         }
@@ -525,6 +593,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
+
+if (typeof window !== "undefined") {
+  window.handleSignOut = handleSignOut;
+  window.openSupabaseAuthModal = openSupabaseAuthModal;
+  window.closeSupabaseAuthModal = closeSupabaseAuthModal;
+  window.updateAuthUI = updateAuthUI;
+}
 
 /* PWA Installation Controller */
 let deferredPwaPrompt = null;

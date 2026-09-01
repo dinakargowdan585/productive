@@ -1745,7 +1745,7 @@ button:active { transform: scale(0.98); }
           <div class="sync-row" id="syncUserRow"><span>Account:</span><span id="syncUserEmail">Guest (Local)</span></div>
         </div>
         <div class="sync-popover-actions" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-          <button type="button" class="secondary" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem;">🔑 Account / Cloud Login</button>
+          <button type="button" class="secondary" id="btnOpenAuthModal" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem;">🔑 Account / Cloud Login</button>
           <button type="button" class="pwa-install-btn secondary" onclick="promptPwaInstall()" style="display:none; width:100%; padding:6px; font-size:0.78rem; border-color:var(--accent);">📲 Install Desktop/Mobile App</button>
           <div style="display:flex; gap:6px; margin-top:2px;">
             <button type="button" class="secondary" onclick="exportFullDataBackup()" style="flex:1; padding:5px; font-size:0.72rem;" title="Download JSON data snapshot">📦 Backup Data</button>
@@ -2771,6 +2771,23 @@ button:active { transform: scale(0.98); }
 
       <div style="text-align:center; margin-top:4px;">
         <a href="#" onclick="showAuthEmailStep(event)" style="font-size:0.75rem; color:var(--accent); text-decoration:none; font-weight:600;">← Change Email Address</a>
+      </div>
+    </div>
+
+    <!-- Step 3: Logged In Account Info & Sign Out -->
+    <div id="authStepLoggedIn" style="display:none; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); padding:14px; border-radius:var(--radius-sm);">
+        <div id="loggedInUserAvatar" style="width:42px; height:42px; border-radius:50%; background:var(--accent); color:#05070a; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:1.2rem;">U</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:0.75rem; color:var(--muted); font-weight:600;">ACTIVE ACCOUNT</div>
+          <div id="loggedInUserEmail" style="font-size:0.92rem; font-weight:700; color:var(--text); word-break:break-all;">user@example.com</div>
+          <div style="font-size:0.75rem; color:var(--green); font-weight:600; margin-top:2px;">🟢 Cloud Synced</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" onclick="triggerBackgroundSync(); closeSupabaseAuthModal(); showToast('⚡ Sync completed!', 'success');" style="width:100%;">🔄 Sync Cloud Data Now</button>
+        <button type="button" class="secondary" onclick="handleSignOut()" style="width:100%; color:var(--danger); border-color:rgba(255, 59, 48, 0.3);">🚪 Sign Out</button>
       </div>
     </div>
 
