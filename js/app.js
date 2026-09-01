@@ -494,8 +494,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (emailEl) {
         emailEl.textContent = userObj?.email || "Guest (Local)";
       }
-      if (userObj && typeof triggerBackgroundSync === "function") {
-        triggerBackgroundSync();
+      if (userObj) {
+        if (typeof showToast === "function" && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+          showToast(`👋 Welcome, ${userObj.email}!`, "success");
+          if (typeof closeSupabaseAuthModal === "function") closeSupabaseAuthModal();
+        }
+        if (typeof triggerBackgroundSync === "function") {
+          triggerBackgroundSync();
+        }
+      }
+      
+      // Clean up OAuth tokens from URL if present
+      if (typeof window !== "undefined") {
+        if (window.location.hash && window.location.hash.includes("access_token")) {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+        if (window.location.search && window.location.search.includes("code=")) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
       }
     });
   }

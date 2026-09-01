@@ -167,13 +167,29 @@ async function signInWithEmail(email, password) {
 async function signInWithGoogle() {
   if (!ensureSupabaseConfigured()) return null;
   const client = getSupabase();
+  
+  const origin = window.location.origin;
+  const pathname = window.location.pathname.endsWith(".html") 
+    ? window.location.pathname 
+    : window.location.pathname.replace(/\/$/, "") + "/index.html";
+  const redirectUrl = `${origin}${pathname}`;
+
+  console.log("🌐 Initiating Google OAuth with redirect URL:", redirectUrl);
+
   const { data, error } = await client.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + window.location.pathname
+      redirectTo: redirectUrl,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'select_account'
+      }
     }
   });
-  if (error) throw error;
+  if (error) {
+    console.error("Google OAuth error:", error);
+    throw error;
+  }
   return data;
 }
 
