@@ -193,6 +193,14 @@ async function signInWithGoogle() {
   return data;
 }
 
+if (typeof window !== "undefined") {
+  window.signInWithGoogle = signInWithGoogle;
+  window.executeGoogleAuth = signInWithGoogle;
+  window.googleOAuthLogin = signInWithGoogle;
+  window.handleGoogleLogin = signInWithGoogle;
+  window.googleLogin = signInWithGoogle;
+}
+
 async function signOutUser() {
   const client = getSupabase();
   if (!client) return;

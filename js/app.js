@@ -420,11 +420,20 @@ async function executeSignUp() {
 
 async function executeGoogleAuth() {
   try {
-    const data = await signInWithGoogle();
+    if (typeof showToast === "function") showToast("Connecting to Google...", "info");
+    const data = await (typeof signInWithGoogle === "function" ? signInWithGoogle() : window.signInWithGoogle?.());
     if (!data) return;
   } catch (err) {
+    console.error("Google login error:", err);
     if (typeof showToast === "function") showToast(`Google Auth Error: ${err.message || String(err)}`, "error");
   }
+}
+
+if (typeof window !== "undefined") {
+  window.executeGoogleAuth = executeGoogleAuth;
+  window.googleOAuthLogin = executeGoogleAuth;
+  window.handleGoogleLogin = executeGoogleAuth;
+  window.googleLogin = executeGoogleAuth;
 }
 
 async function saveCustomCredentialsFromModal() {
