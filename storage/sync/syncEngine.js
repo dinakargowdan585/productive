@@ -1,5 +1,21 @@
 /* Productive OS - Sync Engine with Mutex Lock, Coalescing & BroadcastChannel Sync */
 
+const ConflictResolver = {
+  resolve(localRecord, remoteRecord) {
+    if (!remoteRecord) return localRecord;
+    if (!localRecord) return remoteRecord;
+    const localDeleted = localRecord.deletedAt ? new Date(localRecord.deletedAt).getTime() : 0;
+    const remoteDeleted = (remoteRecord.deleted_at || remoteRecord.deletedAt) ? new Date(remoteRecord.deleted_at || remoteRecord.deletedAt).getTime() : 0;
+    const localUpdated = new Date(localRecord.updatedAt || localRecord.created_at || 0).getTime();
+    const remoteUpdated = new Date(remoteRecord.updated_at || remoteRecord.updatedAt || remoteRecord.created_at || 0).getTime();
+    const localMax = Math.max(localDeleted, localUpdated);
+    const remoteMax = Math.max(remoteDeleted, remoteUpdated);
+    if (localMax > remoteMax) return localRecord;
+    if (remoteMax > localMax) return remoteRecord;
+    return String(localRecord.id || "").localeCompare(String(remoteRecord.id || "")) >= 0 ? localRecord : remoteRecord;
+  }
+};
+
 const STORE_TO_TABLE_MAP = {
   tasks: "tasks",
   notes: "notes",

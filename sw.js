@@ -18,11 +18,9 @@ const ASSETS = [
   "./js/app.js",
   "./storage/database.js",
   "./storage/repositories/baseRepository.js",
-  "./storage/repositories/notesRepository.js",
-  "./storage/repositories/tasksRepository.js",
-  "./storage/repositories/calendarsRepository.js",
-  "./storage/repositories/timeBlocksRepository.js",
-  "./storage/repositories/projectsRepository.js",
+  "./storage/sync/syncQueue.js",
+  "./storage/sync/syncEngine.js",
+  "./storage/migration.js",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
 ];
