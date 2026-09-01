@@ -241,9 +241,13 @@ function updateAuthUI(user) {
   const loggedInAvatarEl = document.getElementById("loggedInUserAvatar");
   const dot = document.getElementById("syncStatusDot");
   const label = document.getElementById("syncStatusLabel");
+  const dockTooltip = document.getElementById("dockAuthTooltip");
+  const headerBadge = document.getElementById("headerAccountBadge");
+  const greetingText = document.getElementById("execGreetingText");
 
   if (user && user.email) {
     const email = user.email;
+    const username = email.split('@')[0];
     const initial = email.charAt(0).toUpperCase();
 
     if (emailEl) {
@@ -253,12 +257,22 @@ function updateAuthUI(user) {
     if (loggedInAvatarEl) loggedInAvatarEl.textContent = initial;
 
     if (authBtn) {
-      authBtn.innerHTML = `👤 Account (${escapeHTML(email.split('@')[0])})`;
+      authBtn.innerHTML = `👤 Account (${escapeHTML(username)})`;
       authBtn.style.borderColor = "var(--accent)";
       authBtn.style.color = "var(--accent)";
     }
     if (dot) dot.style.background = "var(--green)";
     if (label) label.textContent = "Synced";
+    if (dockTooltip) dockTooltip.textContent = `👤 Logged in: ${email}`;
+
+    if (headerBadge) {
+      headerBadge.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:var(--green); display:inline-block;"></span> <span style="color:var(--accent);">${escapeHTML(email)}</span>`;
+      headerBadge.style.display = "inline-flex";
+      headerBadge.title = "Connected to Supabase Cloud. Click to view account.";
+    }
+    if (greetingText && username) {
+      greetingText.textContent = `Welcome back, ${username.charAt(0).toUpperCase() + username.slice(1)}`;
+    }
   } else {
     if (emailEl) emailEl.textContent = "Guest (Local)";
     if (authBtn) {
@@ -268,6 +282,13 @@ function updateAuthUI(user) {
     }
     if (dot) dot.style.background = "var(--muted)";
     if (label) label.textContent = "Local Mode";
+    if (dockTooltip) dockTooltip.textContent = `☁️ Cloud Account & Sync`;
+
+    if (headerBadge) {
+      headerBadge.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span> <span>Local Mode</span>`;
+      headerBadge.style.display = "inline-flex";
+      headerBadge.title = "Operating in local storage mode. Click to connect cloud.";
+    }
   }
 }
 
@@ -415,8 +436,7 @@ async function handleVerifyOtp(e) {
     
     const userObj = data?.user || data?.session?.user;
     if (userObj?.email) {
-      const emailEl = document.getElementById("syncUserEmail");
-      if (emailEl) emailEl.textContent = userObj.email;
+      if (typeof updateAuthUI === "function") updateAuthUI(userObj);
     }
     if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   } catch (err) {
@@ -462,8 +482,7 @@ async function handleAuthSubmit(e) {
     
     const userObj = data?.user || data?.session?.user;
     if (userObj?.email) {
-      const emailEl = document.getElementById("syncUserEmail");
-      if (emailEl) emailEl.textContent = userObj.email;
+      if (typeof updateAuthUI === "function") updateAuthUI(userObj);
     }
     if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   } catch (err) {

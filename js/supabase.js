@@ -72,10 +72,17 @@ async function getSupabaseUser() {
   const client = getSupabase();
   if (!client) return null;
   try {
+    const { data: { session } } = await client.auth.getSession();
+    if (session?.user) return session.user;
     const { data: { user } } = await client.auth.getUser();
-    return user;
+    return user || null;
   } catch (e) {
-    return null;
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      return session?.user || null;
+    } catch (err2) {
+      return null;
+    }
   }
 }
 
