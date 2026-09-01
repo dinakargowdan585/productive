@@ -3,8 +3,10 @@
 let supabaseClient = null;
 
 function getSupabaseConfig() {
-  const url = (localStorage.getItem("SUPABASE_URL") || window.SUPABASE_URL || "").trim();
-  const key = (localStorage.getItem("SUPABASE_ANON_KEY") || window.SUPABASE_ANON_KEY || "").trim();
+  const storedUrl = (localStorage.getItem("SUPABASE_URL") || "").trim();
+  const storedKey = (localStorage.getItem("SUPABASE_ANON_KEY") || "").trim();
+  const url = (storedUrl || window.SUPABASE_URL || "").trim();
+  const key = (storedKey || window.SUPABASE_ANON_KEY || "").trim();
   return { url, key };
 }
 
