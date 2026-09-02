@@ -79,14 +79,12 @@ async function loadAllFromRepositoriesIntoMemory() {
   try {
     if (typeof TasksRepository !== "undefined") {
       const tasks = await TasksRepository.getAll();
-      memoryCache.tasks = (tasks && tasks.length) ? tasks : [
-        { id: uuid(), title: "Review Q3 System Architecture & Performance", category: "work", priority: "HIGH", dueDate: getIsoDateStr(), isDaily: false, completed: false, estimateMins: 120, createdAt: new Date().toISOString() },
-        { id: uuid(), title: "Deep Work: Mobile VisionOS UI Refinement", category: "study", priority: "MED", dueDate: getIsoDateStr(), isDaily: false, completed: false, estimateMins: 90, createdAt: new Date().toISOString() }
-      ];
+      memoryCache.tasks = Array.isArray(tasks) ? tasks : [];
     }
 
     if (typeof NotesRepository !== "undefined") {
-      memoryCache.notes = await NotesRepository.getAll();
+      const notes = await NotesRepository.getAll();
+      memoryCache.notes = Array.isArray(notes) ? notes : [];
     }
 
     if (typeof CalendarsRepository !== "undefined") {
@@ -95,30 +93,18 @@ async function loadAllFromRepositoriesIntoMemory() {
     }
 
     if (typeof TimeBlocksRepository !== "undefined") {
-      memoryCache.timeBlocks = await TimeBlocksRepository.getAll();
+      const blocks = await TimeBlocksRepository.getAll();
+      memoryCache.timeBlocks = Array.isArray(blocks) ? blocks : [];
     }
 
     if (typeof ProjectsRepository !== "undefined") {
       const projs = await ProjectsRepository.getAll();
-      memoryCache.projects = (projs && projs.length) ? projs : [
-        {
-          id: "proj-1",
-          title: "🏢 Executive Strategy 2026",
-          cat: "Work",
-          taskList: [
-            { id: uuid(), title: "Initial Roadmap & Scope Definition", completed: true },
-            { id: uuid(), title: "System Architecture Review", completed: true }
-          ]
-        }
-      ];
+      memoryCache.projects = Array.isArray(projs) ? projs : [];
     }
 
     if (typeof GoalsRepository !== "undefined") {
       const goals = await GoalsRepository.getAll();
-      memoryCache.goals = (goals && goals.length) ? goals : [
-        { id: "g1", objective: "Master Engineering Architecture", progress: 65, quarter: "Q3 2026", status: "In Progress" },
-        { id: "g2", objective: "Publish High-Performance SPA Benchmark Suite", progress: 40, quarter: "Q3 2026", status: "In Progress" }
-      ];
+      memoryCache.goals = Array.isArray(goals) ? goals : [];
     }
 
     // Vault Notes Store (Encrypted payloads)

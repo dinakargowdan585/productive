@@ -13,7 +13,7 @@ async function checkAndRunStorageMigration() {
       { key: "learningTasks", repo: typeof TasksRepository !== "undefined" ? TasksRepository : null, store: "tasks" },
       { key: "learningLogs", repo: typeof NotesRepository !== "undefined" ? NotesRepository : null, store: "notes" },
       { key: "learningCalendarCategories", repo: typeof CalendarsRepository !== "undefined" ? CalendarsRepository : null, store: "calendars" },
-      { key: "learningTimeBlocks", repo: typeof TimeBlocksRepository !== "undefined" ? TimeBlocksRepository : null, store: "time_blocks" },
+      { key: "learningTimeBlocks", repo: typeof TimeBlocksRepository !== "undefined" ? TimeBlocksRepository : null, store: "timeBlocks" },
       { key: "learningProjects", repo: typeof ProjectsRepository !== "undefined" ? ProjectsRepository : null, store: "projects" },
       { key: "learningGoals", repo: typeof GoalsRepository !== "undefined" ? GoalsRepository : null, store: "goals" }
     ];
