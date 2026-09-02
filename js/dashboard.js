@@ -173,9 +173,10 @@ function renderDashboard() {
   const projects = loadProjects();
   const projCard = document.getElementById("execCurrentProjectCard");
   if (projCard) {
-    const p = projects[0] || { title: "🏢 Executive Strategy 2026", cat: "Work", taskList: [] };
-    const doneTasks = (p.taskList || []).filter(t => t.completed).length;
-    const totalTasks = (p.taskList || []).length;
+    const p = projects[0] || { title: "🏢 Executive Strategy 2026", cat: "Work" };
+    const projectTasks = tasks.filter(t => t.projectId === p.id);
+    const doneTasks = projectTasks.length ? projectTasks.filter(t => t.completed).length : tasks.filter(t => t.completed).length;
+    const totalTasks = projectTasks.length ? projectTasks.length : tasks.length;
     const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
     projCard.innerHTML = `
       <div style="font-size:0.78rem; color:var(--muted); font-weight:600;">Category: ${p.cat || 'Work'}</div>

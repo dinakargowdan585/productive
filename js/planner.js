@@ -272,8 +272,16 @@ function renderPlanner() {
   const completed = tasks.filter(t => t.completed).length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const percentEl = document.getElementById("taskProgressPercent");
-  if (percentEl) percentEl.textContent = `${percent}%`;
+  const ringPercentEl = document.getElementById("ringPercentText");
+  const ringSvgEl = document.getElementById("ringSvgPath");
+  if (ringPercentEl) ringPercentEl.textContent = `${percent}%`;
+  if (ringSvgEl) {
+    ringSvgEl.setAttribute("stroke-dasharray", `${percent}, 100`);
+    ringSvgEl.style.stroke = percent >= 80 ? "var(--green)" : (percent >= 40 ? "var(--accent)" : "var(--amber)");
+  }
+
+  const legacyPercentEl = document.getElementById("taskProgressPercent");
+  if (legacyPercentEl) legacyPercentEl.textContent = `${percent}%`;
 
   let filtered = tasks;
   if (filter === "DAILY") filtered = tasks.filter(t => t.isDaily);
