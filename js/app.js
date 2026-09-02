@@ -326,11 +326,13 @@ function switchAuthMode(mode) {
   const modeToggle = document.getElementById("authModeToggle");
   const divider = document.getElementById("authDivider");
   const googleBtn = document.getElementById("authGoogleBtn");
+  const socialSection = document.getElementById("authSocialSection");
 
   if (stepLoggedIn) stepLoggedIn.style.display = "none";
   if (stepOtp) stepOtp.style.display = "none";
   if (form) form.style.display = "grid";
   if (modeToggle) modeToggle.style.display = "grid";
+  if (socialSection) socialSection.style.display = mode === "otp" ? "none" : "flex";
 
   if (btnLogin) btnLogin.classList.toggle("active", mode === "login");
   if (btnSignup) btnSignup.classList.toggle("active", mode === "signup");
@@ -358,8 +360,8 @@ function switchAuthMode(mode) {
     if (passwordGroup) passwordGroup.style.display = "none";
     if (passwordInput) passwordInput.required = false;
     if (submitBtnText) submitBtnText.textContent = "✉️ Send Verification Code";
-    if (divider) divider.style.display = "flex";
-    if (googleBtn) googleBtn.style.display = "flex";
+    if (divider) divider.style.display = "none";
+    if (googleBtn) googleBtn.style.display = "none";
   }
 }
 
@@ -386,12 +388,14 @@ async function openSupabaseAuthModal() {
   const form = document.getElementById("authPasswordForm");
   const stepOtp = document.getElementById("authStepOtp");
   const modeToggle = document.getElementById("authModeToggle");
+  const socialSection = document.getElementById("authSocialSection");
   const title = document.getElementById("authModalTitle");
   const subtitle = document.getElementById("authModalSubtitle");
 
   if (user && user.email) {
     if (stepLoggedIn) stepLoggedIn.style.display = "flex";
     if (form) form.style.display = "none";
+    if (socialSection) socialSection.style.display = "none";
     if (stepOtp) stepOtp.style.display = "none";
     if (modeToggle) modeToggle.style.display = "none";
     if (title) title.textContent = "Supabase Cloud Account";
@@ -400,6 +404,7 @@ async function openSupabaseAuthModal() {
   } else {
     if (stepLoggedIn) stepLoggedIn.style.display = "none";
     if (modeToggle) modeToggle.style.display = "grid";
+    if (socialSection) socialSection.style.display = "flex";
     switchAuthMode(currentAuthMode || "login");
   }
 

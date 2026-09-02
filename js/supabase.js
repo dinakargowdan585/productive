@@ -287,10 +287,11 @@ function setupRealtimeSync() {
   }
 }
 
-// Auto-initialize client on load
+// Auto-initialize client immediately on load
 if (typeof window !== "undefined") {
+  initSupabaseClient();
   window.addEventListener("DOMContentLoaded", () => {
-    const client = initSupabaseClient();
+    const client = getSupabase();
     if (client) {
       setupRealtimeSync();
     }
