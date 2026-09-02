@@ -210,53 +210,114 @@ const SyncEngine = {
 
       // 1. Sync Tasks (Push & Pull)
       if (typeof TasksRepository !== "undefined") {
-        const localTasks = await TasksRepository.getAll();
-        if (localTasks && localTasks.length) {
-          const formatted = localTasks.map(t => this.formatTaskForCloud(t, user.id));
-          await client.from("tasks").upsert(formatted, { onConflict: "id" });
-        }
-        const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id).is("deleted_at", null);
-        if (remoteTasks && remoteTasks.length) {
-          await TasksRepository.bulkPut(remoteTasks);
+        try {
+          const localTasks = await TasksRepository.getAll();
+          if (localTasks && localTasks.length) {
+            const formatted = localTasks.map(t => this.formatTaskForCloud(t, user.id));
+            await client.from("tasks").upsert(formatted, { onConflict: "id" });
+          }
+          const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id).is("deleted_at", null);
+          if (remoteTasks && remoteTasks.length) {
+            const localFormatted = remoteTasks.map(t => ({
+              id: t.id,
+              title: t.title,
+              notes: t.notes || null,
+              category: t.category || "work",
+              priority: t.priority || "MED",
+              dueDate: t.due_date || null,
+              isDaily: Boolean(t.is_daily),
+              completed: Boolean(t.completed),
+              estimateMins: t.estimate_mins || 30,
+              createdAt: t.created_at,
+              updatedAt: t.updated_at
+            }));
+            await TasksRepository.bulkPut(localFormatted);
+          }
+        } catch (taskErr) {
+          console.warn("Task sync notice:", taskErr);
         }
       }
 
       // 2. Sync Notes (Push & Pull)
       if (typeof NotesRepository !== "undefined") {
-        const localNotes = await NotesRepository.getAll();
-        if (localNotes && localNotes.length) {
-          const formatted = localNotes.map(n => this.formatNoteForCloud(n, user.id));
-          await client.from("notes").upsert(formatted, { onConflict: "id" });
-        }
-        const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id).is("deleted_at", null);
-        if (remoteNotes && remoteNotes.length) {
-          await NotesRepository.bulkPut(remoteNotes);
+        try {
+          const localNotes = await NotesRepository.getAll();
+          if (localNotes && localNotes.length) {
+            const formatted = localNotes.map(n => this.formatNoteForCloud(n, user.id));
+            await client.from("notes").upsert(formatted, { onConflict: "id" });
+          }
+          const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id).is("deleted_at", null);
+          if (remoteNotes && remoteNotes.length) {
+            const localFormatted = remoteNotes.map(n => ({
+              id: n.id,
+              title: n.title,
+              content: n.content || "",
+              category: n.category || "general",
+              tags: Array.isArray(n.tags) ? n.tags : [],
+              isPinned: Boolean(n.is_pinned),
+              isVault: Boolean(n.is_vault),
+              createdAt: n.created_at,
+              updatedAt: n.updated_at
+            }));
+            await NotesRepository.bulkPut(localFormatted);
+          }
+        } catch (noteErr) {
+          console.warn("Note sync notice:", noteErr);
         }
       }
 
       // 3. Sync Projects (Push & Pull)
       if (typeof ProjectsRepository !== "undefined") {
-        const localProjects = await ProjectsRepository.getAll();
-        if (localProjects && localProjects.length) {
-          const formatted = localProjects.map(p => this.formatProjectForCloud(p, user.id));
-          await client.from("projects").upsert(formatted, { onConflict: "id" });
-        }
-        const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id).is("deleted_at", null);
-        if (remoteProjects && remoteProjects.length) {
-          await ProjectsRepository.bulkPut(remoteProjects);
+        try {
+          const localProjects = await ProjectsRepository.getAll();
+          if (localProjects && localProjects.length) {
+            const formatted = localProjects.map(p => this.formatProjectForCloud(p, user.id));
+            await client.from("projects").upsert(formatted, { onConflict: "id" });
+          }
+          const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id).is("deleted_at", null);
+          if (remoteProjects && remoteProjects.length) {
+            const localFormatted = remoteProjects.map(p => ({
+              id: p.id,
+              title: p.name || p.title,
+              cat: "Work",
+              description: p.description || null,
+              color: p.color || "#38BDF8",
+              status: p.status || "ACTIVE",
+              createdAt: p.created_at,
+              updatedAt: p.updated_at
+            }));
+            await ProjectsRepository.bulkPut(localFormatted);
+          }
+        } catch (projErr) {
+          console.warn("Project sync notice:", projErr);
         }
       }
 
       // 4. Sync Time Blocks (Push & Pull)
       if (typeof TimeBlocksRepository !== "undefined") {
-        const localBlocks = await TimeBlocksRepository.getAll();
-        if (localBlocks && localBlocks.length) {
-          const formatted = localBlocks.map(tb => this.formatTimeBlockForCloud(tb, user.id));
-          await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
-        }
-        const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id).is("deleted_at", null);
-        if (remoteBlocks && remoteBlocks.length) {
-          await TimeBlocksRepository.bulkPut(remoteBlocks);
+        try {
+          const localBlocks = await TimeBlocksRepository.getAll();
+          if (localBlocks && localBlocks.length) {
+            const formatted = localBlocks.map(tb => this.formatTimeBlockForCloud(tb, user.id));
+            await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
+          }
+          const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id).is("deleted_at", null);
+          if (remoteBlocks && remoteBlocks.length) {
+            const localFormatted = remoteBlocks.map(tb => ({
+              id: tb.id,
+              title: tb.title,
+              date: tb.date,
+              startTime: tb.start_time ? tb.start_time.slice(0, 5) : "09:00",
+              durationMinutes: tb.duration_minutes || 60,
+              category: tb.category || "Deep Work",
+              completed: Boolean(tb.completed),
+              createdAt: tb.created_at,
+              updatedAt: tb.updated_at
+            }));
+            await TimeBlocksRepository.bulkPut(localFormatted);
+          }
+        } catch (tbErr) {
+          console.warn("TimeBlock sync notice:", tbErr);
         }
       }
 

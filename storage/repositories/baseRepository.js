@@ -98,7 +98,7 @@ function createRepository(storeName) {
 const NotesRepository = createRepository("notes");
 const TasksRepository = createRepository("tasks");
 const CalendarsRepository = createRepository("calendars");
-const TimeBlocksRepository = createRepository("time_blocks");
+const TimeBlocksRepository = createRepository("timeBlocks");
 const ProjectsRepository = createRepository("projects");
 const GoalsRepository = createRepository("goals");
 const SettingsRepository = createRepository("settings");
