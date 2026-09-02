@@ -2036,8 +2036,10 @@ button:active { transform: scale(0.98); }
               </select>
             </div>
           </div>
-          <button type="submit" id="btnSubmitTask" style="width:100%; margin-top:12px;">➕ Add Task</button>
-          <button type="button" class="secondary" onclick="addDefaultDailyTasks()" style="width:100%; margin-top:8px;">✨ Load 4 Starter Habits</button>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+            <button type="submit" id="btnSubmitTask" style="width:100%;">➕ Add Task</button>
+            <button type="button" class="secondary" onclick="addCustomDailyHabit()" style="width:100%; border-color:rgba(56,189,248,0.3); color:var(--accent);">🔁 Add as Daily Habit</button>
+          </div>
         </form>
 
       </aside>

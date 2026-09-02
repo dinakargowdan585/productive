@@ -76,52 +76,54 @@ function handleNaturalLanguageAdd(e) {
   if (typeof showToast === "function") showToast(`Added task: "${cleanTitle}"`, "success");
 }
 
-function addDefaultDailyTasks() {
+function addCustomDailyHabit() {
   const titleInput = document.getElementById("taskTitle");
-  const typedTitle = titleInput ? titleInput.value.trim() : "";
+  const title = titleInput ? titleInput.value.trim() : "";
 
-  if (typedTitle) {
-    // If user typed a custom title, create that custom daily habit!
-    const isDailyInput = document.getElementById("taskIsDaily");
-    if (isDailyInput) isDailyInput.checked = true;
-    createTask();
+  if (!title) {
+    if (typeof showToast === "function") showToast("Please type a habit title first (e.g., Morning Workout, Read 15m)", "error");
+    if (titleInput) titleInput.focus();
     return;
   }
 
-  // If input was empty, load the 4 starter habits
-  const habits = [
-    { title: "💧 Drink 2L Water", category: "personal", priority: "HIGH" },
-    { title: "🧘 15m Morning Mindfulness", category: "personal", priority: "MED" },
-    { title: "📚 Read 20 Pages of Tech / Philosophy", category: "study", priority: "MED" },
-    { title: "🏋️ 30m Physical Workout", category: "personal", priority: "HIGH" }
-  ];
+  const calSelect = document.getElementById("taskCalendarSelect");
+  const calendarId = calSelect ? calSelect.value : "personal";
+  const prioSelect = document.getElementById("taskPriority");
+  const priority = (prioSelect ? prioSelect.value : "MED").toUpperCase();
+  const projSelect = document.getElementById("taskLinkProject");
+  const projectId = projSelect ? projSelect.value : "";
+  const goalSelect = document.getElementById("taskLinkGoal");
+  const goalId = goalSelect ? goalSelect.value : "";
 
   const tasks = loadTasks();
-  let addedCount = 0;
-  habits.forEach(h => {
-    if (!tasks.some(t => t.title === h.title && t.isDaily)) {
-      tasks.unshift({
-        id: uuid(),
-        title: h.title,
-        category: h.category,
-        calendarId: h.category,
-        priority: h.priority,
-        isDaily: true,
-        completed: false,
-        streak: 0,
-        estimateMins: 30,
-        createdAt: new Date().toISOString()
-      });
-      addedCount++;
-    }
-  });
+  const newHabit = {
+    id: uuid(),
+    title: title,
+    category: calendarId,
+    calendarId: calendarId,
+    priority: priority,
+    dueDate: "",
+    isDaily: true,
+    completed: false,
+    streak: 0,
+    estimateMins: 30,
+    projectId: projectId,
+    goalId: goalId,
+    createdAt: new Date().toISOString()
+  };
 
+  tasks.unshift(newHabit);
   saveTasks(tasks);
+
+  if (titleInput) titleInput.value = "";
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
-  if (typeof showToast === "function") {
-    showToast(addedCount > 0 ? "✨ Loaded 4 starter daily habits!" : "Starter habits already exist in your planner", "success");
-  }
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+  if (typeof showToast === "function") showToast(`Added daily habit: "${title}"! 🔁`, "success");
+}
+
+function addDefaultDailyTasks() {
+  addCustomDailyHabit();
 }
 
 function toggleTask(id) {
