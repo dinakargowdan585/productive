@@ -254,7 +254,7 @@ const SyncEngine = {
     try {
       console.log("⚡ Executing Full 2-Way Cloud Sync for User:", user.email || user.id);
 
-      // 1. Sync Tasks (Push & Pull with Deletion Sync)
+      // 1. Sync Tasks (Push & Pull with Multi-Device Deletion Sync)
       if (typeof TasksRepository !== "undefined") {
         try {
           const deletedTaskIds = getDeletedRecordIds("tasks");
@@ -265,21 +265,21 @@ const SyncEngine = {
             clearDeletedRecordIds("tasks", deletedTaskIds);
           }
 
+          const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id);
+          const activeRemote = (remoteTasks || []).filter(t => !t.deleted_at && !deletedTaskIds.includes(t.id));
           const localTasks = await TasksRepository.getAll();
-          if (localTasks && localTasks.length > 0) {
-            const formatted = localTasks.map(t => this.formatTaskForCloud(t, user.id));
-            await client.from("tasks").upsert(formatted, { onConflict: "id" });
-          } else if (localTasks && localTasks.length === 0) {
-            const { data: remoteExisting } = await client.from("tasks").select("id").eq("user_id", user.id);
-            if (remoteExisting && remoteExisting.length > 0) {
-              await client.from("tasks").delete().eq("user_id", user.id);
-            }
-          }
 
-          const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteTasks) {
-            const currentDeleted = getDeletedRecordIds("tasks");
-            const activeRemote = remoteTasks.filter(t => !currentDeleted.includes(t.id));
+          if (activeRemote.length === 0 && (!localTasks || localTasks.length === 0)) {
+            await TasksRepository.clear();
+          } else if (activeRemote.length === 0 && localTasks && localTasks.length > 0) {
+            // Cloud was wiped on another device! Propagate deletion to this device
+            await TasksRepository.clear();
+          } else {
+            const formatted = (localTasks || []).map(t => this.formatTaskForCloud(t, user.id));
+            if (formatted.length > 0) {
+              await client.from("tasks").upsert(formatted, { onConflict: "id" });
+            }
+
             const localFormatted = activeRemote.map(t => ({
               id: t.id,
               title: t.title,
@@ -300,7 +300,7 @@ const SyncEngine = {
         }
       }
 
-      // 2. Sync Notes (Push & Pull with Deletion Sync)
+      // 2. Sync Notes (Push & Pull with Multi-Device Deletion Sync)
       if (typeof NotesRepository !== "undefined") {
         try {
           const deletedNoteIds = getDeletedRecordIds("notes");
@@ -311,21 +311,20 @@ const SyncEngine = {
             clearDeletedRecordIds("notes", deletedNoteIds);
           }
 
+          const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id);
+          const activeRemote = (remoteNotes || []).filter(n => !n.deleted_at && !deletedNoteIds.includes(n.id));
           const localNotes = await NotesRepository.getAll();
-          if (localNotes && localNotes.length > 0) {
-            const formatted = localNotes.map(n => this.formatNoteForCloud(n, user.id));
-            await client.from("notes").upsert(formatted, { onConflict: "id" });
-          } else if (localNotes && localNotes.length === 0) {
-            const { data: remoteExisting } = await client.from("notes").select("id").eq("user_id", user.id);
-            if (remoteExisting && remoteExisting.length > 0) {
-              await client.from("notes").delete().eq("user_id", user.id);
-            }
-          }
 
-          const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteNotes) {
-            const currentDeleted = getDeletedRecordIds("notes");
-            const activeRemote = remoteNotes.filter(n => !currentDeleted.includes(n.id));
+          if (activeRemote.length === 0 && (!localNotes || localNotes.length === 0)) {
+            await NotesRepository.clear();
+          } else if (activeRemote.length === 0 && localNotes && localNotes.length > 0) {
+            await NotesRepository.clear();
+          } else {
+            const formatted = (localNotes || []).map(n => this.formatNoteForCloud(n, user.id));
+            if (formatted.length > 0) {
+              await client.from("notes").upsert(formatted, { onConflict: "id" });
+            }
+
             const localFormatted = activeRemote.map(n => ({
               id: n.id,
               title: n.title,
@@ -344,7 +343,7 @@ const SyncEngine = {
         }
       }
 
-      // 3. Sync Projects (Push & Pull with Deletion Sync)
+      // 3. Sync Projects (Push & Pull with Multi-Device Deletion Sync)
       if (typeof ProjectsRepository !== "undefined") {
         try {
           const deletedProjIds = getDeletedRecordIds("projects");
@@ -355,21 +354,20 @@ const SyncEngine = {
             clearDeletedRecordIds("projects", deletedProjIds);
           }
 
+          const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id);
+          const activeRemote = (remoteProjects || []).filter(p => !p.deleted_at && !deletedProjIds.includes(p.id));
           const localProjects = await ProjectsRepository.getAll();
-          if (localProjects && localProjects.length > 0) {
-            const formatted = localProjects.map(p => this.formatProjectForCloud(p, user.id));
-            await client.from("projects").upsert(formatted, { onConflict: "id" });
-          } else if (localProjects && localProjects.length === 0) {
-            const { data: remoteExisting } = await client.from("projects").select("id").eq("user_id", user.id);
-            if (remoteExisting && remoteExisting.length > 0) {
-              await client.from("projects").delete().eq("user_id", user.id);
-            }
-          }
 
-          const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteProjects) {
-            const currentDeleted = getDeletedRecordIds("projects");
-            const activeRemote = remoteProjects.filter(p => !currentDeleted.includes(p.id));
+          if (activeRemote.length === 0 && (!localProjects || localProjects.length === 0)) {
+            await ProjectsRepository.clear();
+          } else if (activeRemote.length === 0 && localProjects && localProjects.length > 0) {
+            await ProjectsRepository.clear();
+          } else {
+            const formatted = (localProjects || []).map(p => this.formatProjectForCloud(p, user.id));
+            if (formatted.length > 0) {
+              await client.from("projects").upsert(formatted, { onConflict: "id" });
+            }
+
             const localFormatted = activeRemote.map(p => ({
               id: p.id,
               title: p.name || p.title,
@@ -387,7 +385,7 @@ const SyncEngine = {
         }
       }
 
-      // 4. Sync Time Blocks (Push & Pull with Deletion Sync)
+      // 4. Sync Time Blocks (Push & Pull with Multi-Device Deletion Sync)
       if (typeof TimeBlocksRepository !== "undefined") {
         try {
           const deletedTbIds = getDeletedRecordIds("time_blocks");
@@ -398,21 +396,20 @@ const SyncEngine = {
             clearDeletedRecordIds("time_blocks", deletedTbIds);
           }
 
+          const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id);
+          const activeRemote = (remoteBlocks || []).filter(tb => !tb.deleted_at && !deletedTbIds.includes(tb.id));
           const localBlocks = await TimeBlocksRepository.getAll();
-          if (localBlocks && localBlocks.length > 0) {
-            const formatted = localBlocks.map(tb => this.formatTimeBlockForCloud(tb, user.id));
-            await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
-          } else if (localBlocks && localBlocks.length === 0) {
-            const { data: remoteExisting } = await client.from("time_blocks").select("id").eq("user_id", user.id);
-            if (remoteExisting && remoteExisting.length > 0) {
-              await client.from("time_blocks").delete().eq("user_id", user.id);
-            }
-          }
 
-          const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteBlocks) {
-            const currentDeleted = getDeletedRecordIds("time_blocks");
-            const activeRemote = remoteBlocks.filter(tb => !currentDeleted.includes(tb.id));
+          if (activeRemote.length === 0 && (!localBlocks || localBlocks.length === 0)) {
+            await TimeBlocksRepository.clear();
+          } else if (activeRemote.length === 0 && localBlocks && localBlocks.length > 0) {
+            await TimeBlocksRepository.clear();
+          } else {
+            const formatted = (localBlocks || []).map(tb => this.formatTimeBlockForCloud(tb, user.id));
+            if (formatted.length > 0) {
+              await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
+            }
+
             const localFormatted = activeRemote.map(tb => ({
               id: tb.id,
               title: tb.title,
