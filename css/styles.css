@@ -1117,17 +1117,29 @@ button:active { transform: scale(0.98); }
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .flip-top-static span, .flip-top-fold span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   line-height: var(--clock-unit-h, 104px);
   height: var(--clock-unit-h, 104px);
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .flip-bottom-static span, .flip-bottom-fold span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   line-height: var(--clock-unit-h, 104px);
   height: var(--clock-unit-h, 104px);
   display: flex;
   align-items: center;
-  transform: translateY(-50%);
+  justify-content: center;
+  text-align: center;
+  transform: none !important;
 }
 
 .flip-top-fold {

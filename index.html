@@ -1111,11 +1111,11 @@ button:active { transform: scale(0.98); }
   top: 0;
   left: 0;
   right: 0;
-  height: var(--clock-unit-h);
+  height: var(--clock-unit-h, 104px);
+  line-height: var(--clock-unit-h, 104px);
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
   text-align: center;
 }
 
@@ -1131,12 +1131,13 @@ button:active { transform: scale(0.98); }
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--clock-unit-h);
+  height: var(--clock-unit-h, 104px);
+  line-height: var(--clock-unit-h, 104px);
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
   text-align: center;
+  transform: none !important;
 }
 
 /* Apple StandBy Mode Bedside OLED Aesthetics */
