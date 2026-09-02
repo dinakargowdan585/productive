@@ -1,4 +1,20 @@
-/* Productive OS - Sync Engine with Mutex Lock, Coalescing & BroadcastChannel Sync */
+/* Productive OS - Robust Bi-Directional Cloud Sync Engine */
+
+function isValidUuid(id) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ""));
+}
+
+function ensureValidUuid(id) {
+  if (isValidUuid(id)) return id;
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === "x" ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 const ConflictResolver = {
   resolve(localRecord, remoteRecord) {
@@ -14,16 +30,6 @@ const ConflictResolver = {
     if (remoteMax > localMax) return remoteRecord;
     return String(localRecord.id || "").localeCompare(String(remoteRecord.id || "")) >= 0 ? localRecord : remoteRecord;
   }
-};
-
-const STORE_TO_TABLE_MAP = {
-  tasks: "tasks",
-  notes: "notes",
-  projects: "projects",
-  goals: "goals",
-  vaultNotes: "notes",
-  timeBlocks: "time_blocks",
-  settings: "user_settings"
 };
 
 let syncBroadcastChannel = null;
@@ -105,10 +111,80 @@ const SyncEngine = {
     }
   },
 
+  formatTaskForCloud(task, userId) {
+    return {
+      id: ensureValidUuid(task.id),
+      user_id: userId,
+      title: task.title || "Untitled Task",
+      notes: task.notes || task.description || null,
+      category: task.category || "work",
+      priority: (task.priority || "MED").toUpperCase(),
+      due_date: task.dueDate || task.due_date || null,
+      is_daily: Boolean(task.isDaily || task.is_daily),
+      completed: Boolean(task.completed),
+      estimate_mins: parseInt(task.estimateMins || task.estimate_mins, 10) || 30,
+      created_at: task.createdAt || task.created_at || new Date().toISOString(),
+      updated_at: task.updatedAt || task.updated_at || new Date().toISOString(),
+      deleted_at: task.deletedAt || task.deleted_at || null
+    };
+  },
+
+  formatNoteForCloud(note, userId) {
+    return {
+      id: ensureValidUuid(note.id),
+      user_id: userId,
+      title: note.title || "Untitled Note",
+      content: note.content || "",
+      category: note.category || "general",
+      tags: Array.isArray(note.tags) ? note.tags : [],
+      is_pinned: Boolean(note.isPinned || note.is_pinned),
+      is_vault: Boolean(note.isVault || note.is_vault),
+      created_at: note.createdAt || note.created_at || new Date().toISOString(),
+      updated_at: note.updatedAt || note.updated_at || new Date().toISOString(),
+      deleted_at: note.deletedAt || note.deleted_at || null
+    };
+  },
+
+  formatProjectForCloud(proj, userId) {
+    return {
+      id: ensureValidUuid(proj.id),
+      user_id: userId,
+      name: proj.name || proj.title || "Untitled Project",
+      description: proj.description || null,
+      color: proj.color || "#38BDF8",
+      status: (proj.status || "ACTIVE").toUpperCase(),
+      created_at: proj.createdAt || proj.created_at || new Date().toISOString(),
+      updated_at: proj.updatedAt || proj.updated_at || new Date().toISOString(),
+      deleted_at: proj.deletedAt || proj.deleted_at || null
+    };
+  },
+
+  formatTimeBlockForCloud(tb, userId) {
+    let startTime = String(tb.startTime || tb.start_time || "09:00:00").trim();
+    if (startTime.length === 5 && startTime.includes(":")) startTime += ":00";
+    if (!startTime.includes(":")) startTime = "09:00:00";
+
+    const d = new Date();
+    const defaultDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+    return {
+      id: ensureValidUuid(tb.id),
+      user_id: userId,
+      title: tb.title || "Focus Session",
+      date: tb.date || defaultDate,
+      start_time: startTime,
+      duration_minutes: parseInt(tb.durationMinutes || tb.duration_minutes || tb.durationMins || 60, 10) || 60,
+      category: tb.category || "Deep Work",
+      completed: Boolean(tb.completed),
+      created_at: tb.createdAt || tb.created_at || new Date().toISOString(),
+      updated_at: tb.updatedAt || tb.updated_at || new Date().toISOString(),
+      deleted_at: tb.deletedAt || tb.deleted_at || null
+    };
+  },
+
   async triggerSync() {
-    // Atomic Mutex Lock Check
     if (this.isSyncingActive) {
-      console.log("🔒 Sync Engine execution already locked by active run.");
+      console.log("🔒 Sync Engine already running.");
       return false;
     }
     if (!navigator.onLine) {
@@ -118,117 +194,105 @@ const SyncEngine = {
     if (typeof getSupabaseUser !== "function") return false;
 
     const user = await getSupabaseUser();
-    if (!user) {
+    if (!user || !user.id) {
       this.updateState("offline");
       return false;
     }
 
-    this.isSyncingActive = true; // Mutex Lock Acquired
+    const client = typeof getSupabase === "function" ? getSupabase() : null;
+    if (!client) return false;
+
+    this.isSyncingActive = true;
     this.updateState("syncing");
 
     try {
-      // 1. Process local pending queue with coalescing
-      await this.processPendingQueue(user.id);
+      console.log("⚡ Executing Full 2-Way Cloud Sync for User:", user.email || user.id);
 
-      // 2. Incremental remote pull
-      await this.pullRemoteChanges(user.id);
+      // 1. Sync Tasks (Push & Pull)
+      if (typeof TasksRepository !== "undefined") {
+        const localTasks = await TasksRepository.getAll();
+        if (localTasks && localTasks.length) {
+          const formatted = localTasks.map(t => this.formatTaskForCloud(t, user.id));
+          await client.from("tasks").upsert(formatted, { onConflict: "id" });
+        }
+        const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id).is("deleted_at", null);
+        if (remoteTasks && remoteTasks.length) {
+          await TasksRepository.bulkPut(remoteTasks);
+        }
+      }
+
+      // 2. Sync Notes (Push & Pull)
+      if (typeof NotesRepository !== "undefined") {
+        const localNotes = await NotesRepository.getAll();
+        if (localNotes && localNotes.length) {
+          const formatted = localNotes.map(n => this.formatNoteForCloud(n, user.id));
+          await client.from("notes").upsert(formatted, { onConflict: "id" });
+        }
+        const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id).is("deleted_at", null);
+        if (remoteNotes && remoteNotes.length) {
+          await NotesRepository.bulkPut(remoteNotes);
+        }
+      }
+
+      // 3. Sync Projects (Push & Pull)
+      if (typeof ProjectsRepository !== "undefined") {
+        const localProjects = await ProjectsRepository.getAll();
+        if (localProjects && localProjects.length) {
+          const formatted = localProjects.map(p => this.formatProjectForCloud(p, user.id));
+          await client.from("projects").upsert(formatted, { onConflict: "id" });
+        }
+        const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id).is("deleted_at", null);
+        if (remoteProjects && remoteProjects.length) {
+          await ProjectsRepository.bulkPut(remoteProjects);
+        }
+      }
+
+      // 4. Sync Time Blocks (Push & Pull)
+      if (typeof TimeBlocksRepository !== "undefined") {
+        const localBlocks = await TimeBlocksRepository.getAll();
+        if (localBlocks && localBlocks.length) {
+          const formatted = localBlocks.map(tb => this.formatTimeBlockForCloud(tb, user.id));
+          await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
+        }
+        const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id).is("deleted_at", null);
+        if (remoteBlocks && remoteBlocks.length) {
+          await TimeBlocksRepository.bulkPut(remoteBlocks);
+        }
+      }
+
+      // 5. Reload memory cache and refresh UI
+      if (typeof loadAllFromRepositoriesIntoMemory === "function") {
+        await loadAllFromRepositoriesIntoMemory();
+      }
 
       this.lastSyncedAt = new Date().toISOString();
       if (typeof localStorage !== "undefined") {
         localStorage.setItem("productive_last_sync", this.lastSyncedAt);
       }
+
       this.updateState("synced");
       this.broadcastDataUpdate();
+
+      // Refresh active view
+      if (typeof switchView === "function") {
+        const activeView = document.querySelector(".dock-item.active")?.dataset?.view || "dashboard";
+        switchView(activeView);
+      }
+
       return true;
     } catch (err) {
-      console.error("Sync Engine Execution Error:", err);
+      console.error("Cloud Sync Execution Error:", err);
       this.updateState("error", { error: err });
       return false;
     } finally {
-      this.isSyncingActive = false; // Mutex Lock Released
-    }
-  },
-
-  async processPendingQueue(userId) {
-    if (typeof SyncQueue === "undefined") return;
-    const queue = await SyncQueue.getQueue(userId);
-    if (!queue.length) return;
-
-    const client = typeof getSupabase === "function" ? getSupabase() : null;
-    if (!client) return;
-
-    // Coalesce rapid consecutive updates for the same (tableName, recordId)
-    const coalescedMap = new Map();
-    queue.forEach(item => {
-      const key = `${item.tableName}:${item.recordId}`;
-      coalescedMap.set(key, item); // Keeps latest payload
-    });
-
-    const itemsToUpload = Array.from(coalescedMap.values());
-
-    for (const item of itemsToUpload) {
-      const table = STORE_TO_TABLE_MAP[item.tableName] || item.tableName;
-      try {
-        if (item.operation === "DELETE") {
-          await client.from(table).update({ deleted_at: new Date().toISOString() }).eq("id", item.recordId);
-        } else {
-          const rowData = {
-            ...item.payload,
-            user_id: userId,
-            updated_at: item.payload.updatedAt || new Date().toISOString()
-          };
-          delete rowData.createdAt;
-          delete rowData.updatedAt;
-          await client.from(table).upsert(rowData);
-        }
-
-        await SyncQueue.removeQueueItem(item.id);
-      } catch (err) {
-        console.warn(`Failed queue upload for ${item.tableName}:${item.recordId}`, err);
-        await SyncQueue.updateItemAttempts(item.id, (item.attempts || 0) + 1, err.message || String(err));
-      }
-    }
-  },
-
-  async pullRemoteChanges(userId) {
-    const client = typeof getSupabase === "function" ? getSupabase() : null;
-    if (!client) return;
-
-    for (const [storeName, tableName] of Object.entries(STORE_TO_TABLE_MAP)) {
-      try {
-        let query = client.from(tableName).select("*").eq("user_id", userId);
-        if (this.lastSyncedAt) {
-          query = query.gt("updated_at", this.lastSyncedAt);
-        }
-
-        const { data, error } = await query;
-        if (error || !data || !data.length) continue;
-
-        for (const remoteRow of data) {
-          const localRecord = await getStore(storeName, "readonly").then(s => new Promise(res => {
-            const req = s.get(remoteRow.id);
-            req.onsuccess = () => res(req.result || null);
-            req.onerror = () => res(null);
-          }));
-
-          const winner = typeof ConflictResolver !== "undefined" 
-            ? ConflictResolver.resolve(localRecord, remoteRow) 
-            : remoteRow;
-
-          if (winner === remoteRow) {
-            const writeStore = await getStore(storeName, "readwrite");
-            writeStore.put(winner);
-          }
-        }
-      } catch (err) {
-        console.warn(`Remote pull warning for ${storeName}:`, err);
-      }
+      this.isSyncingActive = false;
     }
   }
 };
 
 // Network status listeners
 if (typeof window !== "undefined") {
+  window.SyncEngine = SyncEngine;
   window.addEventListener("online", () => {
     console.log("🌐 Network online detected. Triggering Sync Engine...");
     SyncEngine.triggerSync();

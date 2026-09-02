@@ -654,6 +654,19 @@ document.addEventListener("click", (e) => {
   }
 });
 
+async function handleManualSync() {
+  if (typeof showToast === "function") showToast("🔄 Syncing with Supabase Cloud...", "info");
+  const success = (typeof SyncEngine !== "undefined" && typeof SyncEngine.triggerSync === "function")
+    ? await SyncEngine.triggerSync()
+    : false;
+  closeSupabaseAuthModal();
+  if (success) {
+    if (typeof showToast === "function") showToast("⚡ Cloud sync completed successfully!", "success");
+  } else {
+    if (typeof showToast === "function") showToast("⚠️ Cloud sync error. Please check your connection.", "error");
+  }
+}
+
 function triggerBackgroundSync() {
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.triggerSync === "function") {
     SyncEngine.triggerSync();
@@ -718,6 +731,7 @@ if (typeof window !== "undefined") {
   window.handleResendOtp = handleResendOtp;
   window.showAuthError = showAuthError;
   window.clearAuthError = clearAuthError;
+  window.handleManualSync = handleManualSync;
 }
 
 /* PWA Installation Controller */

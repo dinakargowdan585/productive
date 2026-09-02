@@ -2826,7 +2826,7 @@ button:active { transform: scale(0.98); }
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <button type="button" class="auth-submit-btn" onclick="triggerBackgroundSync(); closeSupabaseAuthModal(); if (typeof showToast === 'function') showToast('⚡ Cloud sync completed!', 'success');" style="width:100%;">
+        <button type="button" class="auth-submit-btn" onclick="handleManualSync()" style="width:100%;">
           <span>🔄 Sync Cloud Data Now</span>
         </button>
         <button type="button" class="auth-signout-btn" onclick="handleSignOut()">
