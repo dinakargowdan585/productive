@@ -22,62 +22,8 @@ function renderVault() {
   if (typeof renderVaultAuthPane === "function") renderVaultAuthPane();
 }
 
-function renderAnalytics() {
-  const container = document.getElementById("analyticsContent");
-  if (!container) return;
-
-  const tasks = typeof loadTasks === "function" ? loadTasks() : [];
-  const notes = typeof loadNotes === "function" ? loadNotes() : [];
-  const timeBlocks = typeof loadTimeBlocks === "function" ? loadTimeBlocks() : [];
-
-  const completed = tasks.filter(t => t.completed).length;
-  const total = tasks.length;
-  const taskRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const totalFocusMins = timeBlocks.reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
-
-  container.innerHTML = `
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom:24px;">
-      <div class="panel" style="text-align:center;">
-        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">TASK COMPLETION RATE</span>
-        <h2 style="font-size:2.2rem; margin:8px 0; color:var(--accent);">${taskRate}%</h2>
-        <span style="font-size:0.8rem; color:var(--muted);">${completed}/${total} Tasks Done</span>
-      </div>
-      <div class="panel" style="text-align:center;">
-        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">TOTAL FOCUS TIME</span>
-        <h2 style="font-size:2.2rem; margin:8px 0; color:var(--green);">${Math.floor(totalFocusMins / 60)}h ${totalFocusMins % 60}m</h2>
-        <span style="font-size:0.8rem; color:var(--muted);">${timeBlocks.length} Focus Session(s)</span>
-      </div>
-      <div class="panel" style="text-align:center;">
-        <span style="font-size:0.75rem; color:var(--muted); font-weight:700;">TOTAL KNOWLEDGE NOTES</span>
-        <h2 style="font-size:2.2rem; margin:8px 0; color:var(--amber);">${notes.length}</h2>
-        <span style="font-size:0.8rem; color:var(--muted);">Knowledge Library Entries</span>
-      </div>
-    </div>
-  `;
-}
-
-function toggleCustomAnalyticsDates() {
-  const customPane = document.getElementById("analyticsCustomDateRange");
-  if (customPane) {
-    customPane.style.display = customPane.style.display === "none" ? "flex" : "none";
-  }
-}
-
-function filterCommandPalette(q) {
-  renderCommandPaletteResults(q);
-}
-
-function resolveConfirm(res) {
-  const dlg = document.getElementById("confirmModal");
-  if (dlg) dlg.close();
-  if (confirmResolver) {
-    confirmResolver(res);
-    confirmResolver = null;
-  }
-}
-
 function switchView(viewName) {
-  const views = ["Dashboard", "Notes", "Planner", "Vault", "Calendar", "Analytics", "Standby"];
+  const views = ["Dashboard", "Notes", "Planner", "Vault", "Calendar", "Standby"];
   views.forEach(v => {
     const el = document.getElementById("view" + v);
     if (el) el.style.display = (v.toLowerCase() === viewName) ? (v === "Notes" || v === "Planner" ? "grid" : "block") : "none";
@@ -110,7 +56,6 @@ function switchView(viewName) {
   if (viewName === "notes" && typeof renderNotes === "function") renderNotes();
   if (viewName === "calendar" && typeof renderCalendar === "function") renderCalendar();
   if (viewName === "vault" && typeof renderVaultAuthPane === "function") renderVaultAuthPane();
-  if (viewName === "analytics") renderAnalytics();
   if (viewName === "standby" && typeof updateStandbyClock === "function") updateStandbyClock();
 }
 
@@ -210,8 +155,7 @@ window.addEventListener("keydown", (e) => {
     else if (e.key === "3") { e.preventDefault(); switchView("calendar"); }
     else if (e.key === "4") { e.preventDefault(); switchView("notes"); }
     else if (e.key === "5") { e.preventDefault(); switchView("vault"); }
-    else if (e.key === "6") { e.preventDefault(); switchView("analytics"); }
-    else if (e.key === "7") { e.preventDefault(); switchView("standby"); }
+    else if (e.key === "6") { e.preventDefault(); switchView("standby"); }
     else if (e.key.toLowerCase() === "k") { e.preventDefault(); openCommandPalette(); }
   } else if (e.key === "Escape") {
     closeCommandPalette();
@@ -868,7 +812,6 @@ async function handleBackupFileSelect(event) {
       await loadAllFromRepositoriesIntoMemory();
     }
     if (typeof render === "function") render();
-    if (typeof renderAnalytics === "function") renderAnalytics();
 
     if (typeof showToast === "function") {
       showToast("✅ Workspace data restored successfully!", "success");

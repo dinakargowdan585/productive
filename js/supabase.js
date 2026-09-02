@@ -275,7 +275,6 @@ function setupRealtimeSync() {
           await loadAllFromRepositoriesIntoMemory();
         }
         if (typeof render === "function") render();
-        if (typeof renderAnalytics === "function") renderAnalytics();
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
