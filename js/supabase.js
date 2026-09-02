@@ -187,6 +187,7 @@ async function signInWithGoogle() {
     provider: 'google',
     options: {
       redirectTo: redirectUrl,
+      skipBrowserRedirect: false,
       queryParams: {
         access_type: 'offline',
         prompt: 'select_account'
@@ -196,6 +197,9 @@ async function signInWithGoogle() {
   if (error) {
     console.error("Google OAuth error:", error);
     throw error;
+  }
+  if (data && data.url) {
+    window.location.href = data.url;
   }
   return data;
 }

@@ -578,15 +578,32 @@ async function handleResendOtp(e) {
   }
 }
 
-async function executeGoogleAuth() {
+async function executeGoogleAuth(e) {
+  if (e) {
+    if (typeof e.preventDefault === "function") e.preventDefault();
+    if (typeof e.stopPropagation === "function") e.stopPropagation();
+  }
   clearAuthError();
+  const googleBtn = document.getElementById("authGoogleBtn");
+  if (googleBtn) {
+    googleBtn.disabled = true;
+    googleBtn.style.opacity = "0.7";
+  }
   try {
     if (typeof showToast === "function") showToast("Connecting to Google...", "info");
     const data = await (typeof signInWithGoogle === "function" ? signInWithGoogle() : window.signInWithGoogle?.());
-    if (!data) return;
+    if (data && data.url) {
+      window.location.href = data.url;
+    }
   } catch (err) {
     console.error("Google login error:", err);
     showAuthError(`Google Auth Error: ${err.message || String(err)}`);
+    if (typeof showToast === "function") showToast(`Google Auth Error: ${err.message || String(err)}`, "error");
+  } finally {
+    if (googleBtn) {
+      googleBtn.disabled = false;
+      googleBtn.style.opacity = "1";
+    }
   }
 }
 
