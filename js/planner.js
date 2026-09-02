@@ -363,11 +363,11 @@ function renderPlanner() {
           </div>
         </div>
         <div class="task-card-actions">
-          <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;">
+          <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to change priority">
             ${priorityDot}
           </span>
           <button type="button" class="secondary" id="taskDetailsBtn-${t.id}" onclick="toggleTaskDetails('${t.id}')" style="padding:4px 10px; font-size:0.78rem;">▼ Details</button>
-          <button type="button" class="secondary" onclick="toggleTaskMenu('${t.id}', event)" style="padding:4px 10px; font-size:0.78rem;">⋯ More</button>
+          <button type="button" class="task-delete-front-btn" onclick="deleteTask('${t.id}')" title="Delete Task">🗑️ Delete</button>
         </div>
       </div>
 
@@ -395,12 +395,6 @@ function renderPlanner() {
           <strong>Time Stats:</strong> ${timeStats.blockCount} Session(s) Scheduled • ${timeStats.efficiency}% Efficiency Rating
         </div>
         ${relationshipChipsHTML}
-      </div>
-
-      <div id="taskMenu-${t.id}" class="task-card-menu-dropdown" style="display:none;" onclick="event.stopPropagation();">
-        <div class="task-card-menu-item" onclick="promptCreateTimeBlock('${t.id}'); toggleTaskMenu('${t.id}');">⏱️ Schedule Time Block</div>
-        <div class="task-card-menu-item" onclick="cycleTaskPriority('${t.id}'); toggleTaskMenu('${t.id}');">⭐ Change Priority</div>
-        <div class="task-card-menu-item" onclick="deleteTask('${t.id}'); toggleTaskMenu('${t.id}');" style="color:var(--danger);">🗑️ Delete Task</div>
       </div>
     `;
     container.appendChild(item);
