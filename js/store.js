@@ -170,7 +170,15 @@ async function deleteTaskSingle(id) {
   let tasks = memoryCache.tasks || [];
   memoryCache.tasks = tasks.filter(t => t.id !== id);
   if (typeof TasksRepository !== "undefined") {
-    await TasksRepository.delete(id);
+    await TasksRepository.delete(id).catch(() => {});
+  }
+  if (typeof recordLocalDeletion === "function") {
+    recordLocalDeletion("tasks", id);
+  }
+  const client = typeof getSupabase === "function" ? getSupabase() : null;
+  const user = typeof getSupabaseUser === "function" ? await getSupabaseUser() : null;
+  if (client && user && user.id) {
+    client.from("tasks").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
 }
 
@@ -206,7 +214,15 @@ async function deleteNoteSingle(id) {
   let notes = memoryCache.notes || [];
   memoryCache.notes = notes.filter(n => n.id !== id);
   if (typeof NotesRepository !== "undefined") {
-    await NotesRepository.delete(id);
+    await NotesRepository.delete(id).catch(() => {});
+  }
+  if (typeof recordLocalDeletion === "function") {
+    recordLocalDeletion("notes", id);
+  }
+  const client = typeof getSupabase === "function" ? getSupabase() : null;
+  const user = typeof getSupabaseUser === "function" ? await getSupabaseUser() : null;
+  if (client && user && user.id) {
+    client.from("notes").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
 }
 

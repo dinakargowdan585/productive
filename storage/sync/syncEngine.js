@@ -16,6 +16,52 @@ function ensureValidUuid(id) {
   });
 }
 
+const DELETED_IDS_STORAGE_KEY = "productive_deleted_ids_v1";
+
+function getDeletedRecordIds(storeName) {
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(DELETED_IDS_STORAGE_KEY) : null;
+    const map = raw ? JSON.parse(raw) : {};
+    return map[storeName] || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function recordLocalDeletion(storeName, id) {
+  if (!id) return;
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(DELETED_IDS_STORAGE_KEY) : null;
+    const map = raw ? JSON.parse(raw) : {};
+    if (!map[storeName]) map[storeName] = [];
+    if (!map[storeName].includes(id)) {
+      map[storeName].push(id);
+    }
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(DELETED_IDS_STORAGE_KEY, JSON.stringify(map));
+    }
+  } catch (e) {
+    console.warn("Error recording local deletion:", e);
+  }
+}
+
+function clearDeletedRecordIds(storeName, idsToClear = []) {
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(DELETED_IDS_STORAGE_KEY) : null;
+    const map = raw ? JSON.parse(raw) : {};
+    if (map[storeName]) {
+      if (idsToClear && idsToClear.length) {
+        map[storeName] = map[storeName].filter(id => !idsToClear.includes(id));
+      } else {
+        delete map[storeName];
+      }
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(DELETED_IDS_STORAGE_KEY, JSON.stringify(map));
+      }
+    }
+  } catch (e) {}
+}
+
 const ConflictResolver = {
   resolve(localRecord, remoteRecord) {
     if (!remoteRecord) return localRecord;
@@ -208,17 +254,33 @@ const SyncEngine = {
     try {
       console.log("⚡ Executing Full 2-Way Cloud Sync for User:", user.email || user.id);
 
-      // 1. Sync Tasks (Push & Pull)
+      // 1. Sync Tasks (Push & Pull with Deletion Sync)
       if (typeof TasksRepository !== "undefined") {
         try {
+          const deletedTaskIds = getDeletedRecordIds("tasks");
+          if (deletedTaskIds && deletedTaskIds.length) {
+            for (const delId of deletedTaskIds) {
+              await client.from("tasks").delete().eq("id", delId).eq("user_id", user.id);
+            }
+            clearDeletedRecordIds("tasks", deletedTaskIds);
+          }
+
           const localTasks = await TasksRepository.getAll();
-          if (localTasks && localTasks.length) {
+          if (localTasks && localTasks.length > 0) {
             const formatted = localTasks.map(t => this.formatTaskForCloud(t, user.id));
             await client.from("tasks").upsert(formatted, { onConflict: "id" });
+          } else if (localTasks && localTasks.length === 0) {
+            const { data: remoteExisting } = await client.from("tasks").select("id").eq("user_id", user.id);
+            if (remoteExisting && remoteExisting.length > 0) {
+              await client.from("tasks").delete().eq("user_id", user.id);
+            }
           }
+
           const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteTasks && remoteTasks.length) {
-            const localFormatted = remoteTasks.map(t => ({
+          if (remoteTasks) {
+            const currentDeleted = getDeletedRecordIds("tasks");
+            const activeRemote = remoteTasks.filter(t => !currentDeleted.includes(t.id));
+            const localFormatted = activeRemote.map(t => ({
               id: t.id,
               title: t.title,
               notes: t.notes || null,
@@ -231,24 +293,40 @@ const SyncEngine = {
               createdAt: t.created_at,
               updatedAt: t.updated_at
             }));
-            await TasksRepository.bulkPut(localFormatted);
+            await TasksRepository.clearAndPut(localFormatted);
           }
         } catch (taskErr) {
           console.warn("Task sync notice:", taskErr);
         }
       }
 
-      // 2. Sync Notes (Push & Pull)
+      // 2. Sync Notes (Push & Pull with Deletion Sync)
       if (typeof NotesRepository !== "undefined") {
         try {
+          const deletedNoteIds = getDeletedRecordIds("notes");
+          if (deletedNoteIds && deletedNoteIds.length) {
+            for (const delId of deletedNoteIds) {
+              await client.from("notes").delete().eq("id", delId).eq("user_id", user.id);
+            }
+            clearDeletedRecordIds("notes", deletedNoteIds);
+          }
+
           const localNotes = await NotesRepository.getAll();
-          if (localNotes && localNotes.length) {
+          if (localNotes && localNotes.length > 0) {
             const formatted = localNotes.map(n => this.formatNoteForCloud(n, user.id));
             await client.from("notes").upsert(formatted, { onConflict: "id" });
+          } else if (localNotes && localNotes.length === 0) {
+            const { data: remoteExisting } = await client.from("notes").select("id").eq("user_id", user.id);
+            if (remoteExisting && remoteExisting.length > 0) {
+              await client.from("notes").delete().eq("user_id", user.id);
+            }
           }
+
           const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteNotes && remoteNotes.length) {
-            const localFormatted = remoteNotes.map(n => ({
+          if (remoteNotes) {
+            const currentDeleted = getDeletedRecordIds("notes");
+            const activeRemote = remoteNotes.filter(n => !currentDeleted.includes(n.id));
+            const localFormatted = activeRemote.map(n => ({
               id: n.id,
               title: n.title,
               content: n.content || "",
@@ -259,24 +337,40 @@ const SyncEngine = {
               createdAt: n.created_at,
               updatedAt: n.updated_at
             }));
-            await NotesRepository.bulkPut(localFormatted);
+            await NotesRepository.clearAndPut(localFormatted);
           }
         } catch (noteErr) {
           console.warn("Note sync notice:", noteErr);
         }
       }
 
-      // 3. Sync Projects (Push & Pull)
+      // 3. Sync Projects (Push & Pull with Deletion Sync)
       if (typeof ProjectsRepository !== "undefined") {
         try {
+          const deletedProjIds = getDeletedRecordIds("projects");
+          if (deletedProjIds && deletedProjIds.length) {
+            for (const delId of deletedProjIds) {
+              await client.from("projects").delete().eq("id", delId).eq("user_id", user.id);
+            }
+            clearDeletedRecordIds("projects", deletedProjIds);
+          }
+
           const localProjects = await ProjectsRepository.getAll();
-          if (localProjects && localProjects.length) {
+          if (localProjects && localProjects.length > 0) {
             const formatted = localProjects.map(p => this.formatProjectForCloud(p, user.id));
             await client.from("projects").upsert(formatted, { onConflict: "id" });
+          } else if (localProjects && localProjects.length === 0) {
+            const { data: remoteExisting } = await client.from("projects").select("id").eq("user_id", user.id);
+            if (remoteExisting && remoteExisting.length > 0) {
+              await client.from("projects").delete().eq("user_id", user.id);
+            }
           }
+
           const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteProjects && remoteProjects.length) {
-            const localFormatted = remoteProjects.map(p => ({
+          if (remoteProjects) {
+            const currentDeleted = getDeletedRecordIds("projects");
+            const activeRemote = remoteProjects.filter(p => !currentDeleted.includes(p.id));
+            const localFormatted = activeRemote.map(p => ({
               id: p.id,
               title: p.name || p.title,
               cat: "Work",
@@ -286,24 +380,40 @@ const SyncEngine = {
               createdAt: p.created_at,
               updatedAt: p.updated_at
             }));
-            await ProjectsRepository.bulkPut(localFormatted);
+            await ProjectsRepository.clearAndPut(localFormatted);
           }
         } catch (projErr) {
           console.warn("Project sync notice:", projErr);
         }
       }
 
-      // 4. Sync Time Blocks (Push & Pull)
+      // 4. Sync Time Blocks (Push & Pull with Deletion Sync)
       if (typeof TimeBlocksRepository !== "undefined") {
         try {
+          const deletedTbIds = getDeletedRecordIds("time_blocks");
+          if (deletedTbIds && deletedTbIds.length) {
+            for (const delId of deletedTbIds) {
+              await client.from("time_blocks").delete().eq("id", delId).eq("user_id", user.id);
+            }
+            clearDeletedRecordIds("time_blocks", deletedTbIds);
+          }
+
           const localBlocks = await TimeBlocksRepository.getAll();
-          if (localBlocks && localBlocks.length) {
+          if (localBlocks && localBlocks.length > 0) {
             const formatted = localBlocks.map(tb => this.formatTimeBlockForCloud(tb, user.id));
             await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
+          } else if (localBlocks && localBlocks.length === 0) {
+            const { data: remoteExisting } = await client.from("time_blocks").select("id").eq("user_id", user.id);
+            if (remoteExisting && remoteExisting.length > 0) {
+              await client.from("time_blocks").delete().eq("user_id", user.id);
+            }
           }
+
           const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id).is("deleted_at", null);
-          if (remoteBlocks && remoteBlocks.length) {
-            const localFormatted = remoteBlocks.map(tb => ({
+          if (remoteBlocks) {
+            const currentDeleted = getDeletedRecordIds("time_blocks");
+            const activeRemote = remoteBlocks.filter(tb => !currentDeleted.includes(tb.id));
+            const localFormatted = activeRemote.map(tb => ({
               id: tb.id,
               title: tb.title,
               date: tb.date,
@@ -314,7 +424,7 @@ const SyncEngine = {
               createdAt: tb.created_at,
               updatedAt: tb.updated_at
             }));
-            await TimeBlocksRepository.bulkPut(localFormatted);
+            await TimeBlocksRepository.clearAndPut(localFormatted);
           }
         } catch (tbErr) {
           console.warn("TimeBlock sync notice:", tbErr);

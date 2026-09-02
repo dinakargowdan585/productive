@@ -153,13 +153,29 @@ function cycleTaskPriority(id) {
   }
 }
 
-function deleteTask(id) {
+async function deleteTask(id) {
   let tasks = loadTasks();
   tasks = tasks.filter(t => t.id !== id);
   saveTasks(tasks);
+
+  if (typeof TasksRepository !== "undefined") {
+    await TasksRepository.delete(id).catch(() => {});
+  }
+  if (typeof recordLocalDeletion === "function") {
+    recordLocalDeletion("tasks", id);
+  }
+
+  const client = typeof getSupabase === "function" ? getSupabase() : null;
+  const user = typeof getSupabaseUser === "function" ? await getSupabaseUser() : null;
+  if (client && user && user.id) {
+    try {
+      await client.from("tasks").delete().eq("id", id).eq("user_id", user.id);
+    } catch (e) {}
+  }
+
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
-  if (typeof showToast === "function") showToast("Task deleted", "info");
+  if (typeof showToast === "function") showToast("Task deleted 🗑️", "info");
 }
 
 function promptCreateTimeBlock(taskId) {

@@ -83,6 +83,30 @@ function createRepository(storeName) {
       });
     },
 
+    async clear() {
+      const store = await getStore(storeName, "readwrite");
+      return new Promise((resolve, reject) => {
+        const req = store.clear();
+        req.onsuccess = () => resolve(true);
+        req.onerror = (e) => reject(e.target.error);
+      });
+    },
+
+    async clearAndPut(items) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite");
+        const store = tx.objectStore(storeName);
+        store.clear();
+        (items || []).forEach(item => {
+          item.updatedAt = item.updatedAt || new Date().toISOString();
+          store.put(item);
+        });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = (e) => reject(e.target.error);
+      });
+    },
+
     async count() {
       const store = await getStore(storeName, "readonly");
       return new Promise((resolve, reject) => {
