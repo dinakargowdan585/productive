@@ -2019,8 +2019,9 @@ button:active { transform: scale(0.98); }
           </div>
           <div class="field-group" style="margin-top:12px;">
             <label class="checkbox-field">
-              <input type="checkbox" id="taskIsDaily" onchange="toggleDueDateField(this)"> 🔁 Repeat Every Day (Daily Task)
+              <input type="checkbox" id="taskIsDaily" onchange="toggleDueDateField(this)"> 🔁 Repeat Every Day (Daily Habit)
             </label>
+          </div>
           <div class="form-row" style="margin-top:10px;">
             <div class="field-group">
               <label class="field-label" for="taskLinkProject">Link Project</label>
@@ -2035,8 +2036,8 @@ button:active { transform: scale(0.98); }
               </select>
             </div>
           </div>
-          <button style="width:100%; margin-top:12px;">Add Task</button>
-          <button type="button" class="secondary" onclick="addDefaultDailyTasks()" style="width:100%; margin-top:8px;">+ Add Default Daily Habits</button>
+          <button type="submit" id="btnSubmitTask" style="width:100%; margin-top:12px;">➕ Add Task</button>
+          <button type="button" class="secondary" onclick="addDefaultDailyTasks()" style="width:100%; margin-top:8px;">✨ Load 4 Starter Habits</button>
         </form>
 
       </aside>

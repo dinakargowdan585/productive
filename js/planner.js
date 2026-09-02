@@ -77,14 +77,27 @@ function handleNaturalLanguageAdd(e) {
 }
 
 function addDefaultDailyTasks() {
+  const titleInput = document.getElementById("taskTitle");
+  const typedTitle = titleInput ? titleInput.value.trim() : "";
+
+  if (typedTitle) {
+    // If user typed a custom title, create that custom daily habit!
+    const isDailyInput = document.getElementById("taskIsDaily");
+    if (isDailyInput) isDailyInput.checked = true;
+    createTask();
+    return;
+  }
+
+  // If input was empty, load the 4 starter habits
   const habits = [
-    { title: "💧 Drink 2L Water", category: "habits", priority: "HIGH" },
+    { title: "💧 Drink 2L Water", category: "personal", priority: "HIGH" },
     { title: "🧘 15m Morning Mindfulness", category: "personal", priority: "MED" },
     { title: "📚 Read 20 Pages of Tech / Philosophy", category: "study", priority: "MED" },
     { title: "🏋️ 30m Physical Workout", category: "personal", priority: "HIGH" }
   ];
 
   const tasks = loadTasks();
+  let addedCount = 0;
   habits.forEach(h => {
     if (!tasks.some(t => t.title === h.title && t.isDaily)) {
       tasks.unshift({
@@ -96,14 +109,19 @@ function addDefaultDailyTasks() {
         isDaily: true,
         completed: false,
         streak: 0,
+        estimateMins: 30,
         createdAt: new Date().toISOString()
       });
+      addedCount++;
     }
   });
 
   saveTasks(tasks);
   renderPlanner();
-  if (typeof showToast === "function") showToast("Added default daily habits!", "success");
+  if (typeof renderDashboard === "function") renderDashboard();
+  if (typeof showToast === "function") {
+    showToast(addedCount > 0 ? "✨ Loaded 4 starter daily habits!" : "Starter habits already exist in your planner", "success");
+  }
 }
 
 function toggleTask(id) {
@@ -259,7 +277,9 @@ function populateProjectAndGoalSelects() {
 
 function toggleDueDateField(chk) {
   const field = document.getElementById("taskDueDate");
+  const submitBtn = document.getElementById("btnSubmitTask");
   if (field) field.style.display = chk.checked ? "none" : "block";
+  if (submitBtn) submitBtn.textContent = chk.checked ? "🔁 Add Daily Habit" : "➕ Add Task";
 }
 
 function renderPlanner() {
