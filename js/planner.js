@@ -137,10 +137,24 @@ function toggleTask(id) {
       t.streak = (t.streak || 0) + 1;
     }
     saveTasks(tasks);
+
+    if (t.completed) {
+      if (typeof FX !== "undefined") {
+        FX.playChime();
+        FX.haptic("success");
+      }
+    }
+
     renderPlanner();
     if (typeof renderDashboard === "function") renderDashboard();
     if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
     if (typeof showToast === "function") showToast(t.completed ? "Task completed! 🎉" : "Task marked incomplete", "info");
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(task => task.completed).length;
+    if (t.completed && totalTasks > 0 && completedTasks === totalTasks) {
+      if (typeof FX !== "undefined") FX.burstConfetti();
+    }
   }
 }
 
@@ -153,6 +167,7 @@ function cycleTaskPriority(id) {
     t.priority = priorities[(curIdx + 1) % priorities.length];
     saveTasks(tasks);
     renderPlanner();
+    if (typeof FX !== "undefined") FX.playClick();
   }
 }
 
@@ -160,6 +175,11 @@ async function deleteTask(id) {
   let tasks = loadTasks();
   tasks = tasks.filter(t => t.id !== id);
   saveTasks(tasks);
+
+  if (typeof FX !== "undefined") {
+    FX.playDelete();
+    FX.haptic("delete");
+  }
 
   if (typeof TasksRepository !== "undefined") {
     await TasksRepository.delete(id).catch(() => {});
@@ -416,6 +436,61 @@ function renderPlanner() {
         ${relationshipChipsHTML}
       </div>
     `;
+    bindTaskSwipe(item, t.id);
     container.appendChild(item);
+  });
+}
+
+function bindTaskSwipe(item, taskId) {
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let isSwiping = false;
+
+  item.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isSwiping = false;
+    item.style.transition = "none";
+  }, { passive: true });
+
+  item.addEventListener("touchmove", (e) => {
+    if (e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+
+    if (!isSwiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      isSwiping = true;
+    }
+
+    if (isSwiping) {
+      currentX = dx;
+      const limitedX = Math.max(-100, Math.min(100, dx));
+      item.style.transform = `translateX(${limitedX}px)`;
+      if (limitedX > 25) {
+        item.style.boxShadow = `inset 4px 0 0 var(--green), 0 4px 16px rgba(52, 199, 89, 0.25)`;
+      } else if (limitedX < -25) {
+        item.style.boxShadow = `inset -4px 0 0 var(--danger), 0 4px 16px rgba(255, 59, 48, 0.25)`;
+      } else {
+        item.style.boxShadow = "";
+      }
+    }
+  }, { passive: true });
+
+  item.addEventListener("touchend", () => {
+    item.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s";
+    item.style.transform = "translateX(0px)";
+    item.style.boxShadow = "";
+
+    if (isSwiping) {
+      if (currentX > 65) {
+        toggleTask(taskId);
+      } else if (currentX < -65) {
+        deleteTask(taskId);
+      }
+    }
+    isSwiping = false;
+    currentX = 0;
   });
 }

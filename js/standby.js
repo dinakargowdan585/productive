@@ -119,6 +119,9 @@ function updateFlipUnit(unitId, val) {
   unit.classList.remove("flipping");
   void unit.offsetWidth;
   unit.classList.add("flipping");
+  if (typeof FX !== "undefined" && (unitId.includes("M") || unitId.includes("H"))) {
+    FX.playClick();
+  }
 }
 
 function selectClockStyle(styleName, e) {

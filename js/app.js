@@ -67,8 +67,10 @@ function switchView(viewName) {
   if (viewName === "planner" && typeof renderPlanner === "function") renderPlanner();
   if (viewName === "notes" && typeof renderNotes === "function") renderNotes();
   if (viewName === "calendar" && typeof renderCalendar === "function") renderCalendar();
-  if (viewName === "vault" && typeof renderVaultAuthPane === "function") renderVaultAuthPane();
-  if (viewName === "standby" && typeof updateStandbyClock === "function") updateStandbyClock();
+  if (viewName === "standby") {
+    if (typeof updateStandbyClock === "function") updateStandbyClock();
+    if (typeof FX !== "undefined" && typeof FX.initStandbyCosmicCanvas === "function") FX.initStandbyCosmicCanvas();
+  }
 }
 
 function toggleTheme() {

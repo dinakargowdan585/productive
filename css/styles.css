@@ -819,15 +819,59 @@ button:active { transform: scale(0.98); }
   color: var(--muted);
 }
 .priority-pill {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
-.priority-high { background: rgba(255, 59, 48, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 59, 48, 0.3); }
-.priority-med { background: rgba(255, 149, 0, 0.15); color: #ffd166; border: 1px solid rgba(255, 149, 0, 0.3); }
-.priority-low { background: rgba(52, 199, 89, 0.15); color: #06d6a0; border: 1px solid rgba(52, 199, 89, 0.3); }
+.priority-pill:hover {
+  transform: scale(1.06);
+}
+.priority-high {
+  background: rgba(255, 59, 48, 0.12);
+  color: #FF6B6B;
+  border: 1px solid rgba(255, 59, 48, 0.35);
+  box-shadow: 0 0 12px rgba(255, 59, 48, 0.18);
+}
+.priority-med {
+  background: rgba(255, 149, 0, 0.12);
+  color: #FFD166;
+  border: 1px solid rgba(255, 149, 0, 0.35);
+  box-shadow: 0 0 12px rgba(255, 149, 0, 0.18);
+}
+.priority-low {
+  background: rgba(52, 199, 89, 0.12);
+  color: #34D399;
+  border: 1px solid rgba(52, 199, 89, 0.35);
+  box-shadow: 0 0 12px rgba(52, 199, 89, 0.18);
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(0.85); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.task-checkbox-wrap input[type="checkbox"]:checked {
+  animation: checkBounce 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  accent-color: var(--green);
+}
+
+.standby-cosmic-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
 
 .task-card-actions {
   display: flex;
@@ -845,7 +889,7 @@ button:active { transform: scale(0.98); }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .task-delete-front-btn:hover {
   background: rgba(239, 68, 68, 0.2);
@@ -1630,6 +1674,43 @@ button:active { transform: scale(0.98); }
   .editor-modes button {
     flex: 1 !important;
   }
+
+  /* 8. Native Mobile Bottom Sheet Modals */
+  dialog.event-modal-dialog,
+  dialog#eventModal,
+  dialog#projectTasksModal,
+  dialog#commandPaletteModal,
+  dialog#themeModal {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    transform: translateY(0) !important;
+    animation: sheetSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+
+  dialog.event-modal-dialog::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 auto 16px auto;
+  }
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 /* ==========================================================================

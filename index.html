@@ -2355,8 +2355,9 @@ button:active { transform: scale(0.98); }
     <!-- VIEW 5: Apple StandBy Mode -->
     <main id="viewStandby" style="display:none;">
       <div id="standbyScreen" class="standby-screen">
+        <canvas id="standbyCosmicCanvas" class="standby-cosmic-canvas"></canvas>
         <!-- Top-Left Glass Controls Bar (Timer + Clock Style) -->
-        <div class="standby-top-controls">
+        <div class="standby-top-controls" style="z-index:10;">
           <button type="button" class="timer-toggle-pill" id="timerTogglePill" onclick="toggleTimerPanel()" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Pomodoro Timer Panel">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
             Timer
@@ -2365,6 +2366,10 @@ button:active { transform: scale(0.98); }
           <button type="button" class="timer-toggle-pill" id="clockStyleTogglePill" onclick="toggleClockStylePanel(event)" aria-expanded="false" aria-controls="clockStylePopover" aria-label="Open Clock Style Panel">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Clock Style
+          </button>
+
+          <button type="button" class="timer-toggle-pill" id="soundTogglePill" onclick="if(typeof FX !== 'undefined'){ const state = FX.toggleSound(); this.textContent = state ? '🔊 Sound' : '🔇 Muted'; }" aria-label="Toggle Sound Effects">
+            🔊 Sound
           </button>
 
           <!-- macOS Control Center Style Clock Style Popover Panel -->
@@ -2810,6 +2815,7 @@ button:active { transform: scale(0.98); }
 <script src="storage/migration.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/store.js"></script>
+<script src="js/fx.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/planner.js"></script>
 <script src="js/notes.js"></script>
