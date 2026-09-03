@@ -50,13 +50,9 @@ function isTaskCompletedOnDate(t, dateStr) {
   const targetDate = dateStr || getIsoDateStr();
   const isDaily = Boolean(t.isDaily || t.is_daily);
   if (isDaily) {
-    if (Array.isArray(t.completedDates)) {
-      return t.completedDates.includes(targetDate);
-    }
-    if (t.lastCompletedDate) {
-      return t.lastCompletedDate === targetDate;
-    }
-    return false;
+    const inDates = Array.isArray(t.completedDates) && t.completedDates.includes(targetDate);
+    const isLast = Boolean(t.lastCompletedDate && t.lastCompletedDate === targetDate);
+    return inDates || isLast;
   }
   return Boolean(t.completed);
 }
