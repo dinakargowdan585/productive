@@ -355,6 +355,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
   for (let day = 1; day <= daysInMonth; day++) {
     const curDateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = curDateStr === todayIso;
+    const isPast = curDateStr < todayIso;
     const isSelected = curDateStr === selectedCalDateStr;
     const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
     const cellIndex = startingOffset + day - 1;
@@ -362,9 +363,10 @@ function renderMonthView(grid, canvasHeader, tasks) {
     const currentRow = Math.floor(cellIndex / 7);
 
     grid.innerHTML += `
-      <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
+      <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="cal-day-number">${day}</span>
+          ${isPast ? `<span style="font-size:0.65rem; color:var(--muted); opacity:0.8;" title="Past date (locked)">🔒</span>` : (isToday ? `<span style="font-size:0.65rem; color:var(--accent); font-weight:800;">TODAY</span>` : '')}
           ${dayTasks.length > 0 ? `<span style="font-size:0.7rem; color:var(--accent); font-weight:700;">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
         </div>
         <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
@@ -372,7 +374,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
             const cal = getCalendarById(t.calendarId || t.category || "work");
             const isDone = isTaskCompletedOnDate(t, curDateStr);
             return `
-              <div class="cal-event-card" style="background:${cal.color}20; border-left-color:${cal.color}; color:var(--text);">
+              <div class="cal-event-card" style="background:${cal.color}20; border-left-color:${cal.color}; color:var(--text); ${isPast ? 'opacity:0.75;' : ''}">
                 <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
               </div>
             `;
@@ -422,7 +424,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
               <strong style="font-size:0.9rem; color:var(--text);">⏱️ ${escapeHTML(b.taskTitle)}</strong>
               <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
             </div>
-            <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 10px; font-size:0.75rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>
+            ${!isPast ? `<button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 10px; font-size:0.75rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>` : `<span style="font-size:0.72rem; color:var(--muted);">Completed</span>`}
           </div>
         `).join('')}
         ${dayTasks.map(t => {
@@ -435,10 +437,10 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
                 <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
                 <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
                 ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
-                ${isPast ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--muted); font-size:0.68rem;">Locked</span>` : ''}
+                ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.68rem; border:1px solid rgba(255,59,48,0.25);">🔒 Locked</span>` : ''}
                 ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.68rem;">Upcoming</span>` : ''}
               </div>
-              <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
+              ${!isPast ? `<button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>` : ''}
             </div>
           `;
         }).join('')}
@@ -452,15 +454,27 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
       <h3 class="cal-inspector-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         ${formattedDate}
-        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.7rem;">TODAY</span>` : ''}
+        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.7rem; font-weight:800;">TODAY</span>` : ''}
+        ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.7rem; font-weight:800; border:1px solid rgba(255,59,48,0.3);">🔒 LOCKED HISTORY</span>` : ''}
+        ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.7rem; font-weight:700;">UPCOMING</span>` : ''}
       </h3>
       <div style="display:flex; gap:8px;">
-        <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
-        <button type="button" class="secondary" onclick="openNewEventModal('${dateStr}')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Full Event</button>
+        ${!isPast ? `
+          <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
+          <button type="button" class="secondary" onclick="openNewEventModal('${dateStr}')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Full Event</button>
+        ` : `
+          <span style="font-size:0.75rem; color:var(--muted); font-style:italic; padding:4px 0;">🔒 Read-only Record</span>
+        `}
       </div>
     </div>
     ${itemsHTML}
-    <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+    ${!isPast ? `
+      <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+    ` : `
+      <div style="font-size:0.78rem; color:var(--muted); font-style:italic; padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:4px; text-align:center; border:1px dashed var(--border);">
+        🔒 Past dates are locked — tasks cannot be added or modified in the past.
+      </div>
+    `}
   `;
 
   container.appendChild(inspector);

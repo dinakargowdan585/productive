@@ -1531,6 +1531,8 @@ button:active { transform: scale(0.98); }
 .cal-day-cell:hover { border-color: rgba(255,255,255,0.18); }
 .cal-day-cell.drag-over { background: rgba(56, 189, 248, 0.14) !important; border-color: var(--accent) !important; }
 .cal-day-cell.is-today { border: 1.5px solid var(--accent); box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.15); }
+.cal-day-cell.is-past { opacity: 0.65; background: rgba(15, 23, 42, 0.6) !important; border-color: rgba(255,255,255,0.03) !important; }
+.cal-day-cell.is-past:hover { opacity: 0.88; border-color: rgba(255,255,255,0.12) !important; }
 .cal-day-number { font-weight: 700; font-family: var(--font-code); display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
 .cal-day-cell.is-today .cal-day-number { background: var(--accent); color: #05070a; }
 .cal-week-num { font-size: 0.7rem; color: var(--muted); font-family: var(--font-code); text-align: center; padding-top: 10px; opacity: 0.6; }
