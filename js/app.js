@@ -877,3 +877,26 @@ async function handleBackupFileSelect(event) {
   }
 }
 
+/* Automatic Midnight Day Rollover Detector */
+let lastActiveDayIso = typeof getIsoDateStr === "function" ? getIsoDateStr() : "";
+
+function checkDayRollover() {
+  if (typeof getIsoDateStr !== "function") return;
+  const currentDay = getIsoDateStr();
+  if (currentDay !== lastActiveDayIso) {
+    lastActiveDayIso = currentDay;
+    if (typeof renderPlanner === "function") renderPlanner();
+    if (typeof renderCalendar === "function") renderCalendar();
+    if (typeof renderDashboard === "function") renderDashboard();
+  }
+}
+
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) checkDayRollover();
+  });
+  window.addEventListener("focus", checkDayRollover);
+  setInterval(checkDayRollover, 30000);
+}
+
+
