@@ -132,6 +132,9 @@ async function loadAllFromRepositoriesIntoMemory() {
     } catch {}
 
     console.log("⚡ Memory cache initialized from IndexedDB repositories.");
+    if (typeof DayRolloverEngine !== "undefined" && typeof DayRolloverEngine.runAutomatedResetCheck === "function") {
+      DayRolloverEngine.runAutomatedResetCheck("post_repo_load");
+    }
   } catch (err) {
     console.error("Failed to load memory cache from repositories:", err);
   }

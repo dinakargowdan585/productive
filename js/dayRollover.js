@@ -42,7 +42,7 @@ const DayRolloverEngine = {
     // Check if day changed OR if it's the initial check
     const isNewDay = storedLast && (currentToday !== storedLast);
 
-    if (isNewDay || triggerSource === "force" || triggerSource === "init") {
+    if (isNewDay || triggerSource === "force" || triggerSource === "init" || triggerSource === "post_repo_load") {
       this.executeDailyReset(currentToday, storedLast);
       this.setStoredLastDate(currentToday);
     }
@@ -74,23 +74,21 @@ const DayRolloverEngine = {
         t.completedDates = [];
       }
 
-      // If task was marked complete on a previous day, ensure it is archived in completedDates
+      // If last completed date is in the past, ensure today is NOT marked complete
       if (t.lastCompletedDate && t.lastCompletedDate < todayIso) {
         if (!t.completedDates.includes(t.lastCompletedDate)) {
           t.completedDates.push(t.lastCompletedDate);
         }
-      }
-
-      // If completedDates accidentally had today's date from yesterday's session, clean it
-      if (prevDayIso && prevDayIso < todayIso) {
         t.completedDates = t.completedDates.filter(d => d < todayIso);
-      }
-
-      // Check if task is actually completed today
-      const isCompletedToday = t.completedDates.includes(todayIso);
-      if (t.completed !== isCompletedToday) {
-        t.completed = isCompletedToday;
-        modifiedCount++;
+        if (t.completed !== false) {
+          t.completed = false;
+          modifiedCount++;
+        }
+      } else if (!t.completedDates.includes(todayIso)) {
+        if (t.completed) {
+          t.completed = false;
+          modifiedCount++;
+        }
       }
 
       // Calculate streak from historical completedDates
@@ -181,9 +179,13 @@ const DayRolloverEngine = {
   }
 };
 
-// Auto-initialize
+// Global exports
 if (typeof window !== "undefined") {
   window.DayRolloverEngine = DayRolloverEngine;
+  window.forceDayReset = function() {
+    DayRolloverEngine.runAutomatedResetCheck("force");
+  };
+
   if (document.readyState === "complete" || document.readyState === "interactive") {
     setTimeout(() => DayRolloverEngine.init(), 100);
   } else {
