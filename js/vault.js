@@ -89,7 +89,7 @@ function handleCreateCustomProject(e) {
   if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  if (typeof showToast === "function") showToast(`Created Project Workspace: ${title}! 📁`, "success");
+  if (typeof showToast === "function") showToast(`Created Project Workspace: ${title}!`, "success");
 }
 
 function createPresetProject(customTitle) {
@@ -125,7 +125,7 @@ function createPresetProject(customTitle) {
   if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  if (typeof showToast === "function") showToast(`Created Project Workspace: ${title}! 📁`, "success");
+  if (typeof showToast === "function") showToast(`Created Project Workspace: ${title}!`, "success");
 }
 
 function renderWorkspaces() {
@@ -324,7 +324,7 @@ function handleCreateCustomOKR(e) {
   if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  if (typeof showToast === "function") showToast(`Created OKR Goal: ${objective}! 🎯`, "success");
+  if (typeof showToast === "function") showToast(`Created OKR Goal: ${objective}!`, "success");
 }
 
 function createPresetOKR(customTitle) {
@@ -356,7 +356,7 @@ function createPresetOKR(customTitle) {
   if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  if (typeof showToast === "function") showToast(`Created OKR Goal: ${title}! 🎯`, "success");
+  if (typeof showToast === "function") showToast(`Created OKR Goal: ${title}!`, "success");
 }
 
 function renderGoals() {
@@ -470,7 +470,7 @@ function openProjectTasksModal(projectId) {
 
   const modalTitle = document.getElementById("projectModalTitle");
   const modalId = document.getElementById("projectModalId");
-  if (modalTitle) modalTitle.textContent = `📁 ${p.title || p.name}`;
+  if (modalTitle) modalTitle.textContent = `${p.title || p.name}`;
   if (modalId) modalId.value = projectId;
 
   renderProjectModalTasks(projectId);
@@ -663,7 +663,7 @@ async function unlockVault(e) {
   isVaultUnlocked = true;
   if (pwdInput) pwdInput.value = "";
   renderVaultAuthPane();
-  if (typeof showToast === "function") showToast("Vault unlocked! 🔐", "success");
+  if (typeof showToast === "function") showToast("Vault unlocked!", "success");
 }
 
 function lockVault() {

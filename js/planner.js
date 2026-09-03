@@ -120,7 +120,7 @@ function addCustomDailyHabit() {
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-  if (typeof showToast === "function") showToast(`Added daily habit: "${title}"! 🔁`, "success");
+  if (typeof showToast === "function") showToast(`Added daily habit: "${title}"!`, "success");
 }
 
 function addDefaultDailyTasks() {
@@ -213,7 +213,7 @@ function toggleTask(id, dateStr) {
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   if (typeof showToast === "function") {
-    showToast(isNowCompleted ? "Task completed! 🎉" : "Task marked incomplete", "info");
+    showToast(isNowCompleted ? "Task completed!" : "Task marked incomplete", "info");
   }
 
   const totalTasks = tasks.length;
@@ -263,7 +263,7 @@ async function deleteTask(id) {
 
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
-  if (typeof showToast === "function") showToast("Task deleted 🗑️", "info");
+  if (typeof showToast === "function") showToast("Task deleted", "info");
 }
 
 function promptCreateTimeBlock(taskId) {

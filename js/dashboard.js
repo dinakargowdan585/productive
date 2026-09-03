@@ -31,8 +31,9 @@ function toggleAddCardMenu() {
       menu.innerHTML = `<div style="padding:8px 12px; font-size:0.8rem; color:var(--muted);">All cards are active on your Dashboard!</div>`;
     } else {
       menu.innerHTML = hidden.map(c => `
-        <div class="task-card-menu-item" onclick="addDashboardCard('${c.id}'); toggleAddCardMenu();">
-          ➕ ${c.name}
+        <div class="task-card-menu-item" onclick="addDashboardCard('${c.id}'); toggleAddCardMenu();" style="display:flex; align-items:center; gap:6px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          ${c.name}
         </div>
       `).join('');
     }
@@ -53,7 +54,7 @@ function generateExecutiveInsights() {
 
   if (overdue.length > 0) {
     insights.push({
-      icon: "⚠️",
+      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
       text: `"${overdue[0].title}" is behind schedule (due ${overdue[0].dueDate}).`,
       type: "warning"
     });
@@ -63,13 +64,13 @@ function generateExecutiveInsights() {
   const totalFocusMins = completedBlocks.reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
   if (totalFocusMins > 0) {
     insights.push({
-      icon: "📈",
+      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
       text: `You completed ${formatDurationHuman(totalFocusMins)} of deep focus sessions.`,
       type: "success"
     });
   } else {
     insights.push({
-      icon: "💡",
+      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
       text: "Schedule a 60m focus block today to maintain your deep work momentum.",
       type: "info"
     });
@@ -77,14 +78,14 @@ function generateExecutiveInsights() {
 
   if (completed.length >= 3) {
     insights.push({
-      icon: "⚡",
+      icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
       text: `Great velocity! You completed ${completed.length} tasks this week.`,
       type: "success"
     });
   }
 
   insights.push({
-    icon: "🌙",
+    icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
     text: "Productivity Pattern: You achieve highest focus consistency between 6:00 PM – 9:00 PM.",
     type: "info"
   });
@@ -173,19 +174,19 @@ function renderDashboard() {
   if (hour >= 5 && hour < 12) {
     timeSalute = "Good Morning";
     auraColor = "rgba(245, 158, 11, 0.22)";
-    subtitle = "☀️ Morning Focus & Clarity";
+    subtitle = "Morning Focus & Clarity";
   } else if (hour >= 12 && hour < 17) {
     timeSalute = "Good Afternoon";
     auraColor = "rgba(56, 189, 248, 0.25)";
-    subtitle = "⚡ Peak Execution Window";
+    subtitle = "Peak Execution Window";
   } else if (hour >= 17 && hour < 21) {
     timeSalute = "Good Evening";
     auraColor = "rgba(168, 85, 247, 0.25)";
-    subtitle = "🌆 Milestone Review & Wrap-up";
+    subtitle = "Milestone Review & Wrap-up";
   } else {
     timeSalute = "Good Night";
     auraColor = "rgba(99, 102, 241, 0.22)";
-    subtitle = "🌙 Night StandBy & Recovery";
+    subtitle = "Night StandBy & Recovery";
   }
 
   const banner = document.getElementById("execGreetingBanner");
@@ -219,7 +220,7 @@ function renderDashboard() {
               <div style="font-size:0.95rem; font-weight:700; color:var(--text);">${idx + 1}. ${escapeHTML(t.title)}</div>
               <div style="font-size:0.78rem; color:var(--muted); margin-top:2px;">${t.dueDate ? 'Due: ' + t.dueDate : 'No due date'}</div>
             </div>
-            <button type="button" class="secondary" onclick="startFocusSessionForBlock('')" style="padding:4px 12px; font-size:0.78rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">▶ Focus</button>
+            <button type="button" class="secondary" onclick="startFocusSessionForBlock('')" style="padding:4px 12px; font-size:0.78rem; background:var(--accent); color:#05070a; font-weight:700; border:none; display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Focus</button>
           </div>
         `;
       }).join('');
@@ -262,7 +263,7 @@ function renderDashboard() {
   const projects = loadProjects();
   const projCard = document.getElementById("execCurrentProjectCard");
   if (projCard) {
-    const p = projects[0] || { title: "🏢 Executive Strategy 2026", cat: "Work" };
+    const p = projects[0] || { title: "Executive Strategy 2026", cat: "Work" };
     const projectTasks = tasks.filter(t => t.projectId === p.id);
     const doneTasks = projectTasks.length ? projectTasks.filter(t => t.completed).length : tasks.filter(t => t.completed).length;
     const totalTasks = projectTasks.length ? projectTasks.length : tasks.length;

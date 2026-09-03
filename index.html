@@ -1737,7 +1737,7 @@ button:active { transform: scale(0.98); }
       <!-- Sync & Auth Popover -->
       <div id="syncPopover" class="sync-popover" style="display:none; left:50px; top:-120px;" onclick="event.stopPropagation();">
         <div class="sync-popover-header">
-          <strong>⚡ Cloud & Offline Sync</strong>
+          <strong style="display:inline-flex; align-items:center; gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Cloud & Offline Sync</strong>
           <button type="button" class="pomodoro-close-btn" onclick="closeSyncPopover()">&times;</button>
         </div>
         <div class="sync-popover-body">
@@ -1748,11 +1748,11 @@ button:active { transform: scale(0.98); }
           <div class="sync-row" id="syncUserRow"><span>Account:</span><span id="syncUserEmail">Guest (Local)</span></div>
         </div>
         <div class="sync-popover-actions" style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-          <button type="button" class="secondary" id="btnOpenAuthModal" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem;">🔑 Account / Cloud Login</button>
-          <button type="button" class="pwa-install-btn secondary" onclick="promptPwaInstall()" style="display:none; width:100%; padding:6px; font-size:0.78rem; border-color:var(--accent);">📲 Install Desktop/Mobile App</button>
+          <button type="button" class="secondary" id="btnOpenAuthModal" onclick="openSupabaseAuthModal()" style="width:100%; padding:6px; font-size:0.78rem; display:inline-flex; align-items:center; justify-content:center; gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg> Account / Cloud Login</button>
+          <button type="button" class="pwa-install-btn secondary" onclick="promptPwaInstall()" style="display:none; width:100%; padding:6px; font-size:0.78rem; border-color:var(--accent); display:inline-flex; align-items:center; justify-content:center; gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Install Desktop/Mobile App</button>
           <div style="display:flex; gap:6px; margin-top:2px;">
-            <button type="button" class="secondary" onclick="exportFullDataBackup()" style="flex:1; padding:5px; font-size:0.72rem;" title="Download JSON data snapshot">📦 Backup Data</button>
-            <button type="button" class="secondary" onclick="importFullDataBackupPrompt()" style="flex:1; padding:5px; font-size:0.72rem;" title="Restore from JSON backup file">📥 Restore Data</button>
+            <button type="button" class="secondary" onclick="exportFullDataBackup()" style="flex:1; padding:5px; font-size:0.72rem; display:inline-flex; align-items:center; justify-content:center; gap:4px;" title="Download JSON data snapshot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Backup</button>
+            <button type="button" class="secondary" onclick="importFullDataBackupPrompt()" style="flex:1; padding:5px; font-size:0.72rem; display:inline-flex; align-items:center; justify-content:center; gap:4px;" title="Restore from JSON backup file"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Restore</button>
           </div>
         </div>
       </div>
@@ -1789,7 +1789,7 @@ button:active { transform: scale(0.98); }
           <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; z-index:2;">
             <div>
               <h2 id="execGreetingText" style="margin:0; font-size:1.55rem; font-weight:800; letter-spacing:-0.5px;">Good Morning, Dinakar</h2>
-              <div id="execDateText" style="font-size:0.88rem; color:var(--muted); font-family:var(--font-code); margin-top:4px;">Tuesday, Aug 4 • ☀️ Morning Focus & Clarity</div>
+              <div id="execDateText" style="font-size:0.88rem; color:var(--muted); font-family:var(--font-code); margin-top:4px;">Tuesday, Aug 4 • Morning Focus & Clarity</div>
             </div>
             <div id="headerAccountBadge" onclick="openSupabaseAuthModal()" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.2); border-radius:999px; padding:4px 12px; font-size:0.75rem; font-weight:700; color:var(--text); transition:all 180ms ease;" title="Supabase Cloud Account">
               <span style="width:8px; height:8px; border-radius:50%; background:var(--muted); display:inline-block;"></span>
@@ -2421,8 +2421,9 @@ button:active { transform: scale(0.98); }
             Clock Style
           </button>
 
-          <button type="button" class="timer-toggle-pill" id="soundTogglePill" onclick="if(typeof FX !== 'undefined'){ const state = FX.toggleSound(); this.textContent = state ? '🔊 Sound' : '🔇 Muted'; }" aria-label="Toggle Sound Effects">
-            🔊 Sound
+          <button type="button" class="timer-toggle-pill" id="soundTogglePill" onclick="if(typeof FX !== 'undefined'){ const state = FX.toggleSound(); this.innerHTML = state ? '<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><path d=\'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07\'/></svg> Sound' : '<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><line x1=\'23\' y1=\'9\' x2=\'17\' y2=\'15\'/><line x1=\'17\' y1=\'9\' x2=\'23\' y2=\'15\'/></svg> Muted'; }" aria-label="Toggle Sound Effects">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Sound
           </button>
 
           <!-- macOS Control Center Style Clock Style Popover Panel -->
@@ -2493,6 +2494,11 @@ button:active { transform: scale(0.98); }
               <div class="flip-top-fold"><span>0</span></div>
               <div class="flip-bottom-fold"><span>0</span></div>
             </div>
+          </div>
+
+          <!-- AM/PM Indicator -->
+          <div class="flip-ampm-wrap" id="flipAmpmWrap">
+            <div class="flip-ampm-badge" id="flipAmpmBadge">AM</div>
           </div>
         </div>
 
@@ -2580,11 +2586,11 @@ button:active { transform: scale(0.98); }
       <div class="field-group">
         <label class="field-label">Category / Calendar</label>
         <select id="eventModalCategory" style="font-weight:700;">
-          <option value="work">🔵 Work</option>
-          <option value="personal">🟢 Personal</option>
-          <option value="study" selected>🟣 Study</option>
-          <option value="goals">🟠 Goals</option>
-          <option value="habits">🔴 Habits</option>
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+          <option value="study" selected>Study</option>
+          <option value="goals">Goals</option>
+          <option value="habits">Habits</option>
         </select>
       </div>
       <div class="field-group">
@@ -2638,20 +2644,20 @@ button:active { transform: scale(0.98); }
       <div class="field-group">
         <label class="field-label" for="newProjectCatSelect">Category</label>
         <select id="newProjectCatSelect">
-          <option value="Work">🏢 Work & Engineering</option>
-          <option value="Product">🚀 Product & Launch</option>
-          <option value="Research">🔬 Research & Learning</option>
-          <option value="Personal">🌱 Personal & Growth</option>
+          <option value="Work">Work & Engineering</option>
+          <option value="Product">Product & Launch</option>
+          <option value="Research">Research & Learning</option>
+          <option value="Personal">Personal & Growth</option>
         </select>
       </div>
       <div class="field-group">
         <label class="field-label" for="newProjectColorInput">Accent Color</label>
         <select id="newProjectColorInput">
-          <option value="#38BDF8">🔵 Cyan Accent</option>
-          <option value="#A855F7">🟣 Purple Velvet</option>
-          <option value="#34C759">🟢 Emerald Green</option>
-          <option value="#FF9500">🟠 Amber Orange</option>
-          <option value="#FF3B30">🔴 Rose Red</option>
+          <option value="#38BDF8">Cyan Accent</option>
+          <option value="#A855F7">Purple Velvet</option>
+          <option value="#34C759">Emerald Green</option>
+          <option value="#FF9500">Amber Orange</option>
+          <option value="#FF3B30">Rose Red</option>
         </select>
       </div>
     </div>
@@ -2780,7 +2786,7 @@ button:active { transform: scale(0.98); }
   <div class="dock-item" id="dockCalendar" data-view="calendar" onclick="switchView('calendar')">
     <div class="macos-app-icon icon-app-calendar">
       <div style="position:absolute; top:0; left:0; right:0; height:14px; background:#FF3B30; color:#FFF; font-size:0.55rem; font-weight:800; text-align:center; line-height:14px; text-transform:uppercase;">CAL</div>
-      <div style="font-size:1.15rem; font-weight:800; margin-top:10px; color:#0F172A;">📅</div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.2" style="margin-top:10px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </div>
     <div class="dock-tooltip">Calendar (⌘3)</div>
     <div class="dock-active-dot"></div>
@@ -2842,7 +2848,7 @@ button:active { transform: scale(0.98); }
         <div class="auth-brand-row">
           <img src="assets/icon-192.png" class="auth-brand-logo" alt="Productive OS">
           <div>
-            <span class="auth-eyebrow">☁️ PRODUCTIVE CLOUD</span>
+            <span class="auth-eyebrow">PRODUCTIVE CLOUD</span>
             <h2 class="auth-title" id="authModalTitle">Welcome Back</h2>
           </div>
         </div>
@@ -2855,7 +2861,7 @@ button:active { transform: scale(0.98); }
     <div class="auth-mode-toggle" id="authModeToggle">
       <button type="button" id="btnModeLogin" class="active" onclick="switchAuthMode('login')">Sign In</button>
       <button type="button" id="btnModeSignup" onclick="switchAuthMode('signup')">Create Account</button>
-      <button type="button" id="btnModeOtp" onclick="switchAuthMode('otp')">⚡ Quick OTP</button>
+      <button type="button" id="btnModeOtp" onclick="switchAuthMode('otp')">Quick OTP</button>
     </div>
 
     <!-- Error Banner -->
@@ -2918,7 +2924,7 @@ button:active { transform: scale(0.98); }
     <!-- 2. Step 2: Enter 6-Digit Email Code (OTP) -->
     <div id="authStepOtp" style="display:none; flex-direction:column; gap:16px; margin-top:16px;">
       <div style="background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); padding:12px 14px; border-radius:12px; font-size:0.85rem; color:var(--text); line-height:1.5;">
-        ✉️ We sent a 6-digit code to <strong id="otpTargetEmail" style="color:var(--accent);">you@example.com</strong>.
+        We sent a 6-digit code to <strong id="otpTargetEmail" style="color:var(--accent);">you@example.com</strong>.
       </div>
 
       <div class="auth-input-group">
@@ -2951,11 +2957,13 @@ button:active { transform: scale(0.98); }
       </div>
 
       <div style="display:flex; flex-direction:column; gap:10px;">
-        <button type="button" class="auth-submit-btn" onclick="handleManualSync()" style="width:100%;">
-          <span>🔄 Sync Cloud Data Now</span>
+        <button type="button" class="auth-submit-btn" onclick="handleManualSync()" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+          <span>Sync Cloud Data Now</span>
         </button>
-        <button type="button" class="auth-signout-btn" onclick="handleSignOut()">
-          <span>🚪 Sign Out</span>
+        <button type="button" class="auth-signout-btn" onclick="handleSignOut()" style="display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Sign Out</span>
         </button>
       </div>
     </div>
@@ -2963,7 +2971,10 @@ button:active { transform: scale(0.98); }
     <!-- Custom Supabase Credentials Configuration -->
     <div style="margin-top:20px; padding-top:14px; border-top:1px dashed rgba(255,255,255,0.1);">
       <details>
-        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer;">⚙️ Custom Supabase Credentials</summary>
+        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Custom Supabase Credentials
+        </summary>
         <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
           <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">
           <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">

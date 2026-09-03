@@ -189,7 +189,7 @@ function renderSidebarUpcoming(tasks, allBlocks) {
   container.innerHTML = `
     ${todayBlocks.slice(0, 3).map(b => `
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid ${b.color || 'var(--accent)'}; padding:6px 8px; border-radius:4px; font-size:0.75rem;">
-        <div style="font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">⏱️ ${escapeHTML(b.taskTitle)}</div>
+        <div style="font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(b.taskTitle)}</div>
         <div style="font-size:0.68rem; color:var(--muted);">${formatTime12Hour(b.startTime)}</div>
       </div>
     `).join('')}
@@ -366,7 +366,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
       <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="cal-day-number">${day}</span>
-          ${isPast ? `<span style="font-size:0.65rem; color:var(--muted); opacity:0.8;" title="Past date (locked)">🔒</span>` : (isToday ? `<span style="font-size:0.65rem; color:var(--accent); font-weight:800;">TODAY</span>` : '')}
+          ${isPast ? `<span style="display:inline-flex; align-items:center; opacity:0.6;" title="Past date (locked)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>` : (isToday ? `<span style="font-size:0.65rem; color:var(--accent); font-weight:800;">TODAY</span>` : '')}
           ${dayTasks.length > 0 ? `<span style="font-size:0.7rem; color:var(--accent); font-weight:700;">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
         </div>
         <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
@@ -421,7 +421,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
         ${dayBlocks.map(b => `
           <div class="cal-inspector-item" style="border-left:3px solid ${b.color || 'var(--accent)'};">
             <div>
-              <strong style="font-size:0.9rem; color:var(--text);">⏱️ ${escapeHTML(b.taskTitle)}</strong>
+              <strong style="font-size:0.9rem; color:var(--text);">${escapeHTML(b.taskTitle)}</strong>
               <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
             </div>
             ${!isPast ? `<button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 10px; font-size:0.75rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>` : `<span style="font-size:0.72rem; color:var(--muted);">Completed</span>`}
@@ -437,7 +437,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
                 <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
                 <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
                 ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
-                ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.68rem; border:1px solid rgba(255,59,48,0.25);">🔒 Locked</span>` : ''}
+                ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.68rem; border:1px solid rgba(255,59,48,0.25); display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Locked</span>` : ''}
                 ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.68rem;">Upcoming</span>` : ''}
               </div>
               ${!isPast ? `<button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>` : ''}
@@ -455,7 +455,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         ${formattedDate}
         ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.7rem; font-weight:800;">TODAY</span>` : ''}
-        ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.7rem; font-weight:800; border:1px solid rgba(255,59,48,0.3);">🔒 LOCKED HISTORY</span>` : ''}
+        ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.7rem; font-weight:800; border:1px solid rgba(255,59,48,0.3); display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>LOCKED HISTORY</span>` : ''}
         ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.7rem; font-weight:700;">UPCOMING</span>` : ''}
       </h3>
       <div style="display:flex; gap:8px;">
@@ -463,7 +463,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
           <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
           <button type="button" class="secondary" onclick="openNewEventModal('${dateStr}')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Full Event</button>
         ` : `
-          <span style="font-size:0.75rem; color:var(--muted); font-style:italic; padding:4px 0;">🔒 Read-only Record</span>
+          <span style="font-size:0.75rem; color:var(--muted); font-style:italic; padding:4px 0;">Read-only Record</span>
         `}
       </div>
     </div>
@@ -472,7 +472,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
       <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
     ` : `
       <div style="font-size:0.78rem; color:var(--muted); font-style:italic; padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:4px; text-align:center; border:1px dashed var(--border);">
-        🔒 Past dates are locked — tasks cannot be added or modified in the past.
+        Past dates are locked — tasks cannot be added or modified in the past.
       </div>
     `}
   `;
@@ -585,7 +585,7 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   grid.innerHTML += `
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div style="font-size:1.15rem; font-weight:800; color:var(--accent);">
-        📅 ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+        ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.72rem; margin-left:8px;">TODAY</span>` : ''}
       </div>
       <div style="display:flex; gap:8px;">
@@ -601,7 +601,7 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
       grid.innerHTML += `
         <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-left:4px solid ${b.color || 'var(--accent)'};">
           <div>
-            <strong style="color:var(--text); font-size:1rem;">⏱️ ${escapeHTML(b.taskTitle)}</strong>
+            <strong style="color:var(--text); font-size:1rem;">${escapeHTML(b.taskTitle)}</strong>
             <div style="font-size:0.8rem; color:var(--muted); margin-top:3px;">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
           </div>
           <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:5px 14px; font-weight:700; background:var(--accent); color:#05070a; border:none;">Focus</button>
@@ -718,7 +718,7 @@ function renderAgendaView(grid, canvasHeader, tasks) {
                     <strong style="color:var(--text); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(b.taskTitle)}</strong>
                     <span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.68rem; font-weight:700;">DEEP WORK</span>
                   </div>
-                  <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">⏱️ ${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m duration)</div>
+                  <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m duration)</div>
                 </div>
               </div>
               <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:6px 14px; font-size:0.78rem; background:var(--accent); color:#05070a; font-weight:800; border:none; display:inline-flex; align-items:center; gap:6px; flex-shrink:0; box-shadow:0 2px 10px rgba(56,189,248,0.3);">

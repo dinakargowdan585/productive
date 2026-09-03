@@ -131,7 +131,7 @@ async function loadAllFromRepositoriesIntoMemory() {
       });
     } catch {}
 
-    console.log("⚡ Memory cache initialized from IndexedDB repositories.");
+    console.log("[Store] Memory cache initialized from IndexedDB repositories.");
     if (typeof DayRolloverEngine !== "undefined" && typeof DayRolloverEngine.runAutomatedResetCheck === "function") {
       DayRolloverEngine.runAutomatedResetCheck("post_repo_load");
     }
@@ -260,7 +260,7 @@ function loadTimeBlocks() {
 function saveTimeBlocks(blocks) {
   memoryCache.timeBlocks = blocks;
   if (typeof TimeBlocksRepository !== "undefined") {
-    TimeBlocksRepository.bulkPut(blocks).catch(err => console.error("TimeBlocks Repository save error:", err));
+    TimeBlocksRepository.saveAll(blocks).catch(err => console.error("TimeBlocks persist error:", err));
   }
 }
 
@@ -271,7 +271,7 @@ function loadGoals() {
 function saveGoals(goals) {
   memoryCache.goals = goals;
   if (typeof GoalsRepository !== "undefined") {
-    GoalsRepository.bulkPut(goals).catch(err => console.error("Goals Repository save error:", err));
+    GoalsRepository.saveAll(goals).catch(err => console.error("Goals persist error:", err));
   }
 }
 
@@ -282,7 +282,7 @@ function loadProjects() {
 function saveProjects(projects) {
   memoryCache.projects = projects;
   if (typeof ProjectsRepository !== "undefined") {
-    ProjectsRepository.bulkPut(projects).catch(err => console.error("Projects Repository save error:", err));
+    ProjectsRepository.saveAll(projects).catch(err => console.error("Projects persist error:", err));
   }
 }
 
@@ -292,20 +292,19 @@ function loadVaultNotes() {
 
 function persistVaultNotes(notes) {
   memoryCache.vaultNotes = notes;
-  getStore("vaultNotes", "readwrite").then(store => {
-    (notes || []).forEach(v => store.put(v));
-  }).catch(err => console.error("Vault Notes save error:", err));
+  if (typeof VaultNotesRepository !== "undefined") {
+    VaultNotesRepository.saveAll(notes).catch(err => console.error("VaultNotes persist error:", err));
+  }
 }
 
-const DEFAULT_CALENDARS = [
-  { id: "work", name: "Work & Engineering", color: "#38BDF8" },
-  { id: "study", name: "Deep Study & Reading", color: "#A855F7" },
-  { id: "personal", name: "Personal & Health", color: "#34C759" },
-  { id: "vault", name: "Secrets & Credentials", color: "#FF3B30" }
-];
-
 function loadCalendars() {
-  return memoryCache.calendars || DEFAULT_CALENDARS;
+  return [
+    { id: "work", name: "Work", color: "var(--accent)" },
+    { id: "personal", name: "Personal", color: "var(--green)" },
+    { id: "study", name: "Study", color: "var(--purple)" },
+    { id: "goals", name: "Goals", color: "var(--amber)" },
+    { id: "habits", name: "Habits", color: "var(--danger)" }
+  ];
 }
 
 function saveCalendars(calendars) {
@@ -315,31 +314,28 @@ function saveCalendars(calendars) {
   }
 }
 
-function exportAppDataJSON() {
-  const exportData = {
-    app: "ProductiveOS",
-    version: "2.0.0",
-    exportedAt: new Date().toISOString(),
+function exportFullDataBackup() {
+  const data = {
     tasks: loadTasks(),
     notes: loadNotes(),
     goals: loadGoals(),
     projects: loadProjects(),
     vaultNotes: loadVaultNotes(),
     timeBlocks: loadTimeBlocks(),
-    calendars: loadCalendars()
+    exportedAt: new Date().toISOString(),
+    version: "2.5.0"
   };
 
-  const jsonStr = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([jsonStr], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `productive_os_backup_${getIsoDateStr()}.json`;
+  a.download = `productive-os-backup-${getIsoDateStr()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  if (typeof showToast === "function") showToast("💾 Full JSON Backup Exported!", "success");
+  if (typeof showToast === "function") showToast("Full JSON Backup Exported!", "success");
 }
 
 function importAppDataJSON(file) {
@@ -354,10 +350,10 @@ function importAppDataJSON(file) {
       if (imported.vaultNotes) persistVaultNotes(imported.vaultNotes);
       if (imported.timeBlocks) saveTimeBlocks(imported.timeBlocks);
 
-      if (typeof showToast === "function") showToast("✅ Data Restored Successfully!", "success");
+      if (typeof showToast === "function") showToast("Data Restored Successfully!", "success");
       setTimeout(() => location.reload(), 1000);
     } catch (err) {
-      if (typeof showToast === "function") showToast("❌ Invalid Backup File Format", "error");
+      if (typeof showToast === "function") showToast("Invalid Backup File Format", "error");
     }
   };
   reader.readAsText(file);
@@ -369,12 +365,12 @@ function getCalendarById(id) {
 }
 
 const ALL_DASHBOARD_CARDS = [
-  { id: "mits", name: "🎯 Today's Focus (Top 3 MITs)" },
-  { id: "timeline", name: "⏱️ Today's Schedule & Timeline" },
-  { id: "goal", name: "🎯 Active OKR Goal" },
-  { id: "project", name: "🏢 Active Project Workspace" },
-  { id: "deadlines", name: "⏳ Upcoming Deadlines" },
-  { id: "insights", name: "🧠 Intelligent Workspace Insights" }
+  { id: "mits", name: "Today's Focus (Top 3 MITs)" },
+  { id: "timeline", name: "Today's Schedule & Timeline" },
+  { id: "goal", name: "Active OKR Goal" },
+  { id: "project", name: "Active Project Workspace" },
+  { id: "deadlines", name: "Upcoming Deadlines" },
+  { id: "insights", name: "Intelligent Workspace Insights" }
 ];
 
 function getVisibleDashboardCards() {

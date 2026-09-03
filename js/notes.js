@@ -30,17 +30,17 @@ const TEMPLATES = {
   Meeting: {
     topic: "Executive Standup Meeting",
     category: "Architecture",
-    takeaway: "## 🎯 Key Decisions\n- Approved single-file SPA architecture.\n- Implemented Apple Liquid Glass design system.\n\n## 📋 Next Steps\n- [ ] Execute performance benchmarks.\n- [ ] Review cloud sync latency."
+    takeaway: "## Key Decisions\n- Approved single-file SPA architecture.\n- Implemented Apple Liquid Glass design system.\n\n## Next Steps\n- [ ] Execute performance benchmarks.\n- [ ] Review cloud sync latency."
   },
   Architecture: {
     topic: "System Architecture Proposal",
     category: "Architecture",
-    takeaway: "## 🏗️ Overview\nModular CSS & JS architecture with zero external dependencies.\n\n> [!NOTE]\n> System designed for 60 FPS offline execution.\n\n## ⚡ Core Metrics\n- Render Velocity: 60 FPS\n- Security: AES-256 WebCrypto Vault"
+    takeaway: "## Overview\nModular CSS & JS architecture with zero external dependencies.\n\n> [!NOTE]\n> System designed for 60 FPS offline execution.\n\n## Core Metrics\n- Render Velocity: 60 FPS\n- Security: AES-256 WebCrypto Vault"
   },
   Learning: {
     topic: "Deep Work Learning Log",
     category: "Learning",
-    takeaway: "## 💡 Key Concept\nProgressive disclosure in UI design prioritizes information hierarchy over visual density.\n\n> [!TIP]\n> Use slash commands `/` for rapid structured note taking."
+    takeaway: "## Key Concept\nProgressive disclosure in UI design prioritizes information hierarchy over visual density.\n\n> [!TIP]\n> Use slash commands `/` for rapid structured note taking."
   }
 };
 
@@ -307,7 +307,7 @@ function toggleVoiceDictation() {
   recognition.continuous = true;
   recognition.onstart = () => {
     isRecording = true;
-    if (btn) { btn.classList.add("recording"); btn.innerHTML = `🎙️ Listening...`; }
+    if (btn) { btn.classList.add("recording"); btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Listening...`; }
   };
   recognition.onresult = (e) => {
     const transcript = e.results[e.results.length - 1][0].transcript;
@@ -319,7 +319,7 @@ function toggleVoiceDictation() {
   };
   recognition.onerror = recognition.onend = () => {
     isRecording = false;
-    if (btn) { btn.classList.remove("recording"); btn.innerHTML = `🎙️ Voice`; }
+    if (btn) { btn.classList.remove("recording"); btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Voice`; }
   };
   recognition.start();
 }
@@ -337,7 +337,7 @@ function copyCodeSnippet(btn) {
   const code = box.querySelector("code");
   if (!code) return;
   navigator.clipboard.writeText(code.innerText).then(() => {
-    btn.textContent = "Copied! ✓";
+    btn.textContent = "Copied!";
     setTimeout(() => { btn.textContent = "Copy"; }, 2000);
   });
 }
@@ -392,19 +392,19 @@ function parseMarkdownMentions(text, noteId = "") {
   // 2. Callout Alerts (> [!NOTE], > [!TIP], > [!WARNING], > [!IMPORTANT])
   html = html.replace(/^>\s*\[!NOTE\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
     const cleanBody = body.replace(/^>\s*/gm, '');
-    return `<div class="note-callout callout-note"><div class="callout-header">💡 NOTE</div><div>${cleanBody}</div></div>`;
+    return `<div class="note-callout callout-note"><div class="callout-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> NOTE</div><div>${cleanBody}</div></div>`;
   });
   html = html.replace(/^>\s*\[!TIP\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
     const cleanBody = body.replace(/^>\s*/gm, '');
-    return `<div class="note-callout callout-tip"><div class="callout-header">🚀 TIP</div><div>${cleanBody}</div></div>`;
+    return `<div class="note-callout callout-tip"><div class="callout-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> TIP</div><div>${cleanBody}</div></div>`;
   });
   html = html.replace(/^>\s*\[!WARNING\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
     const cleanBody = body.replace(/^>\s*/gm, '');
-    return `<div class="note-callout callout-warning"><div class="callout-header">⚠️ WARNING</div><div>${cleanBody}</div></div>`;
+    return `<div class="note-callout callout-warning"><div class="callout-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> WARNING</div><div>${cleanBody}</div></div>`;
   });
   html = html.replace(/^>\s*\[!IMPORTANT\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
     const cleanBody = body.replace(/^>\s*/gm, '');
-    return `<div class="note-callout callout-important"><div class="callout-header">❗ IMPORTANT</div><div>${cleanBody}</div></div>`;
+    return `<div class="note-callout callout-important"><div class="callout-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> IMPORTANT</div><div>${cleanBody}</div></div>`;
   });
 
   // 3. Blockquotes
@@ -502,10 +502,10 @@ function renderNotes() {
       </div>
       <div class="note-body">${parseMarkdownMentions(noteBody, note.id) || '<span style="color:var(--muted); font-style:italic;">(No content)</span>'}</div>
       <div class="note-footer">
-        <span>📅 ${dateStr} • ⏱️ ${calcReadTime(noteBody)}</span>
+        <span>${dateStr} • ${calcReadTime(noteBody)}</span>
         <div style="display:flex; gap:6px;">
           <button type="button" class="secondary" onclick="editNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem;">Edit</button>
-          <button type="button" class="secondary" onclick="togglePinNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem;">${note.isPinned ? '📌 Pinned' : 'Pin'}</button>
+          <button type="button" class="secondary" onclick="togglePinNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem;">${note.isPinned ? 'Pinned' : 'Pin'}</button>
           <button type="button" class="secondary" onclick="deleteNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem; color:var(--danger);">Delete</button>
         </div>
       </div>

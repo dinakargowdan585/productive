@@ -1416,102 +1416,191 @@ button:active { transform: scale(0.98); }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  perspective: 1000px;
-  margin-bottom: 16px;
+  gap: 14px;
+  perspective: 1400px;
+  margin-bottom: 20px;
+  user-select: none;
+  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.7));
 }
-.flip-group { display: flex; gap: 4px; }
+.flip-group {
+  display: flex;
+  gap: 6px;
+  position: relative;
+}
 .flip-unit {
   position: relative;
-  width: var(--clock-unit-w, 76px);
-  height: var(--clock-unit-h, 104px);
+  width: var(--clock-unit-w, 82px);
+  height: var(--clock-unit-h, 114px);
   font-family: var(--font-code);
-  font-size: var(--clock-unit-font, 4.4rem);
+  font-size: var(--clock-unit-font, 4.8rem);
   font-weight: 900;
-  color: #fff;
+  color: #F8FAFC;
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
-  user-select: none;
+  perspective: 800px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75), 0 2px 8px rgba(0, 0, 0, 0.4);
+  background: #080C14;
 }
+
+/* Mechanical Hinge Pin Notches on Left & Right */
+.flip-unit::before, .flip-unit::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 10px;
+  background: #000;
+  border-radius: 2px;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.15);
+}
+.flip-unit::before { left: -2px; }
+.flip-unit::after { right: -2px; }
+
 .flip-top-static, .flip-bottom-static, .flip-top-fold, .flip-bottom-fold {
   position: absolute;
   left: 0;
   right: 0;
   overflow: hidden;
-  background: #111827;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, #172136 0%, #0E1626 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   display: flex;
   justify-content: center;
+  box-sizing: border-box;
 }
+
+/* Top Plate */
 .flip-top-static, .flip-top-fold {
   top: 0;
   height: 50%;
   border-radius: 10px 10px 0 0;
   align-items: flex-start;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.95);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16);
 }
+
+/* Bottom Plate */
 .flip-bottom-static, .flip-bottom-fold {
   bottom: 0;
   height: 50%;
   border-radius: 0 0 10px 10px;
   align-items: flex-end;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.4);
 }
+
 .flip-top-static span, .flip-top-fold span {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  line-height: var(--clock-unit-h, 104px);
-  height: var(--clock-unit-h, 104px);
+  line-height: var(--clock-unit-h, 114px);
+  height: var(--clock-unit-h, 114px);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  letter-spacing: -1px;
 }
 .flip-bottom-static span, .flip-bottom-fold span {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  line-height: var(--clock-unit-h, 104px);
-  height: var(--clock-unit-h, 104px);
+  line-height: var(--clock-unit-h, 114px);
+  height: var(--clock-unit-h, 114px);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  letter-spacing: -1px;
   transform: none !important;
 }
 
+/* 3D Folding Leaves */
 .flip-top-fold {
   transform-origin: 50% 100%;
-  z-index: 4;
+  z-index: 5;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .flip-bottom-fold {
   transform-origin: 50% 0%;
-  z-index: 3;
+  z-index: 4;
+  transform: rotateX(90deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
+
+/* 60 FPS Split-Flap Dynamic Physics Animation */
 .flip-unit.flipping .flip-top-fold {
-  animation: flipTopAnim 300ms ease-in forwards;
+  animation: flipTopLeafAnim 240ms cubic-bezier(0.4, 0, 0.7, 0.2) forwards;
 }
 .flip-unit.flipping .flip-bottom-fold {
-  animation: flipBottomAnim 300ms ease-out 300ms forwards;
+  animation: flipBottomLeafAnim 240ms cubic-bezier(0.2, 0.8, 0.4, 1) 220ms forwards;
 }
-@keyframes flipTopAnim {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-90deg); }
+
+@keyframes flipTopLeafAnim {
+  0% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
+  100% {
+    transform: rotateX(-90deg);
+    filter: brightness(0.35);
+  }
 }
-@keyframes flipBottomAnim {
-  0% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
+@keyframes flipBottomLeafAnim {
+  0% {
+    transform: rotateX(90deg);
+    filter: brightness(1.35);
+  }
+  100% {
+    transform: rotateX(0deg);
+    filter: brightness(1);
+  }
 }
 
 .flip-divider {
   font-family: var(--font-code);
-  font-size: calc(var(--clock-unit-font, 4.4rem) * 0.8);
+  font-size: calc(var(--clock-unit-font, 4.8rem) * 0.75);
   font-weight: 800;
   color: var(--accent);
-  margin: 0 2px;
+  margin: 0 1px;
+  opacity: 0.9;
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* Split-Flap AM/PM Badge */
+.flip-ampm-wrap {
+  display: flex;
+  align-self: flex-end;
+  margin-bottom: 8px;
+  margin-left: 2px;
+}
+.flip-ampm-badge {
+  background: linear-gradient(180deg, #172136 0%, #0E1626 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--font-code);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.flip-ampm-badge::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .clock-display-container {

@@ -13,7 +13,7 @@ const DayRolloverEngine = {
     this.bindLifecycleListeners();
     this.scheduleNextMidnightTimer();
     this.startIntervalPoller();
-    console.log("⚡ Automated Day Rollover Engine initialized. Active date:", this.lastActiveDate);
+    console.log("[DayRollover] Automated Day Rollover Engine initialized. Active date:", this.lastActiveDate);
   },
 
   getStoredLastDate() {
@@ -38,61 +38,69 @@ const DayRolloverEngine = {
     if (typeof getIsoDateStr !== "function") return;
     if (typeof memoryCache !== "undefined" && memoryCache.tasks === null) return;
     const currentToday = getIsoDateStr();
-    const storedLast = this.lastActiveDate || this.getStoredLastDate();
 
-    // Check if day changed OR if it's the initial check
-    const isNewDay = storedLast && (currentToday !== storedLast);
-
-    if (isNewDay || triggerSource === "force" || triggerSource === "init" || triggerSource === "post_repo_load") {
-      this.executeDailyReset(currentToday, storedLast);
+    if (this.lastActiveDate && this.lastActiveDate < currentToday) {
+      this.executeMidnightHabitReset(this.lastActiveDate, currentToday);
+      this.setStoredLastDate(currentToday);
+    } else if (!this.lastActiveDate) {
       this.setStoredLastDate(currentToday);
     }
   },
 
   /**
-   * Resets active completion on all daily habits for today while archiving past completions
+   * Lifecycle event listeners: triggers on window focus, visibility change, and tab resume
    */
-  executeDailyReset(todayIso, prevDayIso) {
+  bindLifecycleListeners() {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        this.runAutomatedResetCheck("visibilitychange");
+      }
+    });
+
+    window.addEventListener("focus", () => {
+      this.runAutomatedResetCheck("window_focus");
+    });
+
+    window.addEventListener("pageshow", () => {
+      this.runAutomatedResetCheck("pageshow");
+    });
+  },
+
+  /**
+   * Performs the habit reset:
+   * Daily habits reset completed=false for the new day,
+   * completedDates array preserves all historical timestamps,
+   * and streaks are mathematically computed from consecutive days.
+   */
+  executeMidnightHabitReset(prevDayIso, todayIso) {
     if (typeof loadTasks !== "function" || typeof saveTasks !== "function") return;
 
-    let tasks = [];
-    try {
-      tasks = (typeof memoryCache !== "undefined" && Array.isArray(memoryCache.tasks)) 
-        ? memoryCache.tasks 
-        : [];
-    } catch {
-      tasks = [];
-    }
-
-    if (!tasks || !tasks.length) return;
-
+    const tasks = loadTasks();
     let modifiedCount = 0;
+
     const sanitized = tasks.map(t => {
       const isDaily = Boolean(t.isDaily || t.is_daily);
       if (!isDaily) return t;
 
       if (!Array.isArray(t.completedDates)) {
         t.completedDates = [];
-      }
-
-      // If last completed date is in the past, ensure today is NOT marked complete
-      if (t.lastCompletedDate && t.lastCompletedDate < todayIso) {
-        if (!t.completedDates.includes(t.lastCompletedDate)) {
+        if (t.lastCompletedDate && t.completed) {
           t.completedDates.push(t.lastCompletedDate);
         }
-        t.completedDates = t.completedDates.filter(d => d < todayIso);
-        if (t.completed !== false) {
-          t.completed = false;
-          modifiedCount++;
-        }
-      } else if (!t.completedDates.includes(todayIso)) {
-        if (t.completed) {
-          t.completed = false;
-          modifiedCount++;
-        }
       }
 
-      // Calculate streak from historical completedDates
+      // Check if habit is completed specifically FOR TODAY
+      const isCompletedToday = t.completedDates.includes(todayIso);
+
+      if (t.completed !== isCompletedToday) {
+        t.completed = isCompletedToday;
+        t.updatedAt = new Date().toISOString();
+        modifiedCount++;
+      }
+
+      // Recalculate streak
       let streak = 0;
       let checkDate = new Date();
       if (!t.completedDates.includes(getIsoDateStr(checkDate))) {
@@ -109,14 +117,14 @@ const DayRolloverEngine = {
 
     if (modifiedCount > 0 || prevDayIso !== todayIso) {
       saveTasks(sanitized);
-      console.log(`🌅 Automated Day Rollover: Reset ${modifiedCount} daily habit(s) for Today (${todayIso}).`);
+      console.log(`[DayRollover] Automated Day Rollover: Reset ${modifiedCount} daily habit(s) for Today (${todayIso}).`);
 
       if (typeof renderPlanner === "function") renderPlanner();
       if (typeof renderCalendar === "function") renderCalendar();
       if (typeof renderDashboard === "function") renderDashboard();
 
       if (prevDayIso && prevDayIso < todayIso && typeof showToast === "function") {
-        showToast(`🌅 New Day (${todayIso})! Daily habits reset & past days locked.`, "info");
+        showToast(`New Day (${todayIso})! Daily habits reset & past days locked.`, "info");
       }
 
       // Dispatch global rollover event
@@ -137,7 +145,7 @@ const DayRolloverEngine = {
     const msUntilMidnight = Math.max(1000, tomorrow.getTime() - now.getTime());
 
     this.midnightTimer = setTimeout(() => {
-      console.log("🕛 Midnight Rollover Trigger Fired!");
+      console.log("[DayRollover] Midnight Rollover Trigger Fired!");
       this.runAutomatedResetCheck("midnight_timer");
       this.scheduleNextMidnightTimer();
     }, msUntilMidnight);

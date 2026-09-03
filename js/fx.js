@@ -93,6 +93,38 @@ const FX = {
     } catch (e) {}
   },
 
+  playFlap() {
+    if (!this.soundEnabled) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+
+      // Mechanical leaf snap (low thump + acoustic flap click)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.035);
+
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(1400, now);
+      filter.frequency.exponentialRampToValueAtTime(200, now + 0.035);
+
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } catch (e) {}
+  },
+
   playDelete() {
     if (!this.soundEnabled) return;
     try {

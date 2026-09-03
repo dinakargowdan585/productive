@@ -90,6 +90,7 @@ function updateStandbyClock() {
   const h = String(hours12).padStart(2, '0');
   const m = String(now.getMinutes()).padStart(2, '0');
   const s = String(now.getSeconds()).padStart(2, '0');
+  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
 
   const effectiveStyle = previewClockStyle || activeClockStyle;
   if (effectiveStyle === "flip") {
@@ -99,6 +100,11 @@ function updateStandbyClock() {
     updateFlipUnit("flipM2", m[1]);
     updateFlipUnit("flipS1", s[0]);
     updateFlipUnit("flipS2", s[1]);
+
+    const ampmBadge = document.getElementById("flipAmpmBadge");
+    if (ampmBadge && ampmBadge.textContent !== ampm) {
+      ampmBadge.textContent = ampm;
+    }
   } else {
     renderActiveClockFace();
   }
@@ -109,19 +115,48 @@ function updateStandbyClock() {
   }
 }
 
-function updateFlipUnit(unitId, val) {
+function updateFlipUnit(unitId, nextVal) {
   const unit = document.getElementById(unitId);
   if (!unit) return;
-  const currentVal = unit.querySelector(".flip-top-static span")?.textContent;
-  if (currentVal === val) return;
 
-  unit.querySelectorAll("span").forEach(s => s.textContent = val);
+  const topStatic = unit.querySelector(".flip-top-static span");
+  const bottomStatic = unit.querySelector(".flip-bottom-static span");
+  const topFold = unit.querySelector(".flip-top-fold span");
+  const bottomFold = unit.querySelector(".flip-bottom-fold span");
+
+  if (!topStatic || !bottomStatic || !topFold || !bottomFold) return;
+
+  const currentVal = topStatic.textContent;
+  if (currentVal === nextVal) return;
+
+  // 1. Set old value on folding top leaf and static bottom
+  topFold.textContent = currentVal;
+  bottomStatic.textContent = currentVal;
+
+  // 2. Set new value on revealed static top and unfolding bottom leaf
+  topStatic.textContent = nextVal;
+  bottomFold.textContent = nextVal;
+
+  // 3. Trigger 3D mechanical animation
   unit.classList.remove("flipping");
   void unit.offsetWidth;
   unit.classList.add("flipping");
-  if (typeof FX !== "undefined" && (unitId.includes("M") || unitId.includes("H"))) {
-    FX.playClick();
+
+  // 4. Acoustic & haptic mechanical response
+  if (typeof FX !== "undefined") {
+    if (unitId.includes("M") || unitId.includes("H")) {
+      if (typeof FX.playFlap === "function") FX.playFlap();
+      else if (typeof FX.playClick === "function") FX.playClick();
+      if (typeof FX.haptic === "function") FX.haptic("light");
+    }
   }
+
+  // 5. Clean up after animation cycle
+  setTimeout(() => {
+    bottomStatic.textContent = nextVal;
+    topFold.textContent = nextVal;
+    unit.classList.remove("flipping");
+  }, 480);
 }
 
 function selectClockStyle(styleName, e) {
@@ -175,11 +210,11 @@ function renderClockStyleGrid() {
   if (!grid) return;
 
   const styles = [
-    { id: "apple", title: " Apple StandBy", desc: "VisionOS 12h clock with date" },
-    { id: "flip", title: "📟 3D Flip Clock", desc: "Retro mechanical split-flap" },
-    { id: "led", title: "🔴 LED Neon", desc: "Glowing cyan digital" },
-    { id: "analog", title: "⏱️ Swiss Analog", desc: "Moving watch hands" },
-    { id: "minimal", title: "🔲 Minimalist Mono", desc: "Lightweight font" }
+    { id: "apple", title: "Apple StandBy", desc: "VisionOS 12h clock with date" },
+    { id: "flip", title: "3D Flip Clock", desc: "Retro mechanical split-flap" },
+    { id: "led", title: "LED Neon", desc: "Glowing cyan digital" },
+    { id: "analog", title: "Swiss Analog", desc: "Moving watch hands" },
+    { id: "minimal", title: "Minimalist Mono", desc: "Lightweight font" }
   ];
 
   grid.innerHTML = styles.map(s => `
@@ -255,7 +290,7 @@ function toggleTimer() {
     if (typeof showToast === "function") showToast("Timer paused.", "info");
   } else {
     startPomodoro();
-    if (typeof showToast === "function") showToast("Focus timer started! ⏱️", "success");
+    if (typeof showToast === "function") showToast("Focus timer started!", "success");
   }
 }
 
@@ -325,10 +360,10 @@ function tickPomodoro() {
     pomodoroSeconds = 59;
   } else {
     pausePomodoro();
-    if (typeof showToast === "function") showToast("🎉 Focus session completed!", "success");
+    if (typeof showToast === "function") showToast("Focus session completed!", "success");
     try {
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        new Notification("Productive OS", { body: "🎉 Focus session completed!" });
+        new Notification("Productive OS", { body: "Focus session completed!" });
       }
     } catch (e) {}
   }
@@ -338,10 +373,10 @@ function tickPomodoro() {
 function togglePomodoroTimer() {
   if (isPomodoroRunning) {
     pausePomodoro();
-    if (typeof showToast === "function") showToast("Focus timer paused ⏸️", "info");
+    if (typeof showToast === "function") showToast("Focus timer paused", "info");
   } else {
     startPomodoro();
-    if (typeof showToast === "function") showToast("Focus timer running ▶️", "info");
+    if (typeof showToast === "function") showToast("Focus timer running", "info");
   }
 }
 
@@ -349,7 +384,7 @@ function stopPomodoroTimer() {
   resetPomodoro();
   const pipWidget = document.getElementById("floatingFocusWidget");
   if (pipWidget) pipWidget.style.display = "none";
-  if (typeof showToast === "function") showToast("Focus session stopped ⏹️", "info");
+  if (typeof showToast === "function") showToast("Focus session stopped", "info");
 }
 
 function updatePomodoroDisplay() {
@@ -374,7 +409,7 @@ function updatePomodoroDisplay() {
     if (isPomodoroRunning || (pomodoroMinutes < 25 && pomodoroMinutes > 0)) {
       pipWidget.style.display = "flex";
       if (pipTimerText) pipTimerText.textContent = formatted;
-      if (pipPlayBtn) pipPlayBtn.textContent = isPomodoroRunning ? "⏸️" : "▶️";
+      if (pipPlayBtn) pipPlayBtn.innerHTML = isPomodoroRunning ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
     } else if (!isPomodoroRunning && pomodoroMinutes === 25 && pomodoroSeconds === 0) {
       pipWidget.style.display = "none";
     }
@@ -389,7 +424,7 @@ function startFocusSessionForBlock(blockId) {
   }
   resetPomodoro();
   startPomodoro();
-  if (typeof showToast === "function") showToast("Focus session started! ⏱️", "success");
+  if (typeof showToast === "function") showToast("Focus session started!", "success");
 }
 
 /* ===================================================================

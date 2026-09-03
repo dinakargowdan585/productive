@@ -38,7 +38,7 @@ function initSupabaseClient() {
         }
       });
       console.log("[Supabase] client:", !!supabaseClient);
-      console.log("⚡ Supabase Client initialized successfully.");
+      console.log("[Supabase] Client initialized successfully.");
       return supabaseClient;
     } catch (err) {
       console.error("Failed to initialize Supabase client:", err);
@@ -61,7 +61,7 @@ function ensureSupabaseConfigured() {
   if (!client) {
     if (typeof openSupabaseAuthModal === "function") openSupabaseAuthModal();
     if (typeof showToast === "function") {
-      showToast("🔑 Please enter your Supabase Anon Key below to connect.", "info");
+      showToast("Please enter your Supabase Anon Key below to connect.", "info");
     }
     return false;
   }
@@ -196,7 +196,7 @@ async function signInWithGoogle() {
     : window.location.pathname.replace(/\/$/, "") + "/index.html";
   const redirectUrl = `${origin}${pathname}`;
 
-  console.log("🌐 Initiating Google OAuth with redirect URL:", redirectUrl);
+  console.log("[Supabase] Initiating Google OAuth with redirect URL:", redirectUrl);
 
   const { data, error } = await client.auth.signInWithOAuth({
     provider: 'google',
@@ -263,12 +263,12 @@ async function checkSupabaseConnectionHealth() {
 
     return {
       connected: true,
-      message: "🟢 Connected to Supabase Cloud API!"
+      message: "Connected to Supabase Cloud API!"
     };
   } catch (err) {
     return {
       connected: false,
-      message: "🔴 Connection error: " + (err.message || err)
+      message: "Connection error: " + (err.message || err)
     };
   }
 }
@@ -281,7 +281,7 @@ function setupRealtimeSync() {
     realtimeChannel = client
       .channel('public-db-changes')
       .on('postgres_changes', { event: '*', schema: 'public' }, async (payload) => {
-        console.log("⚡ Realtime DB change received:", payload);
+        console.log("[Supabase] Realtime DB change received:", payload);
         if (typeof loadAllFromRepositoriesIntoMemory === "function") {
           await loadAllFromRepositoriesIntoMemory();
         }
@@ -289,7 +289,7 @@ function setupRealtimeSync() {
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log("🟢 Supabase Realtime WebSocket Subscribed.");
+          console.log("[Supabase] Realtime WebSocket Subscribed.");
         }
       });
   } catch (e) {
