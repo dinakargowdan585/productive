@@ -152,10 +152,11 @@ function handleQuickDayTaskAdd(e, dateStr) {
     const title = e.target.value.trim();
     if (!title) return;
     const tasks = loadTasks();
+    const targetDate = dateStr || selectedCalDateStr || getIsoDateStr();
     tasks.unshift({
       id: uuid(),
       title,
-      dueDate: dateStr || selectedCalDateStr || getIsoDateStr(),
+      dueDate: targetDate,
       priority: "MED",
       category: "work",
       calendarId: "work",
@@ -163,10 +164,13 @@ function handleQuickDayTaskAdd(e, dateStr) {
       createdAt: new Date().toISOString()
     });
     saveTasks(tasks);
-    e.target.value = "";
     renderCalendar();
     if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-    if (typeof showToast === "function") showToast(`Added task for ${dateStr}!`, "success");
+    if (typeof showToast === "function") showToast(`Added task for ${targetDate}!`, "success");
+    setTimeout(() => {
+      const input = document.getElementById("calQuickAddInput");
+      if (input) input.focus();
+    }, 50);
   }
 }
 
@@ -288,6 +292,13 @@ function selectCalDate(dateStr) {
   calYear = parseInt(parts[0]);
   calMonth = parseInt(parts[1]) - 1;
   renderCalendar();
+  setTimeout(() => {
+    const input = document.getElementById("calQuickAddInput");
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, 60);
 }
 
 function renderCalendarCategoryLegend() {
@@ -321,6 +332,15 @@ function renderMonthView(grid, canvasHeader, tasks) {
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const startingOffset = (firstDay + 6) % 7;
   const todayIso = getIsoDateStr();
+  const selectedDate = selectedCalDateStr || todayIso;
+
+  const [selY, selM, selD] = selectedDate.split("-").map(Number);
+  const isSelectedInMonth = (selY === calYear && selM === (calMonth + 1));
+  const selectedDayNum = isSelectedInMonth ? selD : null;
+  const selectedCol = selectedDayNum ? ((startingOffset + selectedDayNum - 1) % 7) : 0;
+  const selectedRow = selectedDayNum ? Math.floor((startingOffset + selectedDayNum - 1) / 7) : null;
+
+  let inspectorRendered = false;
 
   for (let i = 0; i < startingOffset; i++) {
     grid.innerHTML += `<div class="cal-day-cell" style="opacity:0.3; background:transparent;"></div>`;
@@ -331,6 +351,9 @@ function renderMonthView(grid, canvasHeader, tasks) {
     const isToday = curDateStr === todayIso;
     const isSelected = curDateStr === selectedCalDateStr;
     const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
+    const cellIndex = startingOffset + day - 1;
+    const isEndOfRow = (cellIndex % 7 === 6) || (day === daysInMonth);
+    const currentRow = Math.floor(cellIndex / 7);
 
     grid.innerHTML += `
       <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
@@ -352,13 +375,19 @@ function renderMonthView(grid, canvasHeader, tasks) {
         </div>
       </div>
     `;
+
+    if (isSelectedInMonth && currentRow === selectedRow && isEndOfRow && !inspectorRendered) {
+      renderDayInspector(grid, selectedDate, tasks, selectedCol);
+      inspectorRendered = true;
+    }
   }
 
-  // Render Day Inspector Drawer Below Month Grid
-  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks);
+  if (!inspectorRendered) {
+    renderDayInspector(grid, selectedDate, tasks, 0);
+  }
 }
 
-function renderDayInspector(container, dateStr, tasks) {
+function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
   const dayTasks = tasks.filter(t => isTaskForDate(t, dateStr));
   const allBlocks = loadTimeBlocks();
   const dayBlocks = allBlocks.filter(b => isBlockForDate(b, dateStr));
@@ -368,6 +397,8 @@ function renderDayInspector(container, dateStr, tasks) {
   const inspector = document.createElement("div");
   inspector.className = "cal-day-inspector";
   inspector.style.gridColumn = "1 / -1";
+
+  const caretPercent = (typeof colIndex === "number") ? ((colIndex * (100 / 7)) + (100 / 14)) : 50;
 
   let itemsHTML = "";
   if (!dayTasks.length && !dayBlocks.length) {
@@ -403,6 +434,7 @@ function renderDayInspector(container, dateStr, tasks) {
   }
 
   inspector.innerHTML = `
+    <div class="cal-inspector-pointer" style="left:${caretPercent}%;"></div>
     <div class="cal-inspector-header">
       <h3 class="cal-inspector-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -414,7 +446,7 @@ function renderDayInspector(container, dateStr, tasks) {
       </div>
     </div>
     ${itemsHTML}
-    <input type="text" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+    <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
   `;
 
   container.appendChild(inspector);
@@ -503,7 +535,8 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     });
   });
 
-  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks);
+  const selWeekIdx = weekDates.findIndex(d => getIsoDateStr(d) === (selectedCalDateStr || todayIso));
+  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks, selWeekIdx >= 0 ? selWeekIdx : 0);
 }
 
 function renderDayView(grid, canvasHeader, dateObj, tasks) {
