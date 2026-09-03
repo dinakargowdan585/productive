@@ -155,6 +155,15 @@ const SyncEngine = {
   },
 
   formatTaskForCloud(task, userId) {
+    const todayIso = getIsoDateStr();
+    const isDaily = Boolean(task.isDaily || task.is_daily);
+    let isCompletedToday = false;
+    if (isDaily) {
+      isCompletedToday = Array.isArray(task.completedDates) ? task.completedDates.includes(todayIso) : (task.lastCompletedDate === todayIso);
+    } else {
+      isCompletedToday = Boolean(task.completed);
+    }
+
     let combinedNotes = task.notes || task.description || "";
     try {
       let existingObj = {};
@@ -177,8 +186,8 @@ const SyncEngine = {
       category: task.category || "work",
       priority: (task.priority || "MED").toUpperCase(),
       due_date: task.dueDate || task.due_date || null,
-      is_daily: Boolean(task.isDaily || task.is_daily),
-      completed: Boolean(task.completed),
+      is_daily: isDaily,
+      completed: isCompletedToday,
       estimate_mins: parseInt(task.estimateMins || task.estimate_mins, 10) || 30,
       created_at: task.createdAt || task.created_at || new Date().toISOString(),
       updated_at: task.updatedAt || task.updated_at || new Date().toISOString(),
@@ -310,9 +319,11 @@ const SyncEngine = {
               }
               const todayIso = getIsoDateStr();
               const isDaily = Boolean(t.is_daily);
-              const isCompleted = Boolean(t.completed);
-              if (isDaily && isCompleted && !completedDates.includes(todayIso)) {
-                completedDates.push(todayIso);
+              let isCompletedToday = false;
+              if (isDaily) {
+                isCompletedToday = completedDates.includes(todayIso) || (lastCompletedDate === todayIso);
+              } else {
+                isCompletedToday = Boolean(t.completed);
               }
               return {
                 id: t.id,
@@ -322,7 +333,7 @@ const SyncEngine = {
                 priority: t.priority || "MED",
                 dueDate: t.due_date || null,
                 isDaily: isDaily,
-                completed: isCompleted,
+                completed: isCompletedToday,
                 streak: streak,
                 lastCompletedDate: lastCompletedDate,
                 completedDates: completedDates,

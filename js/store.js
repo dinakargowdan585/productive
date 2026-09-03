@@ -48,14 +48,13 @@ function getYesterdayIsoDateStr() {
 function isTaskCompletedOnDate(t, dateStr) {
   if (!t) return false;
   const targetDate = dateStr || getIsoDateStr();
-  const todayIso = getIsoDateStr();
   const isDaily = Boolean(t.isDaily || t.is_daily);
   if (isDaily) {
-    if (Array.isArray(t.completedDates) && t.completedDates.length > 0) {
+    if (Array.isArray(t.completedDates)) {
       return t.completedDates.includes(targetDate);
     }
-    if (Boolean(t.completed) && (targetDate === todayIso || targetDate === t.lastCompletedDate)) {
-      return true;
+    if (t.lastCompletedDate) {
+      return t.lastCompletedDate === targetDate;
     }
     return false;
   }
@@ -144,7 +143,15 @@ async function loadAllFromRepositoriesIntoMemory() {
 
 // Synchronous and Asynchronous Loaders / Savers
 function loadTasks() {
-  return memoryCache.tasks || [];
+  const rawTasks = memoryCache.tasks || [];
+  const todayIso = getIsoDateStr();
+  return rawTasks.map(t => {
+    const isDaily = Boolean(t.isDaily || t.is_daily);
+    if (isDaily) {
+      t.completed = isTaskCompletedOnDate(t, todayIso);
+    }
+    return t;
+  });
 }
 
 function saveTasks(tasks) {
