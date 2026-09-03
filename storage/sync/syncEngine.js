@@ -128,12 +128,7 @@ const SyncEngine = {
     const popoverConn = document.getElementById("syncPopoverConnection");
 
     if (popoverConn) popoverConn.textContent = navigator.onLine ? "Online" : "Offline";
-
-    if (typeof SyncQueue !== "undefined") {
-      SyncQueue.getQueue().then(queue => {
-        if (popoverQueue) popoverQueue.textContent = `${queue.length} pending`;
-      }).catch(() => {});
-    }
+    if (popoverQueue) popoverQueue.textContent = this.state === "syncing" ? "Syncing..." : "Up to date";
 
     if (popoverLastSync) {
       popoverLastSync.textContent = this.lastSyncedAt ? new Date(this.lastSyncedAt).toLocaleTimeString() : "Never";

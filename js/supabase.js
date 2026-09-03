@@ -215,10 +215,6 @@ if (typeof window !== "undefined") {
 async function signOutUser() {
   const client = getSupabase();
   if (!client) return;
-  const user = await getSupabaseUser();
-  if (user && typeof SyncQueue !== "undefined" && typeof SyncQueue.clearUserQueue === "function") {
-    await SyncQueue.clearUserQueue(user.id);
-  }
   const { error } = await client.auth.signOut();
   if (error) throw error;
 }

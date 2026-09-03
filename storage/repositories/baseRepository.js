@@ -28,12 +28,7 @@ function createRepository(storeName) {
       const store = await getStore(storeName, "readwrite");
       return new Promise((resolve, reject) => {
         const req = store.put(item);
-        req.onsuccess = () => {
-          if (typeof SyncQueue !== "undefined") {
-            SyncQueue.enqueue("CREATE", storeName, item.id, item).catch(() => {});
-          }
-          resolve(item);
-        };
+        req.onsuccess = () => resolve(item);
         req.onerror = (e) => reject(e.target.error);
       });
     },
@@ -45,12 +40,7 @@ function createRepository(storeName) {
       const store = await getStore(storeName, "readwrite");
       return new Promise((resolve, reject) => {
         const req = store.put(updated);
-        req.onsuccess = () => {
-          if (typeof SyncQueue !== "undefined") {
-            SyncQueue.enqueue("UPDATE", storeName, id, updated).catch(() => {});
-          }
-          resolve(updated);
-        };
+        req.onsuccess = () => resolve(updated);
         req.onerror = (e) => reject(e.target.error);
       });
     },
@@ -59,12 +49,7 @@ function createRepository(storeName) {
       const store = await getStore(storeName, "readwrite");
       return new Promise((resolve, reject) => {
         const req = store.delete(id);
-        req.onsuccess = () => {
-          if (typeof SyncQueue !== "undefined") {
-            SyncQueue.enqueue("DELETE", storeName, id, { id, deletedAt: new Date().toISOString() }).catch(() => {});
-          }
-          resolve(true);
-        };
+        req.onsuccess = () => resolve(true);
         req.onerror = (e) => reject(e.target.error);
       });
     },

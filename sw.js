@@ -1,13 +1,13 @@
 /* Productive OS Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "productive-os-cache-v5";
+const CACHE_NAME = "productive-os-cache-v6";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./manifest.json",
-  "./js/config.js",
   "./js/store.js",
+  "./js/fx.js",
   "./js/dashboard.js",
   "./js/planner.js",
   "./js/notes.js",
@@ -18,9 +18,7 @@ const ASSETS = [
   "./js/app.js",
   "./storage/database.js",
   "./storage/repositories/baseRepository.js",
-  "./storage/sync/syncQueue.js",
   "./storage/sync/syncEngine.js",
-  "./storage/migration.js",
   "./assets/icon-192.png",
   "./assets/icon-512.png"
 ];
