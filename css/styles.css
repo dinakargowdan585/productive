@@ -122,7 +122,7 @@ body {
 }
 
 /* Level 3 — Frosted Overlay (Vault Authentication, Dialogs, StandBy Focus) */
-.glass-level-3, dialog, .event-modal-dialog, #vaultAuthPane {
+.glass-level-3, dialog:not(#supabaseAuthModal), .event-modal-dialog, #vaultAuthPane {
   background: rgba(5, 7, 10, 0.88) !important;
   backdrop-filter: blur(60px) saturate(220%) !important;
   -webkit-backdrop-filter: blur(60px) saturate(220%) !important;
@@ -1644,7 +1644,7 @@ button:active { transform: scale(0.98); }
   }
 
   /* 8. Modals & Dialogs */
-  dialog, .event-modal-dialog {
+  dialog:not(#supabaseAuthModal), .event-modal-dialog {
     width: 94vw !important;
     max-width: 94vw !important;
     padding: 16px !important;
@@ -1716,6 +1716,24 @@ button:active { transform: scale(0.98); }
 /* ==========================================================================
    Luxury Authentication Modal & Components (Matching Photographers-Main)
    ========================================================================== */
+dialog#supabaseAuthModal {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  max-width: 480px !important;
+  width: auto !important;
+}
+
+dialog#supabaseAuthModal::backdrop {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
 .auth-modal-card {
   position: relative;
   width: min(100%, 460px);
