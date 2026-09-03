@@ -36,6 +36,7 @@ const DayRolloverEngine = {
    */
   runAutomatedResetCheck(triggerSource = "poller") {
     if (typeof getIsoDateStr !== "function") return;
+    if (typeof memoryCache !== "undefined" && memoryCache.tasks === null) return;
     const currentToday = getIsoDateStr();
     const storedLast = this.lastActiveDate || this.getStoredLastDate();
 
