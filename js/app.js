@@ -302,6 +302,9 @@ function switchAuthMode(mode) {
   if (btnSignup) btnSignup.classList.toggle("active", mode === "signup");
   if (btnOtp) btnOtp.classList.toggle("active", mode === "otp");
 
+  const forgotBtn = document.getElementById("authForgotBtn");
+  const rememberRow = document.getElementById("authRememberRow");
+
   if (mode === "login") {
     if (title) title.textContent = "Welcome Back";
     if (subtitle) subtitle.textContent = "Sign in to sync your notes, tasks, time blocks & projects across all your devices.";
@@ -310,6 +313,8 @@ function switchAuthMode(mode) {
     if (submitBtnText) submitBtnText.textContent = "Sign In";
     if (divider) divider.style.display = "flex";
     if (googleBtn) googleBtn.style.display = "flex";
+    if (forgotBtn) forgotBtn.style.display = "inline-block";
+    if (rememberRow) rememberRow.style.display = "flex";
   } else if (mode === "signup") {
     if (title) title.textContent = "Begin Your Journey";
     if (subtitle) subtitle.textContent = "Create an account to backup and sync your personal executive workspace.";
@@ -318,6 +323,8 @@ function switchAuthMode(mode) {
     if (submitBtnText) submitBtnText.textContent = "Create Account";
     if (divider) divider.style.display = "flex";
     if (googleBtn) googleBtn.style.display = "flex";
+    if (forgotBtn) forgotBtn.style.display = "none";
+    if (rememberRow) rememberRow.style.display = "flex";
   } else if (mode === "otp") {
     if (title) title.textContent = "Passwordless Login";
     if (subtitle) subtitle.textContent = "Enter your email address to receive an instant 6-digit verification code.";
@@ -326,6 +333,30 @@ function switchAuthMode(mode) {
     if (submitBtnText) submitBtnText.textContent = "✉️ Send Verification Code";
     if (divider) divider.style.display = "none";
     if (googleBtn) googleBtn.style.display = "none";
+    if (forgotBtn) forgotBtn.style.display = "none";
+    if (rememberRow) rememberRow.style.display = "none";
+  }
+}
+
+async function handleForgotPassword(e) {
+  if (e) e.preventDefault();
+  clearAuthError();
+  const email = document.getElementById("authEmailInput")?.value.trim();
+  if (!email || !email.includes("@")) {
+    showAuthError("Please enter your email address above to receive a password reset link.");
+    const emailInput = document.getElementById("authEmailInput");
+    if (emailInput) emailInput.focus();
+    return;
+  }
+  try {
+    if (typeof sendPasswordResetEmail === "function") {
+      await sendPasswordResetEmail(email);
+      if (typeof showToast === "function") {
+        showToast("Password reset link sent to your email! ✉️", "success");
+      }
+    }
+  } catch (err) {
+    showAuthError(err.message || "Failed to send password reset email.");
   }
 }
 

@@ -171,6 +171,21 @@ async function signInWithEmail(email, password) {
   return data;
 }
 
+async function sendPasswordResetEmail(email) {
+  if (!ensureSupabaseConfigured()) return null;
+  const client = getSupabase();
+  const cleanEmail = (email || "").trim();
+  if (!cleanEmail || !cleanEmail.includes("@")) {
+    throw new Error("Please enter your email address to reset password.");
+  }
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { data, error } = await client.auth.resetPasswordForEmail(cleanEmail, {
+    redirectTo: redirectTo
+  });
+  if (error) throw error;
+  return data;
+}
+
 async function signInWithGoogle() {
   if (!ensureSupabaseConfigured()) return null;
   const client = getSupabase();
