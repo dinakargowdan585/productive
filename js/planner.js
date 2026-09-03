@@ -131,12 +131,14 @@ function toggleTask(id) {
   const t = tasks.find(x => x.id === id);
   if (t) {
     t.completed = !t.completed;
+    t.updatedAt = new Date().toISOString();
     if (t.completed && t.isDaily) {
       t.streak = (t.streak || 0) + 1;
     }
     saveTasks(tasks);
     renderPlanner();
     if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
     if (typeof showToast === "function") showToast(t.completed ? "Task completed! 🎉" : "Task marked incomplete", "info");
   }
 }
