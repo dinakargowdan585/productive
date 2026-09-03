@@ -7,6 +7,33 @@ let currentCalViewMode = "month";
 let calActiveFilter = "ALL";
 let calNowInterval = null;
 
+function getTaskDate(t) {
+  const d = t.dueDate || t.due_date || "";
+  if (!d) return "";
+  return d.includes("T") ? d.split("T")[0] : d.trim();
+}
+
+function isTaskForDate(t, dateStr) {
+  const todayIso = getIsoDateStr();
+  const taskDate = getTaskDate(t);
+
+  // 1. Daily habits repeat every day
+  if (t.isDaily || t.is_daily) return true;
+
+  // 2. Direct date match
+  if (taskDate && taskDate === dateStr) return true;
+
+  // 3. If task has no due date and is not completed, show on today's calendar
+  if (!taskDate && dateStr === todayIso) return true;
+
+  return false;
+}
+
+function isBlockForDate(b, dateStr) {
+  const bDate = b.date ? (b.date.includes("T") ? b.date.split("T")[0] : b.date.trim()) : "";
+  return bDate === dateStr;
+}
+
 function changeCalMonth(delta) {
   calMonth += delta;
   if (calMonth < 0) { calMonth = 11; calYear--; }
@@ -31,7 +58,7 @@ function nextMonth() {
 }
 
 function changeCalWeek(deltaWeeks) {
-  const d = new Date(selectedCalDateStr || getIsoDateStr());
+  const d = new Date((selectedCalDateStr || getIsoDateStr()) + "T00:00:00");
   d.setDate(d.getDate() + (deltaWeeks * 7));
   selectedCalDateStr = getIsoDateStr(d);
   calYear = d.getFullYear();
@@ -63,6 +90,8 @@ function setCalViewMode(mode) {
 
 function filterCalCategory(catId) {
   calActiveFilter = catId;
+  const filterSelect = document.getElementById("calCategoryFilter");
+  if (filterSelect) filterSelect.value = catId;
   document.querySelectorAll(".cal-chip").forEach(chip => chip.classList.remove("active"));
   const activeChip = document.getElementById("calChip-" + catId);
   if (activeChip) activeChip.classList.add("active");
@@ -141,6 +170,37 @@ function handleQuickDayTaskAdd(e, dateStr) {
   }
 }
 
+function renderSidebarUpcoming(tasks, allBlocks) {
+  const container = document.getElementById("sidebarUpcomingEvents");
+  if (!container) return;
+  const todayIso = getIsoDateStr();
+  const todayTasks = tasks.filter(t => isTaskForDate(t, todayIso));
+  const todayBlocks = allBlocks.filter(b => isBlockForDate(b, todayIso));
+
+  if (!todayTasks.length && !todayBlocks.length) {
+    container.innerHTML = `<div style="font-size:0.75rem; color:var(--muted); font-style:italic;">No events for today.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    ${todayBlocks.slice(0, 3).map(b => `
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid ${b.color || 'var(--accent)'}; padding:6px 8px; border-radius:4px; font-size:0.75rem;">
+        <div style="font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">⏱️ ${escapeHTML(b.taskTitle)}</div>
+        <div style="font-size:0.68rem; color:var(--muted);">${formatTime12Hour(b.startTime)}</div>
+      </div>
+    `).join('')}
+    ${todayTasks.slice(0, 4).map(t => {
+      const cal = getCalendarById(t.calendarId || t.category || "work");
+      return `
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid ${cal.color}; padding:6px 8px; border-radius:4px; font-size:0.75rem; display:flex; align-items:center; gap:6px;">
+          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" style="width:14px !important; height:14px !important; min-width:14px; min-height:14px;">
+          <span style="color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(t.title)}</span>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
 function renderCalendar() {
   const monthTitle = document.getElementById("calMonthTitle") || document.getElementById("calendarMonthTitle");
   if (monthTitle) {
@@ -162,17 +222,27 @@ function renderCalendar() {
   if (!grid) return;
 
   const tasks = loadTasks();
+  const allBlocks = loadTimeBlocks();
+  const searchInput = document.getElementById("calSearchInput")?.value.trim().toLowerCase() || "";
+  const selectFilter = document.getElementById("calCategoryFilter")?.value || "ALL";
+  const activeFilter = (selectFilter !== "ALL" ? selectFilter : calActiveFilter).toLowerCase();
+
   let filteredTasks = tasks;
-  if (calActiveFilter !== "ALL") {
-    filteredTasks = tasks.filter(t => (t.calendarId || t.category || "work").toLowerCase() === calActiveFilter.toLowerCase());
+  if (activeFilter !== "all") {
+    filteredTasks = filteredTasks.filter(t => (t.calendarId || t.category || "work").toLowerCase() === activeFilter);
   }
+  if (searchInput) {
+    filteredTasks = filteredTasks.filter(t => (t.title || "").toLowerCase().includes(searchInput) || (t.category || "").toLowerCase().includes(searchInput));
+  }
+
+  renderSidebarUpcoming(tasks, allBlocks);
 
   if (currentCalViewMode === "month") {
     renderMonthView(grid, canvasHeader, filteredTasks);
   } else if (currentCalViewMode === "week") {
-    renderWeekView(grid, canvasHeader, new Date(selectedCalDateStr || getIsoDateStr()), filteredTasks);
+    renderWeekView(grid, canvasHeader, new Date((selectedCalDateStr || getIsoDateStr()) + "T00:00:00"), filteredTasks);
   } else if (currentCalViewMode === "day") {
-    renderDayView(grid, canvasHeader, new Date(selectedCalDateStr || getIsoDateStr()), filteredTasks);
+    renderDayView(grid, canvasHeader, new Date((selectedCalDateStr || getIsoDateStr()) + "T00:00:00"), filteredTasks);
   } else if (currentCalViewMode === "agenda") {
     renderAgendaView(grid, canvasHeader, filteredTasks);
   }
@@ -260,7 +330,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
     const curDateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = curDateStr === todayIso;
     const isSelected = curDateStr === selectedCalDateStr;
-    const dayTasks = tasks.filter(t => t.dueDate === curDateStr);
+    const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
 
     grid.innerHTML += `
       <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
@@ -288,8 +358,9 @@ function renderMonthView(grid, canvasHeader, tasks) {
 }
 
 function renderDayInspector(container, dateStr, tasks) {
-  const dayTasks = tasks.filter(t => t.dueDate === dateStr);
-  const dayBlocks = loadTimeBlocks().filter(b => b.date === dateStr);
+  const dayTasks = tasks.filter(t => isTaskForDate(t, dateStr));
+  const allBlocks = loadTimeBlocks();
+  const dayBlocks = allBlocks.filter(b => isBlockForDate(b, dateStr));
   const dateObj = new Date(dateStr + "T00:00:00");
   const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -319,6 +390,7 @@ function renderDayInspector(container, dateStr, tasks) {
               <div style="display:flex; align-items:center; gap:8px;">
                 <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
                 <span style="font-size:0.9rem; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+                ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
               </div>
               <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
             </div>
@@ -409,12 +481,10 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
       const curDateStr = getIsoDateStr(d);
       const isTodayCol = curDateStr === todayIso;
       const hrBlocks = allTimeBlocks.filter(b => {
-        if (b.date !== curDateStr) return false;
+        if (!isBlockForDate(b, curDateStr)) return false;
         const bStartHr = Math.floor(parseTimeToMinutes(b.startTime) / 60);
         return bStartHr === hr;
       });
-
-      const dayTasks = tasks.filter(t => t.dueDate === curDateStr && !t.completed);
 
       grid.innerHTML += `
         <div class="cal-day-cell" style="min-height:46px; padding:4px; position:relative;" onclick="selectCalDate('${curDateStr}')">
@@ -442,8 +512,9 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   grid.innerHTML = "";
 
   const curDateStr = getIsoDateStr(dateObj);
-  const dayTasks = tasks.filter(t => t.dueDate === curDateStr);
-  const dayBlocks = loadTimeBlocks().filter(b => b.date === curDateStr);
+  const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
+  const allBlocks = loadTimeBlocks();
+  const dayBlocks = allBlocks.filter(b => isBlockForDate(b, curDateStr));
 
   grid.innerHTML += `
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -507,15 +578,15 @@ function renderAgendaView(grid, canvasHeader, tasks) {
   const dateMap = {};
   
   tasks.forEach(t => {
-    if (!t.dueDate) return;
-    if (!dateMap[t.dueDate]) dateMap[t.dueDate] = { tasks: [], blocks: [] };
-    dateMap[t.dueDate].tasks.push(t);
+    const d = getTaskDate(t) || todayIso;
+    if (!dateMap[d]) dateMap[d] = { tasks: [], blocks: [] };
+    dateMap[d].tasks.push(t);
   });
 
   allBlocks.forEach(b => {
-    if (!b.date) return;
-    if (!dateMap[b.date]) dateMap[b.date] = { tasks: [], blocks: [] };
-    dateMap[b.date].blocks.push(b);
+    const d = (b.date ? (b.date.includes("T") ? b.date.split("T")[0] : b.date.trim()) : todayIso);
+    if (!dateMap[d]) dateMap[d] = { tasks: [], blocks: [] };
+    dateMap[d].blocks.push(b);
   });
 
   const sortedDates = Object.keys(dateMap).sort();
