@@ -127,15 +127,39 @@ function addDefaultDailyTasks() {
   addCustomDailyHabit();
 }
 
+function getYesterdayIsoDateStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return getIsoDateStr(d);
+}
+
 function toggleTask(id) {
   const tasks = loadTasks();
   const t = tasks.find(x => x.id === id);
   if (t) {
     t.completed = !t.completed;
     t.updatedAt = new Date().toISOString();
-    if (t.completed && t.isDaily) {
-      t.streak = (t.streak || 0) + 1;
+    const todayIso = getIsoDateStr();
+    const yesterdayIso = getYesterdayIsoDateStr();
+
+    if (t.isDaily) {
+      if (t.completed) {
+        if (t.lastCompletedDate === yesterdayIso) {
+          t.streak = (parseInt(t.streak, 10) || 0) + 1;
+        } else if (t.lastCompletedDate === todayIso) {
+          t.streak = Math.max(1, parseInt(t.streak, 10) || 1);
+        } else {
+          t.streak = (parseInt(t.streak, 10) > 0 && t.lastCompletedDate === todayIso) ? t.streak : 1;
+        }
+        t.lastCompletedDate = todayIso;
+      } else {
+        if (t.lastCompletedDate === todayIso) {
+          t.streak = Math.max(0, (parseInt(t.streak, 10) || 1) - 1);
+          t.lastCompletedDate = null;
+        }
+      }
     }
+
     saveTasks(tasks);
 
     if (t.completed) {

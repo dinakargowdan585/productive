@@ -160,11 +160,23 @@ const SyncEngine = {
   },
 
   formatTaskForCloud(task, userId) {
+    let combinedNotes = task.notes || task.description || "";
+    try {
+      let existingObj = {};
+      if (typeof combinedNotes === "string" && combinedNotes.startsWith("{") && combinedNotes.includes('"__streak"')) {
+        existingObj = JSON.parse(combinedNotes);
+      }
+      existingObj.__streak = parseInt(task.streak, 10) || 0;
+      existingObj.__lastCompletedDate = task.lastCompletedDate || null;
+      if (task.description) existingObj.description = task.description;
+      combinedNotes = JSON.stringify(existingObj);
+    } catch (e) {}
+
     return {
       id: ensureValidUuid(task.id),
       user_id: userId,
       title: task.title || "Untitled Task",
-      notes: task.notes || task.description || null,
+      notes: combinedNotes || null,
       category: task.category || "work",
       priority: (task.priority || "MED").toUpperCase(),
       due_date: task.dueDate || task.due_date || null,
@@ -283,19 +295,34 @@ const SyncEngine = {
           if (activeRemote.length === 0) {
             await TasksRepository.clear();
           } else {
-            const localFormatted = activeRemote.map(t => ({
-              id: t.id,
-              title: t.title,
-              notes: t.notes || null,
-              category: t.category || "work",
-              priority: t.priority || "MED",
-              dueDate: t.due_date || null,
-              isDaily: Boolean(t.is_daily),
-              completed: Boolean(t.completed),
-              estimateMins: t.estimate_mins || 30,
-              createdAt: t.created_at,
-              updatedAt: t.updated_at
-            }));
+            const localFormatted = activeRemote.map(t => {
+              let streak = 0;
+              let lastCompletedDate = null;
+              let notesText = t.notes || null;
+              if (notesText && typeof notesText === "string" && notesText.startsWith("{") && notesText.includes('"__streak"')) {
+                try {
+                  const parsed = JSON.parse(notesText);
+                  streak = parseInt(parsed.__streak, 10) || 0;
+                  lastCompletedDate = parsed.__lastCompletedDate || null;
+                  notesText = parsed.description || null;
+                } catch (e) {}
+              }
+              return {
+                id: t.id,
+                title: t.title,
+                notes: notesText,
+                category: t.category || "work",
+                priority: t.priority || "MED",
+                dueDate: t.due_date || null,
+                isDaily: Boolean(t.is_daily),
+                completed: Boolean(t.completed),
+                streak: streak,
+                lastCompletedDate: lastCompletedDate,
+                estimateMins: t.estimate_mins || 30,
+                createdAt: t.created_at,
+                updatedAt: t.updated_at
+              };
+            });
             await TasksRepository.clearAndPut(localFormatted);
           }
         } catch (taskErr) {
