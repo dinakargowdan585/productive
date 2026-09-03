@@ -212,11 +212,15 @@ const SyncEngine = {
   },
 
   formatProjectForCloud(proj, userId) {
+    let taskListStr = null;
+    if (Array.isArray(proj.taskList)) {
+      taskListStr = JSON.stringify(proj.taskList);
+    }
     return {
       id: ensureValidUuid(proj.id),
       user_id: userId,
       name: proj.name || proj.title || "Untitled Project",
-      description: proj.description || null,
+      description: taskListStr || proj.description || null,
       color: proj.color || "#38BDF8",
       status: (proj.status || "ACTIVE").toUpperCase(),
       created_at: proj.createdAt || proj.created_at || new Date().toISOString(),
@@ -420,16 +424,25 @@ const SyncEngine = {
           if (activeRemote.length === 0) {
             await ProjectsRepository.clear();
           } else {
-            const localFormatted = activeRemote.map(p => ({
-              id: p.id,
-              title: p.name || p.title,
-              cat: "Work",
-              description: p.description || null,
-              color: p.color || "#38BDF8",
-              status: p.status || "ACTIVE",
-              createdAt: p.created_at,
-              updatedAt: p.updated_at
-            }));
+            const localFormatted = activeRemote.map(p => {
+              let taskList = [];
+              if (p.description && p.description.startsWith("[")) {
+                try { taskList = JSON.parse(p.description); } catch(e){}
+              }
+              return {
+                id: p.id,
+                title: p.name || p.title,
+                name: p.name || p.title,
+                cat: "Work",
+                category: "Work",
+                description: p.description || null,
+                color: p.color || "#38BDF8",
+                status: p.status || "ACTIVE",
+                taskList: taskList,
+                createdAt: p.created_at,
+                updatedAt: p.updated_at
+              };
+            });
             await ProjectsRepository.clearAndPut(localFormatted);
           }
         } catch (projErr) {
