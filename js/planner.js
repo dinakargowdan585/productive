@@ -268,6 +268,22 @@ function createTimeBlock(taskId, dateStr, startTime, durationMins) {
   if (typeof showToast === "function") showToast("Focus block scheduled!", "success");
 }
 
+const TASK_SVGS = {
+  work: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  personal: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  study: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
+  goals: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  habits: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
+  calendar: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  flame: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  edit: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  subtasks: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  focus: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  project: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+  goal: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`
+};
+
 function parseTimeToMinutes(timeStr) {
   if (!timeStr || !timeStr.includes(":")) return 0;
   const parts = timeStr.split(":");
@@ -296,10 +312,10 @@ function toggleTaskDetails(taskId) {
   const isOpen = el.classList.contains("open");
   if (isOpen) {
     el.classList.remove("open");
-    if (btn) btn.textContent = "▼ Details";
+    if (btn) btn.innerHTML = `<span>Details</span>`;
   } else {
     el.classList.add("open");
-    if (btn) btn.textContent = "▲ Details";
+    if (btn) btn.innerHTML = `<span>Hide</span>`;
   }
 }
 
@@ -317,12 +333,12 @@ function renderRelationshipChips(t) {
   if (t.projectId) {
     const projects = loadProjects();
     const p = projects.find(x => x.id === t.projectId);
-    if (p) html += `<span class="chip-pill project">🏢 ${escapeHTML(p.title)}</span> `;
+    if (p) html += `<span class="chip-pill project">${TASK_SVGS.project} ${escapeHTML(p.title)}</span> `;
   }
   if (t.goalId) {
     const goals = loadGoals();
     const g = goals.find(x => x.id === t.goalId);
-    if (g) html += `<span class="chip-pill goal">🎯 ${escapeHTML(g.objective)}</span> `;
+    if (g) html += `<span class="chip-pill goal">${TASK_SVGS.goal} ${escapeHTML(g.objective)}</span> `;
   }
   return html;
 }
@@ -344,7 +360,113 @@ function toggleDueDateField(chk) {
   const field = document.getElementById("taskDueDate");
   const submitBtn = document.getElementById("btnSubmitTask");
   if (field) field.style.display = chk.checked ? "none" : "block";
-  if (submitBtn) submitBtn.textContent = chk.checked ? "🔁 Add Daily Habit" : "➕ Add Task";
+  if (submitBtn) submitBtn.textContent = chk.checked ? "Add Daily Habit" : "Add Task";
+}
+
+/* In-Place Task Title Editing */
+function startEditTaskTitle(taskId, e) {
+  if (e) e.stopPropagation();
+  const wrap = document.getElementById(`taskTitleWrap-${taskId}`);
+  if (!wrap) return;
+  const currentTitle = wrap.getAttribute("data-title") || "";
+  wrap.innerHTML = `<input type="text" class="task-title-inline-input" id="inlineEdit-${taskId}" value="${escapeHTML(currentTitle)}" onkeydown="handleInlineEditKey(event, '${taskId}')" onblur="commitTaskTitleEdit('${taskId}')">`;
+  const input = document.getElementById(`inlineEdit-${taskId}`);
+  if (input) {
+    input.focus();
+    input.select();
+  }
+}
+
+function handleInlineEditKey(e, taskId) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    commitTaskTitleEdit(taskId);
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    renderPlanner();
+  }
+}
+
+function commitTaskTitleEdit(taskId) {
+  const input = document.getElementById(`inlineEdit-${taskId}`);
+  if (!input) return;
+  const newTitle = input.value.trim();
+  if (!newTitle) {
+    renderPlanner();
+    return;
+  }
+  const tasks = loadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (t && t.title !== newTitle) {
+    t.title = newTitle;
+    t.updatedAt = new Date().toISOString();
+    saveTasks(tasks);
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof showToast === "function") showToast("Task title updated!", "success");
+  }
+  renderPlanner();
+}
+
+/* Subtasks & Micro-Checklist Management */
+function addSubtask(taskId, title) {
+  const cleanTitle = (title || "").trim();
+  if (!cleanTitle) return;
+  const tasks = loadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  if (!Array.isArray(t.subtasks)) t.subtasks = [];
+  t.subtasks.push({
+    id: uuid(),
+    title: cleanTitle,
+    completed: false
+  });
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  if (typeof FX !== "undefined") FX.playClick();
+  renderPlanner();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+}
+
+function toggleSubtask(taskId, subtaskId) {
+  const tasks = loadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !Array.isArray(t.subtasks)) return;
+  const st = t.subtasks.find(s => s.id === subtaskId);
+  if (st) {
+    st.completed = !st.completed;
+    t.updatedAt = new Date().toISOString();
+    saveTasks(tasks);
+    if (typeof FX !== "undefined") {
+      if (st.completed) {
+        FX.playChime();
+        FX.haptic("light");
+      } else {
+        FX.playClick();
+      }
+    }
+    renderPlanner();
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+  }
+}
+
+function deleteSubtask(taskId, subtaskId) {
+  const tasks = loadTasks();
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !Array.isArray(t.subtasks)) return;
+  t.subtasks = t.subtasks.filter(s => s.id !== subtaskId);
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
+  renderPlanner();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+}
+
+function handleAddSubtaskInput(e, taskId, input) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    addSubtask(taskId, input.value);
+    input.value = "";
+  }
 }
 
 function renderPlanner() {
@@ -394,21 +516,52 @@ function renderPlanner() {
 
     let dateLabel = 'No due date';
     if (t.isDaily) {
-      dateLabel = 'Resets every day';
+      dateLabel = 'Daily Reset';
     } else if (t.dueDate) {
       if (isOverdue) {
-        dateLabel = `<span style="color:var(--danger); font-weight:700;">Overdue (Due: ${t.dueDate})</span>`;
+        dateLabel = `<span style="color:var(--danger); font-weight:700;">Overdue (${t.dueDate})</span>`;
       } else {
-        dateLabel = `Due: ${t.dueDate}`;
+        dateLabel = `${t.dueDate}`;
       }
     }
 
-    const priorityDot = t.priority === 'HIGH' ? '🔴 HIGH' : (t.priority === 'MED' ? '🟡 MED' : '🟢 LOW');
+    const priorityDot = `<span class="priority-beacon"></span> ${(t.priority || 'HIGH').toUpperCase()}`;
     const relationshipChipsHTML = renderRelationshipChips(t);
     const timeStats = getTaskTimeStats(t.id);
     const blocks = getTimeBlocksByTask(t.id);
     const nextBlock = blocks.find(b => !b.completed) || blocks[0];
-    const progressPct = timeStats.estimated > 0 ? Math.min(100, Math.round((timeStats.actual / timeStats.estimated) * 100)) : (t.completed ? 100 : 0);
+
+    const subtasksList = Array.isArray(t.subtasks) ? t.subtasks : [];
+    const subtasksDone = subtasksList.filter(s => s.completed).length;
+    const subtasksTotal = subtasksList.length;
+
+    let progressPct = 0;
+    if (subtasksTotal > 0) {
+      progressPct = Math.round((subtasksDone / subtasksTotal) * 100);
+    } else if (timeStats.estimated > 0) {
+      progressPct = Math.min(100, Math.round((timeStats.actual / timeStats.estimated) * 100));
+    } else {
+      progressPct = t.completed ? 100 : 0;
+    }
+
+    const catSvg = TASK_SVGS[cal.id] || TASK_SVGS.work;
+
+    let subtasksHTML = `
+      <div class="subtasks-container">
+        <div class="subtasks-header">
+          <span>${TASK_SVGS.subtasks} Sub-steps ${subtasksTotal > 0 ? `(${subtasksDone}/${subtasksTotal})` : ''}</span>
+          <span style="color:var(--accent); font-weight:800;">${progressPct}%</span>
+        </div>
+        ${subtasksList.map(st => `
+          <div class="subtask-item ${st.completed ? 'completed' : ''}">
+            <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleSubtask('${t.id}', '${st.id}')">
+            <span>${escapeHTML(st.title)}</span>
+            <button type="button" class="subtask-delete-btn" onclick="deleteSubtask('${t.id}', '${st.id}')" title="Delete subtask">&times;</button>
+          </div>
+        `).join('')}
+        <input type="text" class="subtask-quick-input" placeholder="+ Add a step (Press Enter)" onkeydown="handleAddSubtaskInput(event, '${t.id}', this)">
+      </div>
+    `;
 
     item.innerHTML = `
       <div class="task-card-primary-row">
@@ -416,45 +569,52 @@ function renderPlanner() {
           <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
         </div>
         <div class="task-card-content">
-          <div class="task-title-text" style="${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">
-            ${escapeHTML(t.title)}
+          <div id="taskTitleWrap-${t.id}" data-title="${escapeHTML(t.title)}" ondblclick="startEditTaskTitle('${t.id}', event)">
+            <div class="task-title-text" style="${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">
+              ${escapeHTML(t.title)}
+            </div>
           </div>
           <div class="task-card-meta">
-            <span class="badge" style="background:${cal.color}15; color:${cal.color}; border:1px solid ${cal.color}35;">● ${escapeHTML(cal.name)}</span>
-            <span>📅 ${dateLabel}</span>
-            ${t.isDaily ? `<span class="badge" style="background:rgba(255, 149, 0, 0.15); color:var(--amber);">🔁 ${t.streak || 0}d</span>` : ''}
+            <span class="badge" style="background:${cal.color}15; color:${cal.color}; border:1px solid ${cal.color}35; display:inline-flex; align-items:center; gap:4px;">
+              ${catSvg} ${escapeHTML(cal.name)}
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:4px;">${TASK_SVGS.calendar} ${dateLabel}</span>
+            ${t.isDaily ? `<span class="badge" style="background:rgba(255, 149, 0, 0.15); color:var(--amber); display:inline-flex; align-items:center; gap:4px;">${TASK_SVGS.flame} ${t.streak || 0}d</span>` : ''}
           </div>
         </div>
         <div class="task-card-actions">
           <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to change priority">
             ${priorityDot}
           </span>
-          <button type="button" class="secondary" id="taskDetailsBtn-${t.id}" onclick="toggleTaskDetails('${t.id}')" style="padding:4px 10px; font-size:0.78rem;">▼ Details</button>
-          <button type="button" class="task-delete-front-btn" onclick="deleteTask('${t.id}')" title="Delete Task">🗑️ Delete</button>
+          <button type="button" class="secondary" onclick="startEditTaskTitle('${t.id}', event)" style="padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" title="Edit Title">
+            ${TASK_SVGS.edit}
+          </button>
+          <button type="button" class="secondary" id="taskDetailsBtn-${t.id}" onclick="toggleTaskDetails('${t.id}')" style="padding:4px 8px; font-size:0.75rem;">Details</button>
+          <button type="button" class="task-delete-front-btn" onclick="deleteTask('${t.id}')" title="Delete Task" style="display:inline-flex; align-items:center; gap:4px;">
+            ${TASK_SVGS.trash} Delete
+          </button>
         </div>
       </div>
 
-      <div style="margin-top:4px;">
+      <div style="margin-top:2px;">
         <div class="bar-track"><div class="bar-fill" style="width:${progressPct}%; background:${cal.color};"></div></div>
-        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-top:4px; font-family:var(--font-code);">
-          <span>Est ${formatDurationHuman(timeStats.estimated)} • Done ${formatDurationHuman(timeStats.actual)} • Left ${formatDurationHuman(timeStats.remaining)}</span>
-          <strong style="color:var(--text);">${progressPct}%</strong>
-        </div>
       </div>
+
+      ${subtasksHTML}
 
       ${nextBlock ? `
         <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:var(--radius-sm); padding:8px 12px; font-size:0.78rem; margin-top:4px;">
-          <span style="color:var(--accent); font-weight:600;">⏱️ Next Focus: ${nextBlock.date} ${formatTime12Hour(nextBlock.startTime)}–${formatTime12Hour(nextBlock.endTime)}</span>
-          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${nextBlock.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">▶ Focus</button>
+          <span style="color:var(--accent); font-weight:600; display:inline-flex; align-items:center; gap:6px;">${TASK_SVGS.focus} Next: ${nextBlock.date} ${formatTime12Hour(nextBlock.startTime)}–${formatTime12Hour(nextBlock.endTime)}</span>
+          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${nextBlock.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--accent); color:#05070a; font-weight:700; border:none; display:inline-flex; align-items:center; gap:4px;">Focus</button>
         </div>
       ` : `
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
-          <button type="button" class="secondary" onclick="promptCreateTimeBlock('${t.id}')" style="padding:4px 12px; font-size:0.78rem; background:rgba(255,255,255,0.04); font-weight:600;">+ Schedule Focus Block</button>
+          <button type="button" class="secondary" onclick="promptCreateTimeBlock('${t.id}')" style="padding:4px 12px; font-size:0.78rem; background:rgba(255,255,255,0.04); font-weight:600; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
         </div>
       `}
 
       <div id="taskDetails-${t.id}" class="task-details-collapsible">
-        <div style="font-size:0.78rem; color:var(--muted);">
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:6px;">
           <strong>Time Stats:</strong> ${timeStats.blockCount} Session(s) Scheduled • ${timeStats.efficiency}% Efficiency Rating
         </div>
         ${relationshipChipsHTML}

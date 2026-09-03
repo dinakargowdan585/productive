@@ -2024,30 +2024,30 @@ button:active { transform: scale(0.98); }
           <div class="field-group" style="margin-bottom:10px;">
             <label class="field-label" for="taskCalendarSelect">Calendar / Category</label>
             <select id="taskCalendarSelect" style="font-weight:700;">
-              <option value="work">🔵 Work</option>
-              <option value="personal">🟢 Personal</option>
-              <option value="study" selected>🟣 Study</option>
-              <option value="goals">🟠 Goals</option>
-              <option value="habits">🔴 Habits</option>
+              <option value="work">Work (Professional)</option>
+              <option value="personal">Personal (Life)</option>
+              <option value="study" selected>Study & Deep Work</option>
+              <option value="goals">Goals & Objectives</option>
+              <option value="habits">Habits & Routines</option>
             </select>
           </div>
           <div class="form-row">
             <div class="field-group">
-              <label class="field-label" for="taskPriority">Priority</label>
+              <label class="field-label" for="taskPriority">Priority Level</label>
               <select id="taskPriority">
-                <option value="High">🔴 High</option>
-                <option value="Medium" selected>🟡 Medium</option>
-                <option value="Low">🔵 Low</option>
+                <option value="High">High Priority (P1)</option>
+                <option value="Medium" selected>Medium Priority (P2)</option>
+                <option value="Low">Low Priority (P3)</option>
               </select>
             </div>
             <div class="field-group">
-              <label class="field-label" for="taskDueDate">Due Date (Calendar)</label>
+              <label class="field-label" for="taskDueDate">Due Date</label>
               <input type="date" id="taskDueDate">
             </div>
           </div>
           <div class="field-group" style="margin-top:12px;">
             <label class="checkbox-field">
-              <input type="checkbox" id="taskIsDaily" onchange="toggleDueDateField(this)"> 🔁 Repeat Every Day (Daily Habit)
+              <input type="checkbox" id="taskIsDaily" onchange="toggleDueDateField(this)"> Repeat Every Day (Daily Habit)
             </label>
           </div>
           <div class="form-row" style="margin-top:10px;">
@@ -2065,8 +2065,12 @@ button:active { transform: scale(0.98); }
             </div>
           </div>
           <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
-            <button type="submit" id="btnSubmitTask" style="width:100%;">➕ Add Task</button>
-            <button type="button" class="secondary" onclick="addCustomDailyHabit()" style="width:100%; border-color:rgba(56,189,248,0.3); color:var(--accent);">🔁 Add as Daily Habit</button>
+            <button type="submit" id="btnSubmitTask" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Task
+            </button>
+            <button type="button" class="secondary" onclick="addCustomDailyHabit()" style="width:100%; border-color:rgba(56,189,248,0.3); color:var(--accent); display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Add as Daily Habit
+            </button>
           </div>
         </form>
 
