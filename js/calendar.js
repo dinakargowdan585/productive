@@ -743,13 +743,13 @@ function renderAgendaView(grid, canvasHeader, tasks) {
                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                       <span style="font-size:0.92rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
                       <span class="badge" style="background:${cal.color}18; color:${cal.color}; font-size:0.7rem;">${escapeHTML(cal.name)}</span>
-                      ${proj ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text); font-size:0.68rem;">📁 ${escapeHTML(proj.name)}</span>` : ''}
-                      ${goal ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">🎯 ${escapeHTML(goal.title)}</span>` : ''}
-                      ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">🔥 Daily</span>` : ''}
+                      ${proj ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${escapeHTML(proj.name)}</span>` : ''}
+                      ${goal ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>${escapeHTML(goal.title)}</span>` : ''}
+                      ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Daily Habit</span>` : ''}
                     </div>
                     ${subtasks.length > 0 ? `
                       <div style="font-size:0.72rem; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:6px;">
-                        <span>☑️ ${subDone}/${subtasks.length} Sub-steps</span>
+                        <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>${subDone}/${subtasks.length} Sub-steps</span>
                         <div style="width:50px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
                           <div style="width:${Math.round((subDone/subtasks.length)*100)}%; height:100%; background:${cal.color};"></div>
                         </div>

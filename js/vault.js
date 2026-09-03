@@ -165,7 +165,7 @@ function renderWorkspaces() {
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
         <div>
           <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text);">${escapeHTML(p.title || p.name || 'Untitled Project')}</h3>
-          <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.7rem; margin-top:4px; display:inline-block;">📁 ${escapeHTML(p.cat || p.category || 'Workspace')}</span>
+          <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.7rem; margin-top:4px; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${escapeHTML(p.cat || p.category || 'Workspace')}</span>
         </div>
         <div style="display:flex; gap:6px;">
           <button type="button" class="secondary" onclick="openProjectTasksModal('${p.id}')" style="padding:4px 8px; font-size:0.75rem;" title="Manage Subtasks">Tasks (${completedTasks}/${totalTasks})</button>
@@ -388,15 +388,15 @@ function renderGoals() {
     card.style.borderLeft = `4px solid ${progress >= 100 ? 'var(--green)' : (progress >= 50 ? 'var(--accent)' : 'var(--amber)')}`;
 
     let statusBadge = `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-weight:700;">In Progress</span>`;
-    if (progress >= 100) statusBadge = `<span class="badge" style="background:rgba(48,209,88,0.18); color:var(--green); font-weight:700;">🏆 Achieved</span>`;
-    else if (progress >= 50) statusBadge = `<span class="badge" style="background:rgba(56,189,248,0.18); color:var(--accent); font-weight:700;">⚡ On Track</span>`;
+    if (progress >= 100) statusBadge = `<span class="badge" style="background:rgba(48,209,88,0.18); color:var(--green); font-weight:700; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>Achieved</span>`;
+    else if (progress >= 50) statusBadge = `<span class="badge" style="background:rgba(56,189,248,0.18); color:var(--accent); font-weight:700; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>On Track</span>`;
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
         <div>
           <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text);">${escapeHTML(g.objective || g.title || 'Untitled Goal')}</h3>
           <div style="display:flex; gap:6px; margin-top:4px; align-items:center;">
-            <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.7rem;">🎯 ${escapeHTML(g.quarter || 'Q3 2026')}</span>
+            <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.7rem; display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>${escapeHTML(g.quarter || 'Q3 2026')}</span>
             ${statusBadge}
           </div>
         </div>
@@ -731,7 +731,10 @@ async function renderVaultContent() {
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--accent);">🔑 ${escapeHTML(n.title)}</h4>
+        <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--accent); display:flex; align-items:center; gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+          ${escapeHTML(n.title)}
+        </h4>
         <button type="button" class="secondary" onclick="deleteVaultNote('${n.id}')" style="padding:2px 8px; font-size:0.75rem; color:var(--danger);">Delete</button>
       </div>
       <div style="font-family:var(--font-code); font-size:0.85rem; background:rgba(0,0,0,0.3); border:1px solid var(--border); padding:10px; border-radius:var(--radius-sm); color:var(--text); word-break:break-all; margin-top:8px;">
