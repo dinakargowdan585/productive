@@ -69,6 +69,7 @@ function switchView(viewName) {
   if (viewName === "calendar" && typeof renderCalendar === "function") renderCalendar();
   if (viewName === "standby") {
     if (typeof updateStandbyClock === "function") updateStandbyClock();
+    if (typeof renderStandbyFocusWidget === "function") renderStandbyFocusWidget();
     if (typeof FX !== "undefined" && typeof FX.initStandbyCosmicCanvas === "function") FX.initStandbyCosmicCanvas();
   }
 }

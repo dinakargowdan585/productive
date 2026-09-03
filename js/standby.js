@@ -392,6 +392,193 @@ function startFocusSessionForBlock(blockId) {
   if (typeof showToast === "function") showToast("Focus session started! ⏱️", "success");
 }
 
+/* ===================================================================
+   Live MIT / Task Focus Widget on StandBy Screen
+   =================================================================== */
+
+let activeStandbyTaskIndex = 0;
+
+function renderStandbyFocusWidget() {
+  const container = document.getElementById("standbyFocusWidget");
+  if (!container) return;
+
+  const tasks = typeof loadTasks === "function" ? loadTasks() : [];
+  const pending = tasks.filter(t => !t.completed);
+
+  if (!pending.length) {
+    container.innerHTML = `
+      <div class="standby-focus-card" style="text-align:center; align-items:center;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:rgba(48,209,88,0.15); color:var(--green); margin-bottom:4px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h4 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text);">All Today's MITs Completed!</h4>
+        <p style="margin:0; font-size:0.8rem; color:var(--muted); max-width:380px;">Enjoy your flow state, or capture a new focus task below.</p>
+        <div style="width:100%; margin-top:6px;">
+          <input type="text" class="standby-quick-input" placeholder="+ Add a new focus task (Press Enter)..." onkeydown="handleStandbyQuickAddKeydown(event)">
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  if (activeStandbyTaskIndex >= pending.length) {
+    activeStandbyTaskIndex = 0;
+  } else if (activeStandbyTaskIndex < 0) {
+    activeStandbyTaskIndex = pending.length - 1;
+  }
+
+  const t = pending[activeStandbyTaskIndex];
+  const cal = (typeof getCalendarById === "function") ? getCalendarById(t.calendarId || t.category || "work") : { name: "Work", color: "var(--accent)" };
+  const projects = typeof loadProjects === "function" ? loadProjects() : [];
+  const proj = t.projectId ? projects.find(p => p.id === t.projectId) : null;
+  const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+  const subDone = subtasks.filter(st => st.completed).length;
+
+  container.innerHTML = `
+    <div class="standby-focus-card">
+      <div class="standby-focus-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="letter-spacing:1px; font-weight:700; color:var(--accent);">FOCUS MIT ${activeStandbyTaskIndex + 1} OF ${pending.length}</span>
+          ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily Habit</span>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button type="button" class="standby-focus-nav-btn" onclick="cycleStandbyTask(-1)" ${pending.length <= 1 ? 'disabled' : ''} title="Previous Task">‹</button>
+          <button type="button" class="standby-focus-nav-btn" onclick="cycleStandbyTask(1)" ${pending.length <= 1 ? 'disabled' : ''} title="Next Task">›</button>
+        </div>
+      </div>
+
+      <div class="standby-focus-body">
+        <div class="standby-checkbox-wrap">
+          <input type="checkbox" class="standby-checkbox" id="standbyCheck-${t.id}" onchange="completeStandbyTask('${t.id}')" title="Mark Task Complete">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <h3 class="standby-task-title">${escapeHTML(t.title)}</h3>
+          <div class="standby-meta-row">
+            <span class="badge" style="background:${cal.color}22; color:${cal.color}; font-size:0.7rem; font-weight:700;">${escapeHTML(cal.name)}</span>
+            ${proj ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text); font-size:0.68rem; display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${escapeHTML(proj.name || proj.title)}</span>` : ''}
+            <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" style="font-size:0.68rem; padding:2px 6px;">${(t.priority || 'MED').toUpperCase()}</span>
+            ${t.estimateMins ? `<span style="font-size:0.72rem; color:var(--muted); font-family:var(--font-code);">⏱️ ${t.estimateMins}m</span>` : ''}
+            ${t.dueDate ? `<span style="font-size:0.72rem; color:var(--muted); font-family:var(--font-code);">📅 ${t.dueDate}</span>` : ''}
+          </div>
+        </div>
+        <button type="button" onclick="startStandbyTaskFocus('${t.id}')" class="standby-focus-nav-btn" style="background:var(--accent); color:#05070A; border:none; padding:6px 12px; font-weight:800; display:inline-flex; align-items:center; gap:4px;" title="Launch Pomodoro Timer for this task">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Focus
+        </button>
+      </div>
+
+      ${subtasks.length > 0 ? `
+        <div style="margin-top:4px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--muted); font-family:var(--font-code);">
+            <span>Sub-steps Progress</span>
+            <span style="font-weight:700; color:var(--accent);">${subDone}/${subtasks.length} Completed</span>
+          </div>
+          <div style="width:100%; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
+            <div style="width:${Math.round((subDone / subtasks.length) * 100)}%; height:100%; background:var(--accent); transition:width 200ms ease;"></div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+            ${subtasks.slice(0, 3).map(st => `
+              <label class="standby-subtask-item" style="cursor:pointer;">
+                <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="toggleStandbySubtask('${t.id}', '${st.id}')" style="accent-color:var(--accent); cursor:pointer;">
+                <span style="${st.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(st.title)}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <div style="margin-top:4px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+        <input type="text" class="standby-quick-input" placeholder="+ Quick add another task (Press Enter)..." onkeydown="handleStandbyQuickAddKeydown(event)">
+      </div>
+    </div>
+  `;
+}
+
+function completeStandbyTask(taskId) {
+  if (typeof toggleTask === "function") {
+    toggleTask(taskId);
+  }
+  renderStandbyFocusWidget();
+}
+
+function cycleStandbyTask(delta) {
+  activeStandbyTaskIndex += delta;
+  renderStandbyFocusWidget();
+  if (typeof FX !== "undefined" && typeof FX.playClick === "function") FX.playClick();
+}
+
+function toggleStandbySubtask(taskId, subtaskId) {
+  const tasks = typeof loadTasks === "function" ? loadTasks() : [];
+  const t = tasks.find(x => x.id === taskId);
+  if (!t || !Array.isArray(t.subtasks)) return;
+
+  const st = t.subtasks.find(x => x.id === subtaskId);
+  if (st) {
+    st.completed = !st.completed;
+    t.updatedAt = new Date().toISOString();
+    if (typeof saveTasks === "function") saveTasks(tasks);
+    if (typeof renderPlanner === "function") renderPlanner();
+    if (typeof renderCalendar === "function") renderCalendar();
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    if (typeof FX !== "undefined" && typeof FX.playClick === "function") FX.playClick();
+    renderStandbyFocusWidget();
+  }
+}
+
+function startStandbyTaskFocus(taskId) {
+  const tasks = typeof loadTasks === "function" ? loadTasks() : [];
+  const t = tasks.find(x => x.id === taskId);
+  if (t) {
+    pomodoroMinutes = t.estimateMins || 25;
+    pomodoroSeconds = 0;
+    const pipTaskTitle = document.getElementById("floatingFocusTaskTitle");
+    if (pipTaskTitle) pipTaskTitle.textContent = t.title;
+  }
+  const panel = document.getElementById("pomodoroPanel") || document.getElementById("pomodoroDrawer");
+  if (panel && !panel.classList.contains("is-open") && !panel.classList.contains("open")) {
+    toggleTimerPanel();
+  }
+  resetPomodoro();
+  startPomodoro();
+  if (typeof showToast === "function") showToast(`Focus started for: ${t ? t.title : 'Task'}! ⏱️`, "success");
+}
+
+function handleStandbyQuickAddKeydown(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    const title = (event.target.value || "").trim();
+    if (!title) return;
+
+    const newTask = {
+      id: typeof uuid === "function" ? uuid() : "task-" + Date.now(),
+      title: title,
+      category: "work",
+      calendarId: "work",
+      priority: "MED",
+      dueDate: getIsoDateStr(),
+      estimateMins: 25,
+      completed: false,
+      streak: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const tasks = typeof loadTasks === "function" ? loadTasks() : [];
+    tasks.unshift(newTask);
+    if (typeof saveTasks === "function") saveTasks(tasks);
+    activeStandbyTaskIndex = 0;
+    event.target.value = "";
+
+    if (typeof renderPlanner === "function") renderPlanner();
+    if (typeof renderCalendar === "function") renderCalendar();
+    if (typeof renderDashboard === "function") renderDashboard();
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    if (typeof FX !== "undefined" && typeof FX.playClick === "function") FX.playClick();
+    if (typeof showToast === "function") showToast(`Added focus task: ${title}!`, "success");
+
+    renderStandbyFocusWidget();
+  }
+}
+
 // Global Window Exports
 if (typeof window !== "undefined") {
   window.togglePomodoroTimer = togglePomodoroTimer;
@@ -412,6 +599,12 @@ if (typeof window !== "undefined") {
   window.setTimerPreset = setTimerPreset;
   window.adjustTimer = adjustTimer;
   window.startFocusSessionForBlock = startFocusSessionForBlock;
+  window.renderStandbyFocusWidget = renderStandbyFocusWidget;
+  window.completeStandbyTask = completeStandbyTask;
+  window.cycleStandbyTask = cycleStandbyTask;
+  window.toggleStandbySubtask = toggleStandbySubtask;
+  window.startStandbyTaskFocus = startStandbyTaskFocus;
+  window.handleStandbyQuickAddKeydown = handleStandbyQuickAddKeydown;
 }
 
 // Initial clock visibility & tick timer
@@ -419,6 +612,7 @@ if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
     updateClockVisibility();
     updateStandbyClock();
+    renderStandbyFocusWidget();
   });
 }
 
