@@ -73,6 +73,7 @@ function handleNaturalLanguageAdd(e) {
   saveTasks(tasks);
   input.value = "";
   renderPlanner();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   if (typeof showToast === "function") showToast(`Added task: "${cleanTitle}"`, "success");
 }
 

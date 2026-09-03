@@ -373,6 +373,7 @@ function handleSaveNote(e) {
   setEditorMode("write");
   updateCharCounter();
   renderNotes();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
 }
 
 // Auto-bind form listener on DOM ready
