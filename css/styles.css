@@ -1714,86 +1714,40 @@ button:active { transform: scale(0.98); }
 }
 
 /* ==========================================================================
-   Luxury VisionOS Authentication Modal & Components
+   Luxury Authentication Modal & Components (Matching Photographers-Main)
    ========================================================================== */
-dialog#supabaseAuthModal {
-  border: none;
-  background: transparent;
-  padding: 0;
-  overflow: visible;
-}
-
-dialog#supabaseAuthModal::backdrop {
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  animation: authFadeIn 0.25s ease-out;
-}
-
-@keyframes authFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes authCardIn {
-  from { opacity: 0; transform: scale(0.94) translateY(14px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
 .auth-modal-card {
   position: relative;
-  width: min(100%, 450px);
-  padding: 32px 30px 26px;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 24px !important;
+  width: min(100%, 460px);
+  padding: 32px 28px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
   background:
-    radial-gradient(circle at top right, rgba(56, 189, 248, 0.15), transparent 45%),
-    linear-gradient(180deg, rgba(20, 27, 38, 0.94), rgba(10, 14, 22, 0.96)) !important;
-  backdrop-filter: blur(60px) saturate(220%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(60px) saturate(220%) contrast(105%) !important;
-  box-shadow: 
-    0 32px 80px rgba(0, 0, 0, 0.85),
-    0 0 36px rgba(56, 189, 248, 0.14),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.35) !important;
-  animation: authCardIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-  box-sizing: border-box;
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 40%),
+    linear-gradient(180deg, rgba(20, 26, 36, 0.98), rgba(9, 13, 20, 0.99));
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.auth-modal-header {
-  position: relative;
-}
-
-.auth-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.auth-brand-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+.auth-modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.88), rgba(99, 102, 241, 0.9), transparent);
 }
 
 .auth-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  display: inline-block;
   color: var(--accent);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  background: rgba(56, 189, 248, 0.1);
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  padding: 2px 8px;
-  border-radius: 999px;
 }
 
 .auth-title {
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -0.5px;
   color: var(--text);
@@ -1804,7 +1758,7 @@ dialog#supabaseAuthModal::backdrop {
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.5;
-  margin: 6px 0 0;
+  margin-top: 6px;
 }
 
 /* Segmented Mode Toggle */
@@ -1816,7 +1770,7 @@ dialog#supabaseAuthModal::backdrop {
   padding: 4px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .auth-mode-toggle button {
@@ -1828,22 +1782,21 @@ dialog#supabaseAuthModal::backdrop {
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   padding: 0 6px;
   white-space: nowrap;
 }
 
 .auth-mode-toggle button:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .auth-mode-toggle button.active {
-  color: #05070a;
-  background: linear-gradient(135deg, #38BDF8, #7DD3FC);
-  border-color: rgba(56, 189, 248, 0.6);
-  font-weight: 800;
-  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.35);
+  color: #fff;
+  background: rgba(56, 189, 248, 0.25);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);
 }
 
 /* Form Inputs & Icons */
@@ -1862,7 +1815,7 @@ dialog#supabaseAuthModal::backdrop {
   color: var(--text);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -1884,23 +1837,23 @@ dialog#supabaseAuthModal::backdrop {
   width: 100%;
   min-height: 48px;
   padding: 0 74px 0 42px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(8, 12, 18, 0.95);
   color: var(--text);
   font-size: 0.92rem;
   outline: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .auth-input-wrapper input::placeholder {
-  color: rgba(148, 163, 184, 0.45);
+  color: rgba(148, 163, 184, 0.5);
 }
 
 .auth-input-wrapper input:focus {
   border-color: var(--accent);
-  background: rgba(8, 12, 20, 0.9);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: rgba(13, 18, 28, 0.98);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
 
 .auth-input-wrapper:focus-within .auth-input-icon {
@@ -1918,7 +1871,7 @@ dialog#supabaseAuthModal::backdrop {
   padding: 0 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--muted);
   cursor: pointer;
   font-size: 0.68rem;
@@ -1930,7 +1883,7 @@ dialog#supabaseAuthModal::backdrop {
 
 .auth-password-toggle:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   border-color: rgba(56, 189, 248, 0.3);
 }
 
@@ -1942,31 +1895,27 @@ dialog#supabaseAuthModal::backdrop {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.92rem;
   letter-spacing: 0.02em;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-  color: #05070A;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #fff;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.35);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
+  transition: all 0.2s ease;
 }
 
 .auth-submit-btn:hover {
-  transform: translateY(-1.5px);
-  box-shadow: 0 10px 30px rgba(56, 189, 248, 0.5);
-}
-
-.auth-submit-btn:active {
-  transform: scale(0.98);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
 }
 
 .auth-divider {
   display: flex;
   align-items: center;
-  margin: 12px 0;
+  margin: 10px 0;
   gap: 12px;
 }
 
@@ -1994,17 +1943,17 @@ dialog#supabaseAuthModal::backdrop {
   gap: 10px;
   font-weight: 600;
   font-size: 0.88rem;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   border: 1px solid rgba(255, 255, 255, 0.14);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .auth-google-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.25);
   transform: translateY(-1px);
 }
 
@@ -2014,7 +1963,7 @@ dialog#supabaseAuthModal::backdrop {
   gap: 10px;
   padding: 10px 14px;
   border: 1px solid rgba(239, 68, 68, 0.4);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(239, 68, 68, 0.12);
   color: #fca5a5;
   font-size: 0.82rem;
@@ -2029,7 +1978,7 @@ dialog#supabaseAuthModal::backdrop {
   background: rgba(56, 189, 248, 0.08);
   border: 1px solid rgba(56, 189, 248, 0.25);
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 .auth-user-avatar {
@@ -2072,12 +2021,11 @@ dialog#supabaseAuthModal::backdrop {
 }
 
 .auth-status-indicator {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 10px var(--green);
-  animation: pulseDot 2s infinite ease-in-out;
+  box-shadow: 0 0 8px var(--green);
 }
 
 .auth-signout-btn {
@@ -2089,7 +2037,7 @@ dialog#supabaseAuthModal::backdrop {
   gap: 8px;
   font-weight: 600;
   font-size: 0.86rem;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(239, 68, 68, 0.08);
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.25);
@@ -2098,8 +2046,8 @@ dialog#supabaseAuthModal::backdrop {
 }
 
 .auth-signout-btn:hover {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 /* ==========================================================================

@@ -2716,21 +2716,18 @@ button:active { transform: scale(0.98); }
   </div>
 </div>
 
-<!-- Supabase Cloud Authentication & Settings Modal (VisionOS Luxury Architecture) -->
+<!-- Supabase Cloud Authentication & Settings Modal (Matching Photographers-Main Luxury Structure) -->
 <dialog id="supabaseAuthModal" class="event-modal">
   <div class="auth-modal-card">
     <div class="auth-modal-header">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
-        <div class="auth-brand-row">
-          <img src="assets/icon-192.png" class="auth-brand-logo" alt="Productive OS">
-          <div>
-            <span class="auth-eyebrow">☁️ PRODUCTIVE CLOUD</span>
-            <h2 class="auth-title" id="authModalTitle">Welcome Back</h2>
-          </div>
+        <div>
+          <span class="auth-eyebrow">PRODUCTIVE CLOUD</span>
+          <h2 class="auth-title" id="authModalTitle">Welcome Back</h2>
+          <p class="auth-subtitle" id="authModalSubtitle">Sign in to sync your notes, tasks, time blocks & projects across all your devices.</p>
         </div>
-        <button type="button" class="pomodoro-close-btn" onclick="closeSupabaseAuthModal()" aria-label="Close Authentication Modal">&times;</button>
+        <button type="button" class="pomodoro-close-btn" onclick="closeSupabaseAuthModal()">&times;</button>
       </div>
-      <p class="auth-subtitle" id="authModalSubtitle">Sign in to sync your notes, tasks, time blocks & projects in real-time across all your devices.</p>
     </div>
 
     <!-- Mode Toggle (Sign In / Create Account / 6-Digit OTP) -->
@@ -2752,7 +2749,7 @@ button:active { transform: scale(0.98); }
         <label for="authEmailInput">Email Address</label>
         <div class="auth-input-wrapper">
           <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          <input type="email" id="authEmailInput" placeholder="name@example.com" required autocomplete="email">
+          <input type="email" id="authEmailInput" placeholder="you@example.com" required autocomplete="email">
         </div>
       </div>
 
@@ -2774,7 +2771,7 @@ button:active { transform: scale(0.98); }
       </button>
     </form>
 
-    <!-- Social Auth Actions -->
+    <!-- Social Auth Actions (Placed outside form to avoid mobile form submit loops) -->
     <div id="authSocialSection" style="display:flex; flex-direction:column; gap:10px;">
       <div class="auth-divider" id="authDivider">
         <span>OR CONTINUE WITH</span>
@@ -2794,12 +2791,12 @@ button:active { transform: scale(0.98); }
 
       <div class="auth-input-group">
         <label for="authOtpInput">6-Digit Verification Code</label>
-        <input type="text" id="authOtpInput" placeholder="123456" maxlength="6" style="font-family:var(--font-code); font-size:1.4rem; letter-spacing:8px; text-align:center; padding:12px; border-radius:12px; background:rgba(0, 0, 0, 0.5); border:1px solid rgba(255,255,255,0.15); color:var(--text); width:100%;">
+        <input type="text" id="authOtpInput" placeholder="123456" maxlength="6" style="font-family:var(--font-code); font-size:1.4rem; letter-spacing:8px; text-align:center; padding:12px; border-radius:10px; background:rgba(8, 8, 8, 0.95); border:1px solid rgba(255,255,255,0.15); color:var(--text); width:100%;">
       </div>
 
       <div style="display:flex; gap:10px;">
         <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtp(event)" class="auth-submit-btn" style="flex:2;">Verify Code</button>
-        <button type="button" class="secondary" onclick="handleResendOtp(event)" style="flex:1; border-radius:12px;">Resend</button>
+        <button type="button" class="secondary" onclick="handleResendOtp(event)" style="flex:1; border-radius:10px;">Resend</button>
       </div>
 
       <div style="text-align:center; margin-top:4px;">
@@ -2834,7 +2831,7 @@ button:active { transform: scale(0.98); }
     <!-- Custom Supabase Credentials Configuration -->
     <div style="margin-top:20px; padding-top:14px; border-top:1px dashed rgba(255,255,255,0.1);">
       <details>
-        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer;">⚙️ Custom Credentials (Self-Hosted Supabase)</summary>
+        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer;">⚙️ Custom Supabase Credentials</summary>
         <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
           <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">
           <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">
