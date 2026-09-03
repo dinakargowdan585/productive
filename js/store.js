@@ -30,10 +30,32 @@ function escapeHTML(str) {
 }
 
 function getIsoDateStr(d = new Date()) {
+  if (typeof d === "string") {
+    return d.includes("T") ? d.split("T")[0] : d.trim();
+  }
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function getYesterdayIsoDateStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return getIsoDateStr(d);
+}
+
+function isTaskCompletedOnDate(t, dateStr) {
+  if (!t) return false;
+  const targetDate = dateStr || getIsoDateStr();
+  const isDaily = Boolean(t.isDaily || t.is_daily);
+  if (isDaily) {
+    if (Array.isArray(t.completedDates)) {
+      return t.completedDates.includes(targetDate);
+    }
+    return t.lastCompletedDate === targetDate && Boolean(t.completed);
+  }
+  return Boolean(t.completed);
 }
 
 function formatDurationHuman(mins) {

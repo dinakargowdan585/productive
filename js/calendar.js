@@ -341,9 +341,10 @@ function renderMonthView(grid, canvasHeader, tasks) {
         <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
           ${dayTasks.slice(0, 3).map(t => {
             const cal = getCalendarById(t.calendarId || t.category || "work");
+            const isDone = isTaskCompletedOnDate(t, curDateStr);
             return `
               <div class="cal-event-card" style="background:${cal.color}20; border-left-color:${cal.color}; color:var(--text);">
-                <span style="${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+                <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
               </div>
             `;
           }).join('')}
@@ -385,11 +386,12 @@ function renderDayInspector(container, dateStr, tasks) {
         `).join('')}
         ${dayTasks.map(t => {
           const cal = getCalendarById(t.calendarId || t.category || "work");
+          const isDone = isTaskCompletedOnDate(t, dateStr);
           return `
             <div class="cal-inspector-item" style="border-left:3px solid ${cal.color};">
               <div style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                <span style="font-size:0.9rem; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${dateStr}')">
+                <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
                 ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
               </div>
               <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
@@ -544,13 +546,14 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
 
     dayTasks.forEach(t => {
       const cal = getCalendarById(t.calendarId || t.category || "work");
+      const isDone = isTaskCompletedOnDate(t, curDateStr);
       grid.innerHTML += `
         <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${cal.color};">
           <div style="display:flex; align-items:center; gap:12px;">
-            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+            <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${curDateStr}')">
             <div>
-              <span style="font-size:0.95rem; font-weight:600; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
-              <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">● ${escapeHTML(cal.name)} • Priority: ${t.priority || 'MED'}</div>
+              <span style="font-size:0.95rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+              <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">● ${escapeHTML(cal.name)} • Priority: ${t.priority || 'MED'}${t.isDaily ? ' • Daily Habit' : ''}</div>
             </div>
           </div>
           <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
@@ -619,11 +622,12 @@ function renderAgendaView(grid, canvasHeader, tasks) {
         `).join('')}
         ${dayTasks.map(t => {
           const cal = getCalendarById(t.calendarId || t.category || "work");
+          const isDone = isTaskCompletedOnDate(t, dateStr);
           return `
             <div class="cal-agenda-card" style="border-left:4px solid ${cal.color};">
               <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
-                <span style="font-size:0.9rem; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${dateStr}')">
+                <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
               </div>
               <span class="badge" style="background:${cal.color}15; color:${cal.color}; font-size:0.72rem;">${escapeHTML(cal.name)}</span>
             </div>

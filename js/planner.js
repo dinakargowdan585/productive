@@ -133,52 +133,81 @@ function getYesterdayIsoDateStr() {
   return getIsoDateStr(d);
 }
 
-function toggleTask(id) {
+function toggleTask(id, dateStr) {
+  const targetDate = dateStr || getIsoDateStr();
   const tasks = loadTasks();
   const t = tasks.find(x => x.id === id);
-  if (t) {
+  if (!t) return;
+
+  const todayIso = getIsoDateStr();
+  const isDaily = Boolean(t.isDaily || t.is_daily);
+  let isNowCompleted = false;
+
+  if (isDaily) {
+    if (!Array.isArray(t.completedDates)) {
+      t.completedDates = [];
+      if (t.lastCompletedDate && t.completed) {
+        t.completedDates.push(t.lastCompletedDate);
+      }
+    }
+
+    const idx = t.completedDates.indexOf(targetDate);
+    if (idx >= 0) {
+      t.completedDates.splice(idx, 1);
+      isNowCompleted = false;
+    } else {
+      t.completedDates.push(targetDate);
+      isNowCompleted = true;
+    }
+
+    t.completed = t.completedDates.includes(todayIso);
+    t.lastCompletedDate = isNowCompleted ? targetDate : (t.completedDates[t.completedDates.length - 1] || null);
+
+    // Calculate real streak from completedDates
+    let currentStreak = 0;
+    let checkDate = new Date();
+    if (!t.completedDates.includes(getIsoDateStr(checkDate))) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    while (t.completedDates.includes(getIsoDateStr(checkDate))) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    t.streak = currentStreak;
+  } else {
     t.completed = !t.completed;
-    t.updatedAt = new Date().toISOString();
-    const todayIso = getIsoDateStr();
-    const yesterdayIso = getYesterdayIsoDateStr();
-
-    if (t.isDaily) {
-      if (t.completed) {
-        if (t.lastCompletedDate === yesterdayIso) {
-          t.streak = (parseInt(t.streak, 10) || 0) + 1;
-        } else if (t.lastCompletedDate === todayIso) {
-          t.streak = Math.max(1, parseInt(t.streak, 10) || 1);
-        } else {
-          t.streak = (parseInt(t.streak, 10) > 0 && t.lastCompletedDate === todayIso) ? t.streak : 1;
-        }
-        t.lastCompletedDate = todayIso;
-      } else {
-        if (t.lastCompletedDate === todayIso) {
-          t.streak = Math.max(0, (parseInt(t.streak, 10) || 1) - 1);
-          t.lastCompletedDate = null;
-        }
-      }
-    }
-
-    saveTasks(tasks);
-
+    isNowCompleted = t.completed;
     if (t.completed) {
-      if (typeof FX !== "undefined") {
-        FX.playChime();
-        FX.haptic("success");
-      }
+      t.lastCompletedDate = targetDate;
     }
+  }
 
-    renderPlanner();
-    if (typeof renderDashboard === "function") renderDashboard();
-    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
-    if (typeof showToast === "function") showToast(t.completed ? "Task completed! 🎉" : "Task marked incomplete", "info");
+  t.updatedAt = new Date().toISOString();
+  saveTasks(tasks);
 
-    const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(task => task.completed).length;
-    if (t.completed && totalTasks > 0 && completedTasks === totalTasks) {
-      if (typeof FX !== "undefined") FX.burstConfetti();
+  if (isNowCompleted) {
+    if (typeof FX !== "undefined") {
+      FX.playChime();
+      FX.haptic("success");
     }
+  } else {
+    if (typeof FX !== "undefined") {
+      FX.playClick();
+    }
+  }
+
+  if (typeof renderPlanner === "function") renderPlanner();
+  if (typeof renderCalendar === "function") renderCalendar();
+  if (typeof renderDashboard === "function") renderDashboard();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+  if (typeof showToast === "function") {
+    showToast(isNowCompleted ? "Task completed! 🎉" : "Task marked incomplete", "info");
+  }
+
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(task => isTaskCompletedOnDate(task, todayIso)).length;
+  if (isNowCompleted && totalTasks > 0 && completedTasks === totalTasks) {
+    if (typeof FX !== "undefined") FX.burstConfetti();
   }
 }
 

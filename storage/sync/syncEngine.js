@@ -163,6 +163,7 @@ const SyncEngine = {
       }
       existingObj.__streak = parseInt(task.streak, 10) || 0;
       existingObj.__lastCompletedDate = task.lastCompletedDate || null;
+      if (Array.isArray(task.completedDates)) existingObj.completedDates = task.completedDates;
       if (Array.isArray(task.subtasks)) existingObj.subtasks = task.subtasks;
       if (task.description) existingObj.description = task.description;
       combinedNotes = JSON.stringify(existingObj);
@@ -296,15 +297,20 @@ const SyncEngine = {
               let lastCompletedDate = null;
               let notesText = t.notes || null;
               let subtasks = [];
+              let completedDates = [];
               if (notesText && typeof notesText === "string" && notesText.startsWith("{") && notesText.includes('"__streak"')) {
                 try {
                   const parsed = JSON.parse(notesText);
                   streak = parseInt(parsed.__streak, 10) || 0;
                   lastCompletedDate = parsed.__lastCompletedDate || null;
+                  if (Array.isArray(parsed.completedDates)) completedDates = parsed.completedDates;
                   if (Array.isArray(parsed.subtasks)) subtasks = parsed.subtasks;
                   notesText = parsed.description || null;
                 } catch (e) {}
               }
+              const todayIso = getIsoDateStr();
+              const isDaily = Boolean(t.is_daily);
+              const isCompletedToday = isDaily ? (completedDates.includes(todayIso) || (lastCompletedDate === todayIso && Boolean(t.completed))) : Boolean(t.completed);
               return {
                 id: t.id,
                 title: t.title,
@@ -312,10 +318,11 @@ const SyncEngine = {
                 category: t.category || "work",
                 priority: t.priority || "MED",
                 dueDate: t.due_date || null,
-                isDaily: Boolean(t.is_daily),
-                completed: Boolean(t.completed),
+                isDaily: isDaily,
+                completed: isCompletedToday,
                 streak: streak,
                 lastCompletedDate: lastCompletedDate,
+                completedDates: completedDates,
                 subtasks: subtasks,
                 estimateMins: t.estimate_mins || 30,
                 createdAt: t.created_at,
