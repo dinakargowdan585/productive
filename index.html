@@ -1947,18 +1947,23 @@ button:active { transform: scale(0.98); }
           <div class="field-group">
             <div class="field-label">
               <span>Takeaway (Markdown)</span>
-              <span id="charCount">0/1000</span>
+              <span id="charCount" style="font-size:0.75rem; color:var(--muted); font-family:var(--font-code);">0 words • 0 chars</span>
             </div>
-            <div class="format-bar">
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('bold')" title="Bold">B</button>
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('italic')" title="Italic">I</button>
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('heading')" title="Heading">H1</button>
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('code')" title="Code">&lt;/&gt;</button>
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('list')" title="List">• List</button>
-              <button type="button" class="fmt-btn" onclick="formatMarkdown('quote')" title="Quote">“ Quote</button>
+            <div class="format-bar" style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; gap:4px;">
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('bold')" title="Bold">B</button>
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('italic')" title="Italic">I</button>
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('heading')" title="Heading">H1</button>
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('code')" title="Code">&lt;/&gt;</button>
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('list')" title="List">• List</button>
+                <button type="button" class="fmt-btn" onclick="formatMarkdown('quote')" title="Quote">“ Quote</button>
+                <button type="button" class="fmt-btn" onclick="openSlashMenuManual()" title="Slash Commands" style="color:var(--accent); font-weight:800;">/</button>
+              </div>
+              <span style="font-size:0.68rem; color:var(--muted); font-family:var(--font-code); opacity:0.8;">Type <strong style="color:var(--accent);">/</strong> for menu</span>
             </div>
             <div class="textarea-wrap" id="writePane">
-              <textarea id="takeaway" rows="7" maxlength="1000" placeholder="Write notes here..."></textarea>
+              <textarea id="takeaway" rows="8" placeholder="Type / for commands (e.g. /h1, /todo, /code, /callout, /table)..." oninput="handleTakeawayInput(event)" onkeydown="handleTakeawayKeydown(event)"></textarea>
+              <div id="slashCommandMenu" class="slash-menu" style="display:none;"></div>
               <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceDictation()" title="Voice Dictation">
                 🎤 Voice
               </button>

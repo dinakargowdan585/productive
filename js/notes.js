@@ -1,25 +1,46 @@
-/* Notes Editor Engine & Markdown Processing */
+/* Notes Editor Engine, Slash Commands & Rich Markdown Processing */
 
 let editingId = null;
 let isRecording = false;
 let recognition = null;
 let editorMode = "write";
+let slashActiveIndex = 0;
+let currentSlashQuery = "";
+
+const SLASH_COMMANDS = [
+  { id: "h1", name: "Heading 1", trigger: "h1", icon: "H1", desc: "Large section heading", template: "\n# Heading 1\n" },
+  { id: "h2", name: "Heading 2", trigger: "h2", icon: "H2", desc: "Medium section heading", template: "\n## Section Title\n" },
+  { id: "h3", name: "Heading 3", trigger: "h3", icon: "H3", desc: "Small subsection heading", template: "\n### Subsection Title\n" },
+  { id: "todo", name: "To-Do Checklist", trigger: "todo", icon: "☑️", desc: "Interactive task checkbox", template: "\n- [ ] " },
+  { id: "bullet", name: "Bulleted List", trigger: "bullet", icon: "•", desc: "Unordered bullet point", template: "\n- " },
+  { id: "num", name: "Numbered List", trigger: "num", icon: "1.", desc: "Sequential numbered list", template: "\n1. " },
+  { id: "callout_note", name: "Callout: Note", trigger: "note", icon: "💡", desc: "Highlighted info box", template: "\n> [!NOTE]\n> Key takeaway or insight here\n" },
+  { id: "callout_tip", name: "Callout: Tip", trigger: "tip", icon: "🚀", desc: "Efficiency or best practice tip", template: "\n> [!TIP]\n> Pro-tip here\n" },
+  { id: "callout_warn", name: "Callout: Warning", trigger: "warning", icon: "⚠️", desc: "Attention / critical warning", template: "\n> [!WARNING]\n> Critical notice here\n" },
+  { id: "callout_imp", name: "Callout: Important", trigger: "important", icon: "❗", desc: "High priority requirement", template: "\n> [!IMPORTANT]\n> Must-know requirement\n" },
+  { id: "code", name: "Code Block", trigger: "code", icon: "⌨️", desc: "Syntax highlighted code snippet", template: "\n```javascript\n// Code snippet here\n```\n" },
+  { id: "table", name: "Markdown Table", trigger: "table", icon: "📊", desc: "2x3 Structured data grid", template: "\n| Item | Description | Status |\n|---|---|---|\n| Step 1 | Initial setup | Done |\n| Step 2 | Implementation | In Progress |\n" },
+  { id: "quote", name: "Blockquote", trigger: "quote", icon: "“", desc: "Capture a quote or reference", template: "\n> " },
+  { id: "divider", name: "Divider Line", trigger: "hr", icon: "➖", desc: "Visual horizontal break", template: "\n\n---\n\n" },
+  { id: "date", name: "Date Stamp", trigger: "date", icon: "📅", desc: "Insert today's ISO date", template: () => `📅 ${getIsoDateStr()}` },
+  { id: "time", name: "Time Stamp", trigger: "time", icon: "⏱️", desc: "Insert current time stamp", template: () => `⏱️ ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` }
+];
 
 const TEMPLATES = {
   Meeting: {
     topic: "Executive Standup Meeting",
     category: "Architecture",
-    takeaway: "## 🎯 Key Decisions\n- Approved single-file SPA architecture.\n- Implemented Apple Liquid Glass design system.\n\n## 📋 Next Steps\n- Execute performance benchmarks."
+    takeaway: "## 🎯 Key Decisions\n- Approved single-file SPA architecture.\n- Implemented Apple Liquid Glass design system.\n\n## 📋 Next Steps\n- [ ] Execute performance benchmarks.\n- [ ] Review cloud sync latency."
   },
   Architecture: {
     topic: "System Architecture Proposal",
     category: "Architecture",
-    takeaway: "## 🏗️ Overview\nModular CSS & JS architecture with zero external dependencies.\n\n## ⚡ Core Metrics\n- Render Velocity: 60 FPS\n- Security: AES-256 WebCrypto Vault"
+    takeaway: "## 🏗️ Overview\nModular CSS & JS architecture with zero external dependencies.\n\n> [!NOTE]\n> System designed for 60 FPS offline execution.\n\n## ⚡ Core Metrics\n- Render Velocity: 60 FPS\n- Security: AES-256 WebCrypto Vault"
   },
   Learning: {
     topic: "Deep Work Learning Log",
     category: "Learning",
-    takeaway: "## 💡 Key Concept\nProgressive disclosure in UI design prioritizes information hierarchy over visual density.\n\n## 🔗 Mentions\n- @Task: Review Q3 System Architecture"
+    takeaway: "## 💡 Key Concept\nProgressive disclosure in UI design prioritizes information hierarchy over visual density.\n\n> [!TIP]\n> Use slash commands `/` for rapid structured note taking."
   }
 };
 
@@ -33,7 +54,7 @@ function setEditorMode(mode) {
   if (!writePane || !previewPane) return;
 
   if (mode === "preview") {
-    previewPane.innerHTML = parseMarkdownMentions(document.getElementById("takeaway").value) || '<span style="color:var(--muted)">Nothing to preview...</span>';
+    previewPane.innerHTML = parseMarkdownMentions(document.getElementById("takeaway").value, "preview-editor") || '<span style="color:var(--muted); font-style:italic;">Nothing to preview...</span>';
     writePane.style.display = "none";
     previewPane.style.display = "block";
     if (modeWriteBtn) modeWriteBtn.classList.remove("active");
@@ -44,6 +65,140 @@ function setEditorMode(mode) {
     if (modeWriteBtn) modeWriteBtn.classList.add("active");
     if (modePreviewBtn) modePreviewBtn.classList.remove("active");
   }
+}
+
+/* Slash Command Controller */
+function handleTakeawayInput(e) {
+  updateCharCounter();
+  const textarea = e.target;
+  const val = textarea.value;
+  const caretPos = textarea.selectionStart;
+  const textBeforeCaret = val.substring(0, caretPos);
+
+  const match = textBeforeCaret.match(/(?:^|\s)\/([a-zA-Z0-9_\-]*)$/);
+  if (match) {
+    currentSlashQuery = match[1].toLowerCase();
+    showSlashMenu(currentSlashQuery);
+  } else {
+    hideSlashMenu();
+  }
+}
+
+function handleTakeawayKeydown(e) {
+  const menu = document.getElementById("slashCommandMenu");
+  if (!menu || menu.style.display === "none") return;
+
+  const items = menu.querySelectorAll(".slash-menu-item");
+  if (!items.length) return;
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    slashActiveIndex = (slashActiveIndex + 1) % items.length;
+    renderSlashMenuHighlight(items);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    slashActiveIndex = (slashActiveIndex - 1 + items.length) % items.length;
+    renderSlashMenuHighlight(items);
+  } else if (e.key === "Enter" || e.key === "Tab") {
+    e.preventDefault();
+    const activeItem = items[slashActiveIndex];
+    if (activeItem) {
+      const cmdId = activeItem.getAttribute("data-cmd-id");
+      insertSlashCommand(cmdId);
+    }
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    hideSlashMenu();
+  }
+}
+
+function showSlashMenu(query = "") {
+  const menu = document.getElementById("slashCommandMenu");
+  if (!menu) return;
+
+  const filtered = SLASH_COMMANDS.filter(c => {
+    if (!query) return true;
+    return c.trigger.toLowerCase().includes(query) || 
+           c.name.toLowerCase().includes(query) || 
+           c.desc.toLowerCase().includes(query);
+  });
+
+  if (!filtered.length) {
+    hideSlashMenu();
+    return;
+  }
+
+  slashActiveIndex = 0;
+  menu.innerHTML = filtered.map((c, idx) => `
+    <div class="slash-menu-item ${idx === 0 ? 'active' : ''}" data-cmd-id="${c.id}" onclick="insertSlashCommand('${c.id}')">
+      <div class="slash-menu-icon">${c.icon}</div>
+      <div class="slash-menu-info">
+        <div class="slash-menu-title">
+          <span>${escapeHTML(c.name)}</span>
+          <span class="slash-menu-tag">/${c.trigger}</span>
+        </div>
+        <div class="slash-menu-desc">${escapeHTML(c.desc)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  menu.style.display = "flex";
+  menu.style.top = "10px";
+  menu.style.left = "14px";
+}
+
+function renderSlashMenuHighlight(items) {
+  items.forEach((item, idx) => {
+    if (idx === slashActiveIndex) {
+      item.classList.add("active");
+      item.scrollIntoView({ block: "nearest" });
+    } else {
+      item.classList.remove("active");
+    }
+  });
+}
+
+function hideSlashMenu() {
+  const menu = document.getElementById("slashCommandMenu");
+  if (menu) menu.style.display = "none";
+}
+
+function openSlashMenuManual() {
+  const textarea = document.getElementById("takeaway");
+  if (!textarea) return;
+  textarea.focus();
+  const caret = textarea.selectionStart;
+  textarea.value = textarea.value.substring(0, caret) + "/" + textarea.value.substring(caret);
+  textarea.setSelectionRange(caret + 1, caret + 1);
+  showSlashMenu("");
+}
+
+function insertSlashCommand(cmdId) {
+  const textarea = document.getElementById("takeaway");
+  if (!textarea) return;
+
+  const cmd = SLASH_COMMANDS.find(c => c.id === cmdId);
+  if (!cmd) return;
+
+  const templateStr = typeof cmd.template === "function" ? cmd.template() : cmd.template;
+  const val = textarea.value;
+  const caret = textarea.selectionStart;
+  const textBeforeCaret = val.substring(0, caret);
+  const textAfterCaret = val.substring(caret);
+
+  // Replace typed `/${query}` before caret
+  const lastSlashIdx = textBeforeCaret.lastIndexOf("/");
+  const prefix = (lastSlashIdx >= 0) ? textBeforeCaret.substring(0, lastSlashIdx) : textBeforeCaret;
+
+  textarea.value = prefix + templateStr + textAfterCaret;
+  const newCaretPos = prefix.length + templateStr.length;
+  textarea.setSelectionRange(newCaretPos, newCaretPos);
+  textarea.focus();
+
+  hideSlashMenu();
+  updateCharCounter();
+  if (typeof FX !== "undefined") FX.playClick();
+  if (typeof showToast === "function") showToast(`Inserted ${cmd.name}`, "info");
 }
 
 function formatMarkdown(type) {
@@ -129,7 +284,11 @@ function applyTemplate(key) {
 function updateCharCounter() {
   const el = document.getElementById("takeaway");
   const countEl = document.getElementById("charCount");
-  if (el && countEl) countEl.textContent = `${el.value.length}/1000`;
+  if (!el || !countEl) return;
+  const text = el.value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  const chars = el.value.length;
+  countEl.textContent = `${words} word${words === 1 ? '' : 's'} • ${chars} chars`;
 }
 
 function toggleVoiceDictation() {
@@ -172,22 +331,131 @@ function calcReadTime(text) {
   return `${mins} min`;
 }
 
-function parseMarkdownMentions(text) {
+function copyCodeSnippet(btn) {
+  const box = btn.closest(".note-code-box");
+  if (!box) return;
+  const code = box.querySelector("code");
+  if (!code) return;
+  navigator.clipboard.writeText(code.innerText).then(() => {
+    btn.textContent = "Copied! ✓";
+    setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+  });
+}
+
+function toggleNoteChecklist(checkbox, noteId, lineIndex) {
+  if (typeof FX !== "undefined") FX.playClick();
+  const notes = loadNotes();
+  const target = notes.find(n => n.id === noteId);
+  if (!target) return;
+
+  const content = target.takeaway || target.content || "";
+  const lines = content.split("\n");
+
+  let checkCounter = 0;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].match(/^\s*-\s*\[([ xX])\]\s*(.*)$/)) {
+      if (checkCounter === lineIndex) {
+        const isChecked = checkbox.checked;
+        lines[i] = lines[i].replace(/^\s*-\s*\[([ xX])\]/, isChecked ? "- [x]" : "- [ ]");
+        break;
+      }
+      checkCounter++;
+    }
+  }
+
+  target.takeaway = lines.join("\n");
+  target.content = target.takeaway;
+  target.updatedAt = new Date().toISOString();
+
+  if (typeof saveNoteSingle === "function") saveNoteSingle(target);
+  else saveNotes(notes);
+
+  renderNotes();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+}
+
+function parseMarkdownMentions(text, noteId = "") {
   if (!text) return "";
   let html = escapeHTML(text);
-  
-  // Format Headings
-  html = html.replace(/^### (.*$)/gim, '<h4 style="margin:8px 0; font-weight:700; color:var(--accent);">$1</h4>');
-  html = html.replace(/^## (.*$)/gim, '<h3 style="margin:10px 0; font-weight:800; color:var(--text);">$1</h3>');
-  html = html.replace(/^# (.*$)/gim, '<h2 style="margin:12px 0; font-weight:800; color:var(--text);">$1</h2>');
 
-  // Format Bold & Italics
+  // 1. Code Blocks (```lang ... ```)
+  html = html.replace(/```([a-zA-Z0-9_\-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<div class="note-code-box">
+      <div class="note-code-header">
+        <span>${lang || 'CODE'}</span>
+        <button type="button" class="note-code-copy-btn" onclick="copyCodeSnippet(this)">Copy</button>
+      </div>
+      <pre><code>${code.trim()}</code></pre>
+    </div>`;
+  });
+
+  // 2. Callout Alerts (> [!NOTE], > [!TIP], > [!WARNING], > [!IMPORTANT])
+  html = html.replace(/^>\s*\[!NOTE\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
+    const cleanBody = body.replace(/^>\s*/gm, '');
+    return `<div class="note-callout callout-note"><div class="callout-header">💡 NOTE</div><div>${cleanBody}</div></div>`;
+  });
+  html = html.replace(/^>\s*\[!TIP\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
+    const cleanBody = body.replace(/^>\s*/gm, '');
+    return `<div class="note-callout callout-tip"><div class="callout-header">🚀 TIP</div><div>${cleanBody}</div></div>`;
+  });
+  html = html.replace(/^>\s*\[!WARNING\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
+    const cleanBody = body.replace(/^>\s*/gm, '');
+    return `<div class="note-callout callout-warning"><div class="callout-header">⚠️ WARNING</div><div>${cleanBody}</div></div>`;
+  });
+  html = html.replace(/^>\s*\[!IMPORTANT\]\n([\s\S]*?)(?=(?:\n\n|\n(?!>)|$))/gim, (m, body) => {
+    const cleanBody = body.replace(/^>\s*/gm, '');
+    return `<div class="note-callout callout-important"><div class="callout-header">❗ IMPORTANT</div><div>${cleanBody}</div></div>`;
+  });
+
+  // 3. Blockquotes
+  html = html.replace(/^>\s+(.*$)/gim, '<blockquote style="border-left:3px solid var(--accent); padding-left:10px; margin:6px 0; color:var(--text); opacity:0.85;">$1</blockquote>');
+
+  // 4. Headings
+  html = html.replace(/^### (.*$)/gim, '<h4 style="margin:8px 0; font-weight:700; color:var(--accent); font-size:0.95rem;">$1</h4>');
+  html = html.replace(/^## (.*$)/gim, '<h3 style="margin:10px 0; font-weight:800; color:var(--text); font-size:1.05rem;">$1</h3>');
+  html = html.replace(/^# (.*$)/gim, '<h2 style="margin:12px 0; font-weight:800; color:var(--text); font-size:1.2rem;">$1</h2>');
+
+  // 5. Interactive Checklists (- [ ] item, - [x] item)
+  let checklistCounter = 0;
+  html = html.replace(/^-\s*\[([ xX])\]\s*(.*$)/gim, (match, check, itemText) => {
+    const isChecked = check.toLowerCase() === 'x';
+    const idx = checklistCounter++;
+    const clickHandler = noteId ? `onchange="toggleNoteChecklist(this, '${noteId}', ${idx})"` : '';
+    return `<div class="note-todo-item ${isChecked ? 'checked' : ''}">
+      <input type="checkbox" ${isChecked ? 'checked' : ''} ${clickHandler}>
+      <span style="${isChecked ? 'text-decoration:line-through; opacity:0.6;' : ''}">${itemText}</span>
+    </div>`;
+  });
+
+  // 6. Markdown Tables (| ... |)
+  html = html.replace(/((?:\|[^\n]+\|\r?\n)+)/g, (match) => {
+    const rows = match.trim().split('\n').filter(r => !r.includes('---'));
+    if (!rows.length) return match;
+    let tableHTML = '<table class="note-table">';
+    rows.forEach((r, idx) => {
+      const cols = r.split('|').filter((c, i, a) => i > 0 && i < a.length - 1).map(c => c.trim());
+      tableHTML += '<tr>';
+      cols.forEach(c => {
+        tableHTML += idx === 0 ? `<th>${c}</th>` : `<td>${c}</td>`;
+      });
+      tableHTML += '</tr>';
+    });
+    tableHTML += '</table>';
+    return tableHTML;
+  });
+
+  // 7. Dividers (---)
+  html = html.replace(/^---$/gim, '<hr class="note-hr">');
+
+  // 8. Bold & Italics
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px; font-family:var(--font-code); color:var(--accent); font-size:0.8rem;">$1</code>');
 
-  // Format Linebreaks & Lists
-  html = html.replace(/^\- (.*$)/gim, '• $1');
-  
+  // 9. Bullet & Numbered lists
+  html = html.replace(/^\-\s+(.*$)/gim, '• $1<br>');
+  html = html.replace(/^(\d+)\.\s+(.*$)/gim, '<strong style="color:var(--accent);">$1.</strong> $2<br>');
+
   return html;
 }
 
@@ -232,7 +500,7 @@ function renderNotes() {
         <div class="note-title">${escapeHTML(noteTitle)}</div>
         <span class="badge">${escapeHTML(note.category || 'General')}</span>
       </div>
-      <div class="note-body">${parseMarkdownMentions(noteBody) || '<span style="color:var(--muted); font-style:italic;">(No content)</span>'}</div>
+      <div class="note-body">${parseMarkdownMentions(noteBody, note.id) || '<span style="color:var(--muted); font-style:italic;">(No content)</span>'}</div>
       <div class="note-footer">
         <span>📅 ${dateStr} • ⏱️ ${calcReadTime(noteBody)}</span>
         <div style="display:flex; gap:6px;">
