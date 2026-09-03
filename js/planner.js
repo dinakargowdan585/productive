@@ -135,11 +135,23 @@ function getYesterdayIsoDateStr() {
 
 function toggleTask(id, dateStr) {
   const targetDate = dateStr || getIsoDateStr();
+  const todayIso = getIsoDateStr();
+
+  // Strictly enforce that tasks can ONLY be ticked / completed for TODAY
+  if (targetDate !== todayIso) {
+    if (targetDate < todayIso) {
+      if (typeof showToast === "function") showToast("Past dates are locked and cannot be ticked.", "warning");
+    } else {
+      if (typeof showToast === "function") showToast("Future dates cannot be ticked until that day arrives.", "warning");
+    }
+    if (typeof FX !== "undefined") FX.playClick();
+    return;
+  }
+
   const tasks = loadTasks();
   const t = tasks.find(x => x.id === id);
   if (!t) return;
 
-  const todayIso = getIsoDateStr();
   const isDaily = Boolean(t.isDaily || t.is_daily);
   let isNowCompleted = false;
 
@@ -151,17 +163,17 @@ function toggleTask(id, dateStr) {
       }
     }
 
-    const idx = t.completedDates.indexOf(targetDate);
+    const idx = t.completedDates.indexOf(todayIso);
     if (idx >= 0) {
       t.completedDates.splice(idx, 1);
       isNowCompleted = false;
     } else {
-      t.completedDates.push(targetDate);
+      t.completedDates.push(todayIso);
       isNowCompleted = true;
     }
 
-    t.completed = t.completedDates.includes(todayIso);
-    t.lastCompletedDate = isNowCompleted ? targetDate : (t.completedDates[t.completedDates.length - 1] || null);
+    t.completed = isNowCompleted;
+    t.lastCompletedDate = isNowCompleted ? todayIso : (t.completedDates[t.completedDates.length - 1] || null);
 
     // Calculate real streak from completedDates
     let currentStreak = 0;
@@ -178,7 +190,7 @@ function toggleTask(id, dateStr) {
     t.completed = !t.completed;
     isNowCompleted = t.completed;
     if (t.completed) {
-      t.lastCompletedDate = targetDate;
+      t.lastCompletedDate = todayIso;
     }
   }
 

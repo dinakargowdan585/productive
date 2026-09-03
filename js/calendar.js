@@ -393,6 +393,10 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
   const dayBlocks = allBlocks.filter(b => isBlockForDate(b, dateStr));
   const dateObj = new Date(dateStr + "T00:00:00");
   const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+  const todayIso = getIsoDateStr();
+  const isToday = (dateStr === todayIso);
+  const isPast = (dateStr < todayIso);
+  const isFuture = (dateStr > todayIso);
 
   const inspector = document.createElement("div");
   inspector.className = "cal-day-inspector";
@@ -418,12 +422,15 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
         ${dayTasks.map(t => {
           const cal = getCalendarById(t.calendarId || t.category || "work");
           const isDone = isTaskCompletedOnDate(t, dateStr);
+          const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked until that day arrives") : "Mark completed";
           return `
-            <div class="cal-inspector-item" style="border-left:3px solid ${cal.color};">
+            <div class="cal-inspector-item" style="border-left:3px solid ${cal.color}; ${!isToday ? 'opacity:0.85;' : ''}">
               <div style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${dateStr}')">
+                <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
                 <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
                 ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
+                ${isPast ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--muted); font-size:0.68rem;">Locked</span>` : ''}
+                ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.68rem;">Upcoming</span>` : ''}
               </div>
               <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
             </div>
@@ -439,6 +446,7 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
       <h3 class="cal-inspector-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         ${formattedDate}
+        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.7rem;">TODAY</span>` : ''}
       </h3>
       <div style="display:flex; gap:8px;">
         <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
@@ -547,6 +555,9 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   grid.innerHTML = "";
 
   const curDateStr = getIsoDateStr(dateObj);
+  const todayIso = getIsoDateStr();
+  const isToday = (curDateStr === todayIso);
+  const isPast = (curDateStr < todayIso);
   const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
   const allBlocks = loadTimeBlocks();
   const dayBlocks = allBlocks.filter(b => isBlockForDate(b, curDateStr));
@@ -555,6 +566,7 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div style="font-size:1.15rem; font-weight:800; color:var(--accent);">
         📅 ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.72rem; margin-left:8px;">TODAY</span>` : ''}
       </div>
       <div style="display:flex; gap:8px;">
         <button type="button" class="secondary" onclick="openNewEventModal('${curDateStr}')" style="padding:5px 12px; font-size:0.8rem;">+ Add Task / Event</button>
@@ -580,10 +592,11 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
     dayTasks.forEach(t => {
       const cal = getCalendarById(t.calendarId || t.category || "work");
       const isDone = isTaskCompletedOnDate(t, curDateStr);
+      const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
       grid.innerHTML += `
-        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${cal.color};">
+        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${cal.color}; ${!isToday ? 'opacity:0.85;' : ''}">
           <div style="display:flex; align-items:center; gap:12px;">
-            <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${curDateStr}')">
+            <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${curDateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
             <div>
               <span style="font-size:0.95rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
               <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">● ${escapeHTML(cal.name)} • Priority: ${t.priority || 'MED'}${t.isDaily ? ' • Daily Habit' : ''}</div>
@@ -634,9 +647,11 @@ function renderAgendaView(grid, canvasHeader, tasks) {
 
   sortedDates.forEach(dateStr => {
     const isToday = dateStr === todayIso;
+    const isPast = dateStr < todayIso;
     const dateObj = new Date(dateStr + "T00:00:00");
     const formatted = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     const { tasks: dayTasks, blocks: dayBlocks } = dateMap[dateStr];
+    const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
 
     let groupHTML = `
       <div class="cal-agenda-group">
@@ -659,7 +674,7 @@ function renderAgendaView(grid, canvasHeader, tasks) {
           return `
             <div class="cal-agenda-card" style="border-left:4px solid ${cal.color};">
               <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${dateStr}')">
+                <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
                 <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
               </div>
               <span class="badge" style="background:${cal.color}15; color:${cal.color}; font-size:0.72rem;">${escapeHTML(cal.name)}</span>
