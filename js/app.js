@@ -80,39 +80,11 @@ function toggleTheme() {
   showToast(`Switched to ${next} mode`, "info");
 }
 
-const LUXURY_THEMES = [
-  { id: "visionos", name: "VisionOS Indigo", accent: "#38BDF8" },
-  { id: "oled", name: "Pure OLED Noir", accent: "#F59E0B" },
-  { id: "emerald", name: "Emerald Matrix", accent: "#10B981" },
-  { id: "cyberpunk", name: "Cyberpunk Sunset", accent: "#EC4899" }
-];
-
-function setLuxuryTheme(themeName) {
-  if (!themeName || themeName === "visionos") {
-    document.documentElement.removeAttribute("data-luxury-theme");
-    localStorage.removeItem("productive_luxury_theme");
-  } else {
-    document.documentElement.setAttribute("data-luxury-theme", themeName);
-    localStorage.setItem("productive_luxury_theme", themeName);
-  }
-  const themeObj = LUXURY_THEMES.find(t => t.id === themeName) || LUXURY_THEMES[0];
-  if (typeof showToast === "function") showToast(`Theme set to ${themeObj.name} ✨`, "info");
+// Clean up any legacy luxury theme attributes
+if (typeof document !== "undefined") {
+  document.documentElement.removeAttribute("data-luxury-theme");
+  try { localStorage.removeItem("productive_luxury_theme"); } catch (e) {}
 }
-
-function cycleLuxuryTheme() {
-  const current = localStorage.getItem("productive_luxury_theme") || "visionos";
-  const curIdx = LUXURY_THEMES.findIndex(t => t.id === current);
-  const nextTheme = LUXURY_THEMES[(curIdx + 1) % LUXURY_THEMES.length];
-  setLuxuryTheme(nextTheme.id);
-}
-
-function initLuxuryTheme() {
-  const saved = localStorage.getItem("productive_luxury_theme");
-  if (saved && saved !== "visionos") {
-    document.documentElement.setAttribute("data-luxury-theme", saved);
-  }
-}
-initLuxuryTheme();
 
 function openCommandPalette() {
   const modal = document.getElementById("commandPaletteModal");
