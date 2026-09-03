@@ -403,7 +403,7 @@ function renderPlanner() {
       }
     }
 
-    const priorityDot = t.priority === 'HIGH' ? '🔴 HIGH' : (t.priority === 'MED' ? 'bb MED' : '🟢 LOW');
+    const priorityDot = t.priority === 'HIGH' ? '🔴 HIGH' : (t.priority === 'MED' ? '🟡 MED' : '🟢 LOW');
     const relationshipChipsHTML = renderRelationshipChips(t);
     const timeStats = getTaskTimeStats(t.id);
     const blocks = getTimeBlocksByTask(t.id);
