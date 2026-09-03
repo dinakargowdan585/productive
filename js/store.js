@@ -48,12 +48,16 @@ function getYesterdayIsoDateStr() {
 function isTaskCompletedOnDate(t, dateStr) {
   if (!t) return false;
   const targetDate = dateStr || getIsoDateStr();
+  const todayIso = getIsoDateStr();
   const isDaily = Boolean(t.isDaily || t.is_daily);
   if (isDaily) {
-    if (Array.isArray(t.completedDates)) {
+    if (Array.isArray(t.completedDates) && t.completedDates.length > 0) {
       return t.completedDates.includes(targetDate);
     }
-    return t.lastCompletedDate === targetDate && Boolean(t.completed);
+    if (Boolean(t.completed) && (targetDate === todayIso || targetDate === t.lastCompletedDate)) {
+      return true;
+    }
+    return false;
   }
   return Boolean(t.completed);
 }

@@ -539,7 +539,8 @@ function renderPlanner() {
     const todayIso = getIsoDateStr();
     const isOverdue = Boolean(t.dueDate && t.dueDate < todayIso && !t.completed);
 
-    item.className = `task-card-redesign ${t.completed ? 'completed' : ''}`;
+    const isDone = isTaskCompletedOnDate(t, todayIso);
+    item.className = `task-card-redesign ${isDone ? 'completed' : ''}`;
     item.style.borderLeftColor = cal.color;
     if (isOverdue) item.style.borderColor = "rgba(255, 59, 48, 0.4)";
 
@@ -570,7 +571,7 @@ function renderPlanner() {
     } else if (timeStats.estimated > 0) {
       progressPct = Math.min(100, Math.round((timeStats.actual / timeStats.estimated) * 100));
     } else {
-      progressPct = t.completed ? 100 : 0;
+      progressPct = isDone ? 100 : 0;
     }
 
     const catSvg = TASK_SVGS[cal.id] || TASK_SVGS.work;
@@ -595,11 +596,11 @@ function renderPlanner() {
     item.innerHTML = `
       <div class="task-card-primary-row">
         <div class="task-checkbox-wrap">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+          <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}')">
         </div>
         <div class="task-card-content">
           <div id="taskTitleWrap-${t.id}" data-title="${escapeHTML(t.title)}" ondblclick="startEditTaskTitle('${t.id}', event)">
-            <div class="task-title-text" style="${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">
+            <div class="task-title-text" style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">
               ${escapeHTML(t.title)}
             </div>
           </div>

@@ -310,7 +310,10 @@ const SyncEngine = {
               }
               const todayIso = getIsoDateStr();
               const isDaily = Boolean(t.is_daily);
-              const isCompletedToday = isDaily ? (completedDates.includes(todayIso) || (lastCompletedDate === todayIso && Boolean(t.completed))) : Boolean(t.completed);
+              const isCompleted = Boolean(t.completed);
+              if (isDaily && isCompleted && !completedDates.includes(todayIso)) {
+                completedDates.push(todayIso);
+              }
               return {
                 id: t.id,
                 title: t.title,
@@ -319,7 +322,7 @@ const SyncEngine = {
                 priority: t.priority || "MED",
                 dueDate: t.due_date || null,
                 isDaily: isDaily,
-                completed: isCompletedToday,
+                completed: isCompleted,
                 streak: streak,
                 lastCompletedDate: lastCompletedDate,
                 completedDates: completedDates,
