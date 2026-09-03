@@ -1,10 +1,11 @@
-/* Desktop Calendar & Week View Timeline Engine */
+/* Desktop Calendar & Week View Timeline Engine (VisionOS / Cron Redesign) */
 
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 let selectedCalDateStr = getIsoDateStr();
 let currentCalViewMode = "month";
 let calActiveFilter = "ALL";
+let calNowInterval = null;
 
 function changeCalMonth(delta) {
   calMonth += delta;
@@ -13,8 +14,31 @@ function changeCalMonth(delta) {
   renderCalendar();
 }
 
-function prevMonth() { changeCalMonth(-1); }
-function nextMonth() { changeCalMonth(1); }
+function prevMonth() { 
+  if (currentCalViewMode === "week") {
+    changeCalWeek(-1);
+  } else {
+    changeCalMonth(-1); 
+  }
+}
+
+function nextMonth() { 
+  if (currentCalViewMode === "week") {
+    changeCalWeek(1);
+  } else {
+    changeCalMonth(1); 
+  }
+}
+
+function changeCalWeek(deltaWeeks) {
+  const d = new Date(selectedCalDateStr || getIsoDateStr());
+  d.setDate(d.getDate() + (deltaWeeks * 7));
+  selectedCalDateStr = getIsoDateStr(d);
+  calYear = d.getFullYear();
+  calMonth = d.getMonth();
+  renderCalendar();
+}
+
 function todayMonth() { setCalToday(); }
 function prevMiniMonth() { changeCalMonth(-1); }
 function nextMiniMonth() { changeCalMonth(1); }
@@ -60,9 +84,10 @@ function closeEventModal() {
 
 function saveEventFromModal(e) {
   if (e) e.preventDefault();
-  const title = document.getElementById("eventModalTitle")?.value.trim();
+  const title = document.getElementById("eventModalTitleInput")?.value.trim() || document.getElementById("eventModalTitle")?.value.trim();
   const date = document.getElementById("eventModalDate")?.value || getIsoDateStr();
   const cat = document.getElementById("eventModalCategory")?.value || "work";
+  const prio = document.getElementById("eventModalPriority")?.value || "Medium";
   if (!title) return;
 
   const tasks = loadTasks();
@@ -71,17 +96,19 @@ function saveEventFromModal(e) {
     id: uuid(),
     title,
     dueDate: date,
-    priority: "Medium",
+    priority: prio,
+    category: cal.id,
     calendarId: cal.id,
     calendarName: cal.name,
     calendarColor: cal.color,
     completed: false,
-    createdAt: Date.now()
+    createdAt: new Date().toISOString()
   });
 
   saveTasks(tasks);
   closeEventModal();
   renderCalendar();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   if (typeof showToast === "function") showToast("Event saved to calendar!", "success");
 }
 
@@ -90,33 +117,67 @@ function deleteEventFromModal() {
   if (typeof showToast === "function") showToast("Event canceled.", "info");
 }
 
+function handleQuickDayTaskAdd(e, dateStr) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const title = e.target.value.trim();
+    if (!title) return;
+    const tasks = loadTasks();
+    tasks.unshift({
+      id: uuid(),
+      title,
+      dueDate: dateStr || selectedCalDateStr || getIsoDateStr(),
+      priority: "MED",
+      category: "work",
+      calendarId: "work",
+      completed: false,
+      createdAt: new Date().toISOString()
+    });
+    saveTasks(tasks);
+    e.target.value = "";
+    renderCalendar();
+    if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+    if (typeof showToast === "function") showToast(`Added task for ${dateStr}!`, "success");
+  }
+}
+
 function renderCalendar() {
-  const monthTitle = document.getElementById("calMonthTitle");
+  const monthTitle = document.getElementById("calMonthTitle") || document.getElementById("calendarMonthTitle");
   if (monthTitle) {
     const d = new Date(calYear, calMonth, 1);
     monthTitle.textContent = d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   }
 
+  const miniTitle = document.getElementById("miniCalTitle");
+  if (miniTitle) {
+    const d = new Date(calYear, calMonth, 1);
+    miniTitle.textContent = d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }).toUpperCase();
+  }
+
   renderMiniCalendar();
   renderCalendarCategoryLegend();
 
-  const grid = document.getElementById("calGrid");
+  const grid = document.getElementById("calGrid") || document.getElementById("calendarGrid");
   const canvasHeader = document.getElementById("calCanvasHeader");
-  if (!grid || !canvasHeader) return;
+  if (!grid) return;
 
   const tasks = loadTasks();
   let filteredTasks = tasks;
   if (calActiveFilter !== "ALL") {
-    filteredTasks = tasks.filter(t => (t.calendarId || t.category || "work") === calActiveFilter);
+    filteredTasks = tasks.filter(t => (t.calendarId || t.category || "work").toLowerCase() === calActiveFilter.toLowerCase());
   }
 
   if (currentCalViewMode === "month") {
     renderMonthView(grid, canvasHeader, filteredTasks);
   } else if (currentCalViewMode === "week") {
-    renderWeekView(grid, canvasHeader, new Date(selectedCalDateStr), filteredTasks);
+    renderWeekView(grid, canvasHeader, new Date(selectedCalDateStr || getIsoDateStr()), filteredTasks);
   } else if (currentCalViewMode === "day") {
-    renderDayView(grid, canvasHeader, new Date(selectedCalDateStr), filteredTasks);
+    renderDayView(grid, canvasHeader, new Date(selectedCalDateStr || getIsoDateStr()), filteredTasks);
+  } else if (currentCalViewMode === "agenda") {
+    renderAgendaView(grid, canvasHeader, filteredTasks);
   }
+
+  bindCalendarSwipe(grid);
 }
 
 function renderMiniCalendar() {
@@ -174,7 +235,13 @@ function renderCalendarCategoryLegend() {
 }
 
 function renderMonthView(grid, canvasHeader, tasks) {
-  canvasHeader.style.display = "grid";
+  if (canvasHeader) {
+    canvasHeader.style.display = "grid";
+    canvasHeader.innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(h => `
+      <div style="font-weight:700; font-size:0.75rem; color:var(--muted); text-align:center; font-family:var(--font-code); padding-bottom:4px;">${h}</div>
+    `).join('');
+  }
+
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(7, 1fr)";
   grid.style.gap = "6px";
@@ -192,13 +259,14 @@ function renderMonthView(grid, canvasHeader, tasks) {
   for (let day = 1; day <= daysInMonth; day++) {
     const curDateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const isToday = curDateStr === todayIso;
+    const isSelected = curDateStr === selectedCalDateStr;
     const dayTasks = tasks.filter(t => t.dueDate === curDateStr);
 
     grid.innerHTML += `
-      <div class="cal-day-cell ${isToday ? 'is-today' : ''}" onclick="selectCalDate('${curDateStr}')">
+      <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span class="cal-day-number">${day}</span>
-          ${dayTasks.length > 0 ? `<span style="font-size:0.7rem; color:var(--accent); font-weight:700;">${dayTasks.length} task(s)</span>` : ''}
+          ${dayTasks.length > 0 ? `<span style="font-size:0.7rem; color:var(--accent); font-weight:700;">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
         </div>
         <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
           ${dayTasks.slice(0, 3).map(t => {
@@ -209,14 +277,77 @@ function renderMonthView(grid, canvasHeader, tasks) {
               </div>
             `;
           }).join('')}
+          ${dayTasks.length > 3 ? `<span class="cal-more-btn">+${dayTasks.length - 3} more</span>` : ''}
         </div>
       </div>
     `;
   }
+
+  // Render Day Inspector Drawer Below Month Grid
+  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks);
+}
+
+function renderDayInspector(container, dateStr, tasks) {
+  const dayTasks = tasks.filter(t => t.dueDate === dateStr);
+  const dayBlocks = loadTimeBlocks().filter(b => b.date === dateStr);
+  const dateObj = new Date(dateStr + "T00:00:00");
+  const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+
+  const inspector = document.createElement("div");
+  inspector.className = "cal-day-inspector";
+  inspector.style.gridColumn = "1 / -1";
+
+  let itemsHTML = "";
+  if (!dayTasks.length && !dayBlocks.length) {
+    itemsHTML = `<div style="font-size:0.85rem; color:var(--muted); font-style:italic;">No tasks or focus blocks scheduled for this day.</div>`;
+  } else {
+    itemsHTML = `
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${dayBlocks.map(b => `
+          <div class="cal-inspector-item" style="border-left:3px solid ${b.color || 'var(--accent)'};">
+            <div>
+              <strong style="font-size:0.9rem; color:var(--text);">⏱️ ${escapeHTML(b.taskTitle)}</strong>
+              <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
+            </div>
+            <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 10px; font-size:0.75rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>
+          </div>
+        `).join('')}
+        ${dayTasks.map(t => {
+          const cal = getCalendarById(t.calendarId || t.category || "work");
+          return `
+            <div class="cal-inspector-item" style="border-left:3px solid ${cal.color};">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                <span style="font-size:0.9rem; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+              </div>
+              <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  inspector.innerHTML = `
+    <div class="cal-inspector-header">
+      <h3 class="cal-inspector-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        ${formattedDate}
+      </h3>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
+        <button type="button" class="secondary" onclick="openNewEventModal('${dateStr}')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Full Event</button>
+      </div>
+    </div>
+    ${itemsHTML}
+    <input type="text" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+  `;
+
+  container.appendChild(inspector);
 }
 
 function getWeekDates(year, month, dateStr) {
-  const refDate = dateStr ? new Date(dateStr) : new Date(year, month, 1);
+  const refDate = dateStr ? new Date(dateStr + "T00:00:00") : new Date(year, month, 1);
   const dayOfWeek = (refDate.getDay() + 6) % 7;
   const monday = new Date(refDate);
   monday.setDate(refDate.getDate() - dayOfWeek);
@@ -231,7 +362,7 @@ function getWeekDates(year, month, dateStr) {
 }
 
 function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
-  canvasHeader.style.display = "none";
+  if (canvasHeader) canvasHeader.style.display = "none";
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "65px repeat(7, 1fr)";
   grid.style.gap = "6px";
@@ -239,6 +370,12 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
 
   const weekDates = getWeekDates(calYear, calMonth, selectedCalDateStr);
   const allTimeBlocks = loadTimeBlocks();
+  const todayIso = getIsoDateStr();
+
+  const now = new Date();
+  const curHr = now.getHours();
+  const curMin = now.getMinutes();
+  const nowTimeString = `${curHr % 12 || 12}:${String(curMin).padStart(2, '0')} ${curHr >= 12 ? 'PM' : 'AM'}`;
 
   grid.innerHTML += `<div style="font-weight:700; font-size:0.75rem; color:var(--muted); padding:8px 0; text-align:center; font-family:var(--font-code);">Time</div>`;
   const daysHeader = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -246,9 +383,10 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
   weekDates.forEach((d, idx) => {
     const dateStr = getIsoDateStr(d);
     const dayNum = d.getDate();
-    const isToday = dateStr === getIsoDateStr();
+    const isToday = dateStr === todayIso;
+    const isSelected = dateStr === selectedCalDateStr;
     grid.innerHTML += `
-      <div style="text-align:center; font-weight:700; font-size:0.78rem; color:${isToday ? 'var(--accent)' : 'var(--text)'}; padding:6px 0; font-family:var(--font-code); border-bottom:1px solid var(--border);">
+      <div onclick="selectCalDate('${dateStr}')" style="text-align:center; font-weight:700; font-size:0.78rem; color:${isToday ? 'var(--accent)' : 'var(--text)'}; padding:6px 0; font-family:var(--font-code); border-bottom:1px solid var(--border); cursor:pointer; ${isSelected ? 'background:rgba(56,189,248,0.1); border-radius:4px;' : ''}">
         ${daysHeader[idx]} <span style="font-size:0.7rem; opacity:0.8;">${d.getMonth() + 1}/${dayNum}</span>
       </div>
     `;
@@ -260,18 +398,29 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     const hr12 = hr % 12 || 12;
     const ampm = hr >= 12 ? 'PM' : 'AM';
     const timeLabel = `${hr12}:00 ${ampm}`;
-    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--muted); font-family:var(--font-code); text-align:right; padding-right:8px; padding-top:6px;">${timeLabel}</div>`;
+    const isCurrentHour = curHr === hr;
+
+    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--muted); font-family:var(--font-code); text-align:right; padding-right:8px; padding-top:6px; position:relative;">
+      ${timeLabel}
+      ${isCurrentHour ? `<div class="cal-now-time-badge">${nowTimeString}</div>` : ''}
+    </div>`;
 
     weekDates.forEach(d => {
       const curDateStr = getIsoDateStr(d);
+      const isTodayCol = curDateStr === todayIso;
       const hrBlocks = allTimeBlocks.filter(b => {
         if (b.date !== curDateStr) return false;
         const bStartHr = Math.floor(parseTimeToMinutes(b.startTime) / 60);
         return bStartHr === hr;
       });
 
+      const dayTasks = tasks.filter(t => t.dueDate === curDateStr && !t.completed);
+
       grid.innerHTML += `
-        <div class="cal-day-cell" style="min-height:44px; padding:4px;">
+        <div class="cal-day-cell" style="min-height:46px; padding:4px; position:relative;" onclick="selectCalDate('${curDateStr}')">
+          ${isTodayCol && isCurrentHour ? `
+            <div class="cal-now-indicator-row" style="top:${Math.round((curMin / 60) * 100)}%;"></div>
+          ` : ''}
           ${hrBlocks.map(b => `
             <div class="cal-event-card" style="background:${b.color || 'var(--accent)'}25; border-left-color:${b.color || 'var(--accent)'}; color:var(--text);">
               <span>${escapeHTML(b.taskTitle)}</span>
@@ -281,10 +430,12 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
       `;
     });
   });
+
+  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks);
 }
 
 function renderDayView(grid, canvasHeader, dateObj, tasks) {
-  canvasHeader.style.display = "none";
+  if (canvasHeader) canvasHeader.style.display = "none";
   grid.style.display = "flex";
   grid.style.flexDirection = "column";
   grid.style.gap = "12px";
@@ -295,25 +446,174 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   const dayBlocks = loadTimeBlocks().filter(b => b.date === curDateStr);
 
   grid.innerHTML += `
-    <div style="font-size:1.1rem; font-weight:800; color:var(--accent);">
-      📅 Schedule for ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div style="font-size:1.15rem; font-weight:800; color:var(--accent);">
+        📅 ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="secondary" onclick="openNewEventModal('${curDateStr}')" style="padding:5px 12px; font-size:0.8rem;">+ Add Task / Event</button>
+      </div>
     </div>
   `;
 
   if (!dayTasks.length && !dayBlocks.length) {
-    grid.innerHTML += `<div class="empty-state"><h3>No tasks scheduled today</h3><p>Enjoy your free focus time!</p></div>`;
+    grid.innerHTML += `<div class="empty-state"><h3>No tasks or focus blocks scheduled</h3><p>Enjoy your free focus time, or schedule an event above!</p></div>`;
+  } else {
+    dayBlocks.forEach(b => {
+      grid.innerHTML += `
+        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-left:4px solid ${b.color || 'var(--accent)'};">
+          <div>
+            <strong style="color:var(--text); font-size:1rem;">⏱️ ${escapeHTML(b.taskTitle)}</strong>
+            <div style="font-size:0.8rem; color:var(--muted); margin-top:3px;">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
+          </div>
+          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:5px 14px; font-weight:700; background:var(--accent); color:#05070a; border:none;">Focus</button>
+        </div>
+      `;
+    });
+
+    dayTasks.forEach(t => {
+      const cal = getCalendarById(t.calendarId || t.category || "work");
+      grid.innerHTML += `
+        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${cal.color};">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+            <div>
+              <span style="font-size:0.95rem; font-weight:600; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+              <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">● ${escapeHTML(cal.name)} • Priority: ${t.priority || 'MED'}</div>
+            </div>
+          </div>
+          <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
+        </div>
+      `;
+    });
+  }
+
+  grid.innerHTML += `
+    <input type="text" class="cal-inspector-quick-input" placeholder="+ Add a task for this day (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${curDateStr}')">
+  `;
+}
+
+function renderAgendaView(grid, canvasHeader, tasks) {
+  if (canvasHeader) canvasHeader.style.display = "none";
+  grid.style.display = "flex";
+  grid.style.flexDirection = "column";
+  grid.style.gap = "16px";
+  grid.innerHTML = "";
+
+  const allBlocks = loadTimeBlocks();
+  const todayIso = getIsoDateStr();
+
+  // Collect unique dates from today onwards
+  const dateMap = {};
+  
+  tasks.forEach(t => {
+    if (!t.dueDate) return;
+    if (!dateMap[t.dueDate]) dateMap[t.dueDate] = { tasks: [], blocks: [] };
+    dateMap[t.dueDate].tasks.push(t);
+  });
+
+  allBlocks.forEach(b => {
+    if (!b.date) return;
+    if (!dateMap[b.date]) dateMap[b.date] = { tasks: [], blocks: [] };
+    dateMap[b.date].blocks.push(b);
+  });
+
+  const sortedDates = Object.keys(dateMap).sort();
+
+  if (!sortedDates.length) {
+    grid.innerHTML = `<div class="empty-state"><h3>No upcoming events in Agenda</h3><p>Schedule your upcoming goals and milestones in the planner.</p></div>`;
     return;
   }
 
-  dayBlocks.forEach(b => {
-    grid.innerHTML += `
-      <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${b.color || 'var(--accent)'};">
-        <div>
-          <strong style="color:var(--text); font-size:1rem;">${escapeHTML(b.taskTitle)}</strong>
-          <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">⏱️ ${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
+  sortedDates.forEach(dateStr => {
+    const isToday = dateStr === todayIso;
+    const dateObj = new Date(dateStr + "T00:00:00");
+    const formatted = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const { tasks: dayTasks, blocks: dayBlocks } = dateMap[dateStr];
+
+    let groupHTML = `
+      <div class="cal-agenda-group">
+        <div class="cal-agenda-date-header">
+          <span>📅 ${formatted}</span>
+          ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.2); color:var(--accent); font-size:0.7rem;">TODAY</span>` : ''}
         </div>
-        <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 12px; font-weight:700; background:var(--accent); color:#05070a; border:none;">▶ Focus</button>
+        ${dayBlocks.map(b => `
+          <div class="cal-agenda-card" style="border-left:4px solid ${b.color || 'var(--accent)'};">
+            <div>
+              <strong style="color:var(--text); font-size:0.92rem;">⏱️ ${escapeHTML(b.taskTitle)}</strong>
+              <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
+            </div>
+            <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>
+          </div>
+        `).join('')}
+        ${dayTasks.map(t => {
+          const cal = getCalendarById(t.calendarId || t.category || "work");
+          return `
+            <div class="cal-agenda-card" style="border-left:4px solid ${cal.color};">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+                <span style="font-size:0.9rem; color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+              </div>
+              <span class="badge" style="background:${cal.color}15; color:${cal.color}; font-size:0.72rem;">${escapeHTML(cal.name)}</span>
+            </div>
+          `;
+        }).join('')}
       </div>
     `;
+
+    grid.innerHTML += groupHTML;
   });
 }
+
+/* Mobile Touch Gesture Support for Calendar */
+function bindCalendarSwipe(container) {
+  if (!container) return;
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let isSwiping = false;
+
+  container.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isSwiping = false;
+  }, { passive: true });
+
+  container.addEventListener("touchmove", (e) => {
+    if (e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+
+    if (!isSwiping && Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(dy)) {
+      isSwiping = true;
+    }
+    if (isSwiping) {
+      currentX = dx;
+    }
+  }, { passive: true });
+
+  container.addEventListener("touchend", () => {
+    if (isSwiping) {
+      if (currentX < -60) {
+        nextMonth();
+        if (typeof FX !== "undefined") FX.playClick();
+      } else if (currentX > 60) {
+        prevMonth();
+        if (typeof FX !== "undefined") FX.playClick();
+      }
+    }
+    isSwiping = false;
+    currentX = 0;
+  });
+}
+
+// Keep live now time indicator moving in real time
+if (!calNowInterval) {
+  calNowInterval = setInterval(() => {
+    if (currentCalViewMode === "week" || currentCalViewMode === "day") {
+      renderCalendar();
+    }
+  }, 60000);
+}
+
