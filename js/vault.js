@@ -27,12 +27,77 @@ function switchVaultSubTab(tabName) {
    Encrypted Workspaces & Projects Management
    =================================================================== */
 
+function openNewProjectModal() {
+  const dlg = document.getElementById("newProjectModal");
+  if (dlg) {
+    const titleInput = document.getElementById("newProjectTitleInput");
+    if (titleInput) titleInput.value = "";
+    const taskInput = document.getElementById("newProjectTaskInitial");
+    if (taskInput) taskInput.value = "";
+    dlg.showModal();
+    if (titleInput) titleInput.focus();
+  } else {
+    createPresetProject();
+  }
+}
+
+function closeNewProjectModal() {
+  const dlg = document.getElementById("newProjectModal");
+  if (dlg) dlg.close();
+}
+
+function handleCreateCustomProject(e) {
+  if (e) e.preventDefault();
+  const titleInput = document.getElementById("newProjectTitleInput");
+  const catSelect = document.getElementById("newProjectCatSelect");
+  const colorInput = document.getElementById("newProjectColorInput");
+  const taskInput = document.getElementById("newProjectTaskInitial");
+
+  const title = titleInput ? titleInput.value.trim() : "";
+  if (!title) return;
+
+  const cat = catSelect ? catSelect.value : "Work";
+  const color = colorInput ? colorInput.value : "#38BDF8";
+  const initialTask = taskInput ? taskInput.value.trim() : "";
+
+  const taskList = [];
+  if (initialTask) {
+    taskList.push({ id: typeof uuid === "function" ? uuid() : "pt-" + Date.now(), title: initialTask, completed: false });
+  } else {
+    taskList.push({ id: typeof uuid === "function" ? uuid() : "pt-1", title: "Project Scope & Milestones", completed: false });
+  }
+
+  const projects = loadProjects();
+  const newProj = {
+    id: typeof uuid === "function" ? uuid() : "proj-" + Date.now(),
+    title: title,
+    name: title,
+    cat: cat,
+    category: cat,
+    color: color,
+    taskList: taskList,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  projects.unshift(newProj);
+  saveProjects(projects);
+  closeNewProjectModal();
+  switchVaultSubTab("workspaces");
+  renderWorkspaces();
+
+  if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
+  if (typeof renderDashboard === "function") renderDashboard();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+  if (typeof showToast === "function") showToast(`Created Project Workspace: ${title}! 📁`, "success");
+}
+
 function createPresetProject(customTitle) {
   let title = customTitle;
   if (!title) {
-    title = prompt("Enter Project Workspace Title:", "🏢 Q3 Architecture Platform");
+    openNewProjectModal();
+    return;
   }
-  if (!title || !title.trim()) return;
   title = title.trim();
 
   const projects = loadProjects();
@@ -76,7 +141,7 @@ function renderWorkspaces() {
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" style="margin-bottom:12px; opacity:0.8;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <h3>No Project Workspaces Yet</h3>
         <p>Create your first project workspace to organize tasks, track milestones, and group secret notes.</p>
-        <button type="button" onclick="createPresetProject()" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">+ Create Project Workspace</button>
+        <button type="button" onclick="openNewProjectModal()" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">+ Create Project Workspace</button>
       </div>
     `;
     return;
@@ -204,12 +269,70 @@ function deleteProject(id) {
    Encrypted OKRs & Goals Management
    =================================================================== */
 
+function openNewOKRModal() {
+  const dlg = document.getElementById("newOKRModal");
+  if (dlg) {
+    const objInput = document.getElementById("newOKRObjectiveInput");
+    if (objInput) objInput.value = "";
+    const progInput = document.getElementById("newOKRInitialProgress");
+    if (progInput) progInput.value = "0";
+    dlg.showModal();
+    if (objInput) objInput.focus();
+  } else {
+    createPresetOKR();
+  }
+}
+
+function closeNewOKRModal() {
+  const dlg = document.getElementById("newOKRModal");
+  if (dlg) dlg.close();
+}
+
+function handleCreateCustomOKR(e) {
+  if (e) e.preventDefault();
+  const objInput = document.getElementById("newOKRObjectiveInput");
+  const qSelect = document.getElementById("newOKRQuarterSelect");
+  const dateInput = document.getElementById("newOKRTargetDate");
+  const progInput = document.getElementById("newOKRInitialProgress");
+
+  const objective = objInput ? objInput.value.trim() : "";
+  if (!objective) return;
+
+  const quarter = qSelect ? qSelect.value : "Q3 2026";
+  const targetDate = dateInput ? dateInput.value : "";
+  const progress = progInput ? parseInt(progInput.value, 10) || 0 : 0;
+
+  const goals = loadGoals();
+  const newGoal = {
+    id: typeof uuid === "function" ? uuid() : "goal-" + Date.now(),
+    objective: objective,
+    title: objective,
+    progress: Math.min(100, Math.max(0, progress)),
+    quarter: quarter,
+    targetDate: targetDate,
+    status: progress >= 100 ? "Achieved" : (progress >= 50 ? "On Track" : "In Progress"),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  goals.unshift(newGoal);
+  saveGoals(goals);
+  closeNewOKRModal();
+  switchVaultSubTab("goals");
+  renderGoals();
+
+  if (typeof populateProjectAndGoalSelects === "function") populateProjectAndGoalSelects();
+  if (typeof renderDashboard === "function") renderDashboard();
+  if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
+  if (typeof showToast === "function") showToast(`Created OKR Goal: ${objective}! 🎯`, "success");
+}
+
 function createPresetOKR(customTitle) {
   let title = customTitle;
   if (!title) {
-    title = prompt("Enter OKR Goal Title / Objective:", "🎯 Scale Platform Velocity to 60 FPS");
+    openNewOKRModal();
+    return;
   }
-  if (!title || !title.trim()) return;
   title = title.trim();
 
   const goals = loadGoals();
@@ -248,7 +371,7 @@ function renderGoals() {
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" style="margin-bottom:12px; opacity:0.8;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
         <h3>No OKR Goals Yet</h3>
         <p>Set strategic quarterly objectives and track milestones in your private vault.</p>
-        <button type="button" onclick="createPresetOKR()" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">+ Add First OKR Goal</button>
+        <button type="button" onclick="openNewOKRModal()" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">+ Add First OKR Goal</button>
       </div>
     `;
     return;
