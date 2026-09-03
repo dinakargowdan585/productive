@@ -193,9 +193,9 @@ const SyncEngine = {
     return {
       id: ensureValidUuid(note.id),
       user_id: userId,
-      title: note.title || "Untitled Note",
-      content: note.content || "",
-      category: note.category || "general",
+      title: note.title || note.topic || "Untitled Note",
+      content: note.content || note.takeaway || "",
+      category: note.category || "General",
       tags: Array.isArray(note.tags) ? note.tags : [],
       is_pinned: Boolean(note.isPinned || note.is_pinned),
       is_vault: Boolean(note.isVault || note.is_vault),
@@ -357,9 +357,11 @@ const SyncEngine = {
           } else {
             const localFormatted = activeRemote.map(n => ({
               id: n.id,
-              title: n.title,
+              title: n.title || "Untitled Note",
+              topic: n.title || "Untitled Note",
               content: n.content || "",
-              category: n.category || "general",
+              takeaway: n.content || "",
+              category: n.category || "General",
               tags: Array.isArray(n.tags) ? n.tags : [],
               isPinned: Boolean(n.is_pinned),
               isVault: Boolean(n.is_vault),

@@ -223,16 +223,18 @@ function renderNotes() {
   filtered.forEach(note => {
     const card = document.createElement("article");
     card.className = `note-card ${note.isPinned ? 'pinned' : ''}`;
-    const dateStr = new Date(note.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const dateStr = new Date(note.createdAt || new Date()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const noteTitle = note.topic || note.title || "Untitled Note";
+    const noteBody = note.takeaway || note.content || "";
 
     card.innerHTML = `
       <div class="note-header">
-        <div class="note-title">${escapeHTML(note.topic)}</div>
-        <span class="badge">${escapeHTML(note.category)}</span>
+        <div class="note-title">${escapeHTML(noteTitle)}</div>
+        <span class="badge">${escapeHTML(note.category || 'General')}</span>
       </div>
-      <div class="note-body">${parseMarkdownMentions(note.takeaway)}</div>
+      <div class="note-body">${parseMarkdownMentions(noteBody) || '<span style="color:var(--muted); font-style:italic;">(No content)</span>'}</div>
       <div class="note-footer">
-        <span>📅 ${dateStr} • ⏱️ ${calcReadTime(note.takeaway)}</span>
+        <span>📅 ${dateStr} • ⏱️ ${calcReadTime(noteBody)}</span>
         <div style="display:flex; gap:6px;">
           <button type="button" class="secondary" onclick="editNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem;">Edit</button>
           <button type="button" class="secondary" onclick="togglePinNote('${note.id}')" style="padding:3px 8px; font-size:0.75rem;">${note.isPinned ? '📌 Pinned' : 'Pin'}</button>
@@ -257,9 +259,9 @@ function editNote(id) {
   const cancelBtn = document.getElementById("cancelEditBtn");
   const saveBtn = document.getElementById("saveBtn");
 
-  if (topicEl) topicEl.value = target.topic || "";
+  if (topicEl) topicEl.value = target.topic || target.title || "";
   if (categoryEl) categoryEl.value = target.category || "General";
-  if (takeawayEl) takeawayEl.value = target.takeaway || "";
+  if (takeawayEl) takeawayEl.value = target.takeaway || target.content || "";
   if (isPinnedEl) isPinnedEl.checked = !!target.isPinned;
   if (cancelBtn) cancelBtn.hidden = false;
   if (saveBtn) saveBtn.textContent = "Update Note";
@@ -330,9 +332,11 @@ function handleSaveNote(e) {
     if (idx >= 0) {
       notes[idx] = {
         ...notes[idx],
-        topic,
-        category,
-        takeaway,
+        title: topic,
+        topic: topic,
+        category: category,
+        content: takeaway,
+        takeaway: takeaway,
         isPinned,
         updatedAt: new Date().toISOString()
       };
@@ -344,10 +348,14 @@ function handleSaveNote(e) {
   } else {
     const newNote = {
       id: typeof uuid === "function" ? uuid() : "note-" + Date.now(),
-      topic,
-      category,
-      takeaway,
-      isPinned,
+      title: topic,
+      topic: topic,
+      category: category,
+      content: takeaway,
+      takeaway: takeaway,
+      tags: [],
+      isPinned: isPinned,
+      isVault: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
