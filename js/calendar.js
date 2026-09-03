@@ -613,17 +613,34 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   `;
 }
 
+function getRelativeDateLabel(dateStr) {
+  const todayIso = getIsoDateStr();
+  if (dateStr === todayIso) return `<span class="badge" style="background:rgba(56,189,248,0.2); color:var(--accent); font-weight:800; font-size:0.7rem;">TODAY</span>`;
+  
+  const d1 = new Date(todayIso + "T00:00:00");
+  const d2 = new Date(dateStr + "T00:00:00");
+  const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 1) return `<span class="badge" style="background:rgba(255,149,0,0.2); color:var(--amber); font-weight:800; font-size:0.7rem;">TOMORROW</span>`;
+  if (diffDays === -1) return `<span class="badge" style="background:rgba(255,59,48,0.2); color:var(--danger); font-weight:800; font-size:0.7rem;">YESTERDAY (LOCKED)</span>`;
+  if (diffDays < -1) return `<span class="badge" style="background:rgba(255,59,48,0.2); color:var(--danger); font-weight:800; font-size:0.7rem;">${Math.abs(diffDays)}d AGO (LOCKED)</span>`;
+  if (diffDays <= 7) return `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--text); font-weight:700; font-size:0.7rem;">In ${diffDays} days</span>`;
+  return `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--muted); font-weight:600; font-size:0.7rem;">In ${Math.round(diffDays / 7)}w</span>`;
+}
+
 function renderAgendaView(grid, canvasHeader, tasks) {
   if (canvasHeader) canvasHeader.style.display = "none";
   grid.style.display = "flex";
   grid.style.flexDirection = "column";
-  grid.style.gap = "16px";
+  grid.style.gap = "20px";
   grid.innerHTML = "";
 
   const allBlocks = loadTimeBlocks();
+  const allProjects = typeof loadProjects === "function" ? loadProjects() : [];
+  const allGoals = typeof loadGoals === "function" ? loadGoals() : [];
   const todayIso = getIsoDateStr();
 
-  // Collect unique dates from today onwards
+  // Collect unique dates
   const dateMap = {};
   
   tasks.forEach(t => {
@@ -641,7 +658,13 @@ function renderAgendaView(grid, canvasHeader, tasks) {
   const sortedDates = Object.keys(dateMap).sort();
 
   if (!sortedDates.length) {
-    grid.innerHTML = `<div class="empty-state"><h3>No upcoming events in Agenda</h3><p>Schedule your upcoming goals and milestones in the planner.</p></div>`;
+    grid.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" style="margin-bottom:12px; opacity:0.8;"><path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+        <h3>No upcoming milestones or focus blocks</h3>
+        <p>Schedule your upcoming goals, projects, and focus blocks in the planner to see your milestone horizon here.</p>
+      </div>
+    `;
     return;
   }
 
@@ -649,38 +672,79 @@ function renderAgendaView(grid, canvasHeader, tasks) {
     const isToday = dateStr === todayIso;
     const isPast = dateStr < todayIso;
     const dateObj = new Date(dateStr + "T00:00:00");
-    const formatted = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const formatted = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
     const { tasks: dayTasks, blocks: dayBlocks } = dateMap[dateStr];
     const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
+    const relativeBadge = getRelativeDateLabel(dateStr);
 
     let groupHTML = `
       <div class="cal-agenda-group">
         <div class="cal-agenda-date-header">
-          <span>📅 ${formatted}</span>
-          ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.2); color:var(--accent); font-size:0.7rem;">TODAY</span>` : ''}
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${formatted}
+          </span>
+          ${relativeBadge}
         </div>
-        ${dayBlocks.map(b => `
-          <div class="cal-agenda-card" style="border-left:4px solid ${b.color || 'var(--accent)'};">
-            <div>
-              <strong style="color:var(--text); font-size:0.92rem;">⏱️ ${escapeHTML(b.taskTitle)}</strong>
-              <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
-            </div>
-            <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>
-          </div>
-        `).join('')}
-        ${dayTasks.map(t => {
-          const cal = getCalendarById(t.calendarId || t.category || "work");
-          const isDone = isTaskCompletedOnDate(t, dateStr);
-          return `
-            <div class="cal-agenda-card" style="border-left:4px solid ${cal.color};">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
-                <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${dayBlocks.map(b => `
+            <div class="cal-agenda-card" style="border-left:4px solid ${b.color || 'var(--accent)'}; background:rgba(56, 189, 248, 0.04);">
+              <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+                <div style="width:36px; height:36px; border-radius:8px; background:rgba(56, 189, 248, 0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div style="min-width:0; flex:1;">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <strong style="color:var(--text); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(b.taskTitle)}</strong>
+                    <span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.68rem; font-weight:700;">DEEP WORK</span>
+                  </div>
+                  <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">⏱️ ${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m duration)</div>
+                </div>
               </div>
-              <span class="badge" style="background:${cal.color}15; color:${cal.color}; font-size:0.72rem;">${escapeHTML(cal.name)}</span>
+              <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:6px 14px; font-size:0.78rem; background:var(--accent); color:#05070a; font-weight:800; border:none; display:inline-flex; align-items:center; gap:6px; flex-shrink:0; box-shadow:0 2px 10px rgba(56,189,248,0.3);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Launch Focus
+              </button>
             </div>
-          `;
-        }).join('')}
+          `).join('')}
+
+          ${dayTasks.map(t => {
+            const cal = getCalendarById(t.calendarId || t.category || "work");
+            const isDone = isTaskCompletedOnDate(t, dateStr);
+            const proj = t.projectId ? allProjects.find(p => p.id === t.projectId) : null;
+            const goal = t.goalId ? allGoals.find(g => g.id === t.goalId) : null;
+            const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+            const subDone = subtasks.filter(s => s.completed).length;
+
+            return `
+              <div class="cal-agenda-card" style="border-left:4px solid ${cal.color}; ${!isToday ? 'opacity:0.9;' : ''}">
+                <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+                  <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <span style="font-size:0.92rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+                      <span class="badge" style="background:${cal.color}18; color:${cal.color}; font-size:0.7rem;">${escapeHTML(cal.name)}</span>
+                      ${proj ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text); font-size:0.68rem;">📁 ${escapeHTML(proj.name)}</span>` : ''}
+                      ${goal ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">🎯 ${escapeHTML(goal.title)}</span>` : ''}
+                      ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">🔥 Daily</span>` : ''}
+                    </div>
+                    ${subtasks.length > 0 ? `
+                      <div style="font-size:0.72rem; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:6px;">
+                        <span>☑️ ${subDone}/${subtasks.length} Sub-steps</span>
+                        <div style="width:50px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+                          <div style="width:${Math.round((subDone/subtasks.length)*100)}%; height:100%; background:${cal.color};"></div>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                  <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" style="font-size:0.68rem; padding:2px 8px;">${(t.priority || 'MED').toUpperCase()}</span>
+                  <button type="button" class="secondary" onclick="promptCreateTimeBlock('${t.id}')" style="padding:4px 8px; font-size:0.72rem; display:inline-flex; align-items:center; gap:4px;" title="Schedule Deep Work Block">+ Block</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
       </div>
     `;
 
