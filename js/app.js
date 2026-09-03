@@ -22,7 +22,19 @@ function renderVault() {
   if (typeof renderVaultAuthPane === "function") renderVaultAuthPane();
 }
 
+let currentActiveView = "dashboard";
+window.currentActiveView = "dashboard";
+
+function getCurrentActiveView() {
+  return window.currentActiveView || currentActiveView || "dashboard";
+}
+
 function switchView(viewName) {
+  if (!viewName) viewName = "dashboard";
+  viewName = viewName.toLowerCase();
+  window.currentActiveView = viewName;
+  currentActiveView = viewName;
+
   const views = ["Dashboard", "Notes", "Planner", "Vault", "Calendar", "Standby"];
   views.forEach(v => {
     const el = document.getElementById("view" + v);

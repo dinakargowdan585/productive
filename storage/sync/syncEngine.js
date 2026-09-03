@@ -86,8 +86,10 @@ if (typeof BroadcastChannel !== "undefined") {
       console.log("📡 Cross-tab sync update received from tab:", event.data.sender);
       if (typeof loadAllFromRepositoriesIntoMemory === "function") {
         loadAllFromRepositoriesIntoMemory().then(() => {
+          const activeView = (typeof getCurrentActiveView === "function") 
+            ? getCurrentActiveView() 
+            : (document.querySelector(".dock-item.active")?.dataset?.view || (document.querySelector(".dock-item.active")?.id ? document.querySelector(".dock-item.active").id.replace("dock", "").toLowerCase() : "dashboard"));
           if (typeof switchView === "function") {
-            const activeView = document.querySelector(".dock-item.active")?.dataset?.view || "dashboard";
             switchView(activeView);
           }
         }).catch(() => {});
@@ -442,9 +444,12 @@ const SyncEngine = {
       this.updateState("synced");
       this.broadcastDataUpdate();
 
-      // Refresh active view
+      // Refresh active view without jumping back to dashboard
+      const activeView = (typeof getCurrentActiveView === "function") 
+        ? getCurrentActiveView() 
+        : (document.querySelector(".dock-item.active")?.dataset?.view || (document.querySelector(".dock-item.active")?.id ? document.querySelector(".dock-item.active").id.replace("dock", "").toLowerCase() : "dashboard"));
+
       if (typeof switchView === "function") {
-        const activeView = document.querySelector(".dock-item.active")?.dataset?.view || "dashboard";
         switchView(activeView);
       }
 
