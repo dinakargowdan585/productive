@@ -92,6 +92,70 @@ function generateExecutiveInsights() {
   return insights.slice(0, 4);
 }
 
+function renderProductivityHeatmap() {
+  const grid = document.getElementById("productivityHeatmapGrid");
+  const monthsContainer = document.getElementById("heatmapMonthsLabels");
+  const totalCountEl = document.getElementById("heatmapTotalCount");
+  if (!grid) return;
+
+  const tasks = loadTasks();
+  const countByDate = {};
+  let totalYearCompleted = 0;
+
+  tasks.forEach(t => {
+    if (t.completed) {
+      let dateKey = null;
+      if (t.updatedAt) dateKey = t.updatedAt.slice(0, 10);
+      else if (t.lastCompletedDate) dateKey = t.lastCompletedDate;
+      else if (t.dueDate) dateKey = t.dueDate;
+      else if (t.createdAt) dateKey = t.createdAt.slice(0, 10);
+
+      if (dateKey) {
+        countByDate[dateKey] = (countByDate[dateKey] || 0) + 1;
+        totalYearCompleted++;
+      }
+    }
+  });
+
+  if (totalCountEl) {
+    totalCountEl.textContent = `${totalYearCompleted} task${totalYearCompleted === 1 ? '' : 's'} completed this year`;
+  }
+
+  const today = new Date();
+  const days = [];
+  for (let i = 364; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    days.push(d);
+  }
+
+  if (monthsContainer) {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let labelsHTML = "";
+    for (let m = 0; m < 12; m++) {
+      const monthDate = new Date();
+      monthDate.setMonth(monthDate.getMonth() - (11 - m));
+      labelsHTML += `<span>${monthNames[monthDate.getMonth()]}</span>`;
+    }
+    monthsContainer.innerHTML = labelsHTML;
+  }
+
+  grid.innerHTML = days.map(d => {
+    const dateStr = getIsoDateStr(d);
+    const count = countByDate[dateStr] || 0;
+    let level = 0;
+    if (count === 1) level = 1;
+    else if (count === 2) level = 2;
+    else if (count >= 3 && count <= 4) level = 3;
+    else if (count >= 5) level = 4;
+
+    const formattedDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const tip = `${formattedDate}: ${count} task${count === 1 ? '' : 's'} completed`;
+
+    return `<div class="heatmap-cell" data-level="${level}" title="${tip}" onclick="if(typeof showToast === 'function') showToast('${tip}', 'info');"></div>`;
+  }).join('');
+}
+
 function renderDashboard() {
   const visibleCards = getVisibleDashboardCards();
   ALL_DASHBOARD_CARDS.forEach(c => {
@@ -103,8 +167,31 @@ function renderDashboard() {
 
   const hour = new Date().getHours();
   let timeSalute = "Good Morning";
-  if (hour >= 12 && hour < 17) timeSalute = "Good Afternoon";
-  else if (hour >= 17) timeSalute = "Good Evening";
+  let auraColor = "rgba(245, 158, 11, 0.2)";
+  let subtitle = "☀️ Morning Focus & Clarity";
+
+  if (hour >= 5 && hour < 12) {
+    timeSalute = "Good Morning";
+    auraColor = "rgba(245, 158, 11, 0.22)";
+    subtitle = "☀️ Morning Focus & Clarity";
+  } else if (hour >= 12 && hour < 17) {
+    timeSalute = "Good Afternoon";
+    auraColor = "rgba(56, 189, 248, 0.25)";
+    subtitle = "⚡ Peak Execution Window";
+  } else if (hour >= 17 && hour < 21) {
+    timeSalute = "Good Evening";
+    auraColor = "rgba(168, 85, 247, 0.25)";
+    subtitle = "🌆 Milestone Review & Wrap-up";
+  } else {
+    timeSalute = "Good Night";
+    auraColor = "rgba(99, 102, 241, 0.22)";
+    subtitle = "🌙 Night StandBy & Recovery";
+  }
+
+  const banner = document.getElementById("execGreetingBanner");
+  if (banner) {
+    banner.style.setProperty("--aura-color", auraColor);
+  }
 
   const greetingEl = document.getElementById("execGreetingText");
   if (greetingEl) greetingEl.textContent = `${timeSalute}, Dinakar`;
@@ -112,8 +199,10 @@ function renderDashboard() {
   const dateEl = document.getElementById("execDateText");
   if (dateEl) {
     const now = new Date();
-    dateEl.textContent = `${now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} • 🌤️ High Focus Opportunity`;
+    dateEl.textContent = `${now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} • ${subtitle}`;
   }
+
+  renderProductivityHeatmap();
 
   const tasks = loadTasks();
   const mits = tasks.filter(t => !t.completed).slice(0, 3);

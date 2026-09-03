@@ -335,6 +335,23 @@ function tickPomodoro() {
   updatePomodoroDisplay();
 }
 
+function togglePomodoroTimer() {
+  if (isPomodoroRunning) {
+    pausePomodoro();
+    if (typeof showToast === "function") showToast("Focus timer paused ⏸️", "info");
+  } else {
+    startPomodoro();
+    if (typeof showToast === "function") showToast("Focus timer running ▶️", "info");
+  }
+}
+
+function stopPomodoroTimer() {
+  resetPomodoro();
+  const pipWidget = document.getElementById("floatingFocusWidget");
+  if (pipWidget) pipWidget.style.display = "none";
+  if (typeof showToast === "function") showToast("Focus session stopped ⏹️", "info");
+}
+
 function updatePomodoroDisplay() {
   const formatted = `${String(pomodoroMinutes).padStart(2, '0')}:${String(pomodoroSeconds).padStart(2, '0')}`;
   
@@ -348,6 +365,19 @@ function updatePomodoroDisplay() {
   if (startBtn) {
     startBtn.textContent = isPomodoroRunning ? "Pause Focus" : "Start Focus";
     startBtn.style.background = isPomodoroRunning ? "var(--amber)" : "var(--accent)";
+  }
+
+  const pipWidget = document.getElementById("floatingFocusWidget");
+  const pipTimerText = document.getElementById("floatingFocusTimerText");
+  const pipPlayBtn = document.getElementById("floatingFocusPlayBtn");
+  if (pipWidget) {
+    if (isPomodoroRunning || (pomodoroMinutes < 25 && pomodoroMinutes > 0)) {
+      pipWidget.style.display = "flex";
+      if (pipTimerText) pipTimerText.textContent = formatted;
+      if (pipPlayBtn) pipPlayBtn.textContent = isPomodoroRunning ? "⏸️" : "▶️";
+    } else if (!isPomodoroRunning && pomodoroMinutes === 25 && pomodoroSeconds === 0) {
+      pipWidget.style.display = "none";
+    }
   }
 }
 
@@ -364,6 +394,8 @@ function startFocusSessionForBlock(blockId) {
 
 // Global Window Exports
 if (typeof window !== "undefined") {
+  window.togglePomodoroTimer = togglePomodoroTimer;
+  window.stopPomodoroTimer = stopPomodoroTimer;
   window.toggleClockStylePanel = toggleClockStylePanel;
   window.closeClockStylePanel = closeClockStylePanel;
   window.selectClockStyle = selectClockStyle;
