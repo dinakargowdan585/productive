@@ -195,10 +195,11 @@ function renderSidebarUpcoming(tasks, allBlocks) {
     `).join('')}
     ${todayTasks.slice(0, 4).map(t => {
       const cal = getCalendarById(t.calendarId || t.category || "work");
+      const isDone = isTaskCompletedOnDate(t, todayIso);
       return `
         <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-left:3px solid ${cal.color}; padding:6px 8px; border-radius:4px; font-size:0.75rem; display:flex; align-items:center; gap:6px;">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" style="width:14px !important; height:14px !important; min-width:14px; min-height:14px;">
-          <span style="color:var(--text); ${t.completed ? 'text-decoration:line-through; opacity:0.6;' : ''}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(t.title)}</span>
+          <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}', '${todayIso}')" style="width:14px !important; height:14px !important; min-width:14px; min-height:14px;">
+          <span style="color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(t.title)}</span>
         </div>
       `;
     }).join('')}
@@ -206,6 +207,11 @@ function renderSidebarUpcoming(tasks, allBlocks) {
 }
 
 function renderCalendar() {
+  const todayIso = getIsoDateStr();
+  if (!selectedCalDateStr) {
+    selectedCalDateStr = todayIso;
+  }
+
   const monthTitle = document.getElementById("calMonthTitle") || document.getElementById("calendarMonthTitle");
   if (monthTitle) {
     const d = new Date(calYear, calMonth, 1);
@@ -244,9 +250,9 @@ function renderCalendar() {
   if (currentCalViewMode === "month") {
     renderMonthView(grid, canvasHeader, filteredTasks);
   } else if (currentCalViewMode === "week") {
-    renderWeekView(grid, canvasHeader, new Date((selectedCalDateStr || getIsoDateStr()) + "T00:00:00"), filteredTasks);
+    renderWeekView(grid, canvasHeader, new Date((selectedCalDateStr || todayIso) + "T00:00:00"), filteredTasks);
   } else if (currentCalViewMode === "day") {
-    renderDayView(grid, canvasHeader, new Date((selectedCalDateStr || getIsoDateStr()) + "T00:00:00"), filteredTasks);
+    renderDayView(grid, canvasHeader, new Date((selectedCalDateStr || todayIso) + "T00:00:00"), filteredTasks);
   } else if (currentCalViewMode === "agenda") {
     renderAgendaView(grid, canvasHeader, filteredTasks);
   }

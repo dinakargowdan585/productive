@@ -141,17 +141,33 @@ async function loadAllFromRepositoriesIntoMemory() {
   }
 }
 
-// Synchronous and Asynchronous Loaders / Savers
 function loadTasks() {
   const rawTasks = memoryCache.tasks || [];
   const todayIso = getIsoDateStr();
-  return rawTasks.map(t => {
+  let changed = false;
+
+  const sanitized = rawTasks.map(t => {
     const isDaily = Boolean(t.isDaily || t.is_daily);
     if (isDaily) {
-      t.completed = isTaskCompletedOnDate(t, todayIso);
+      // If task was completed on a previous day, clean up today's completion so it resets
+      if (t.lastCompletedDate && t.lastCompletedDate < todayIso) {
+        if (Array.isArray(t.completedDates)) {
+          t.completedDates = t.completedDates.filter(d => d <= t.lastCompletedDate && d < todayIso);
+        }
+        t.completed = false;
+        changed = true;
+      } else {
+        t.completed = isTaskCompletedOnDate(t, todayIso);
+      }
     }
     return t;
   });
+
+  if (changed && typeof TasksRepository !== "undefined") {
+    TasksRepository.bulkPut(sanitized).catch(() => {});
+  }
+
+  return sanitized;
 }
 
 function saveTasks(tasks) {
