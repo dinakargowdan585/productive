@@ -838,8 +838,13 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
-        <div class="standby-clock" id="standbyTime" style="display:none;">00:00:00</div>
         <div class="standby-date" id="standbyDate">MONDAY, AUG 3</div>
+
+        <!-- Live Active Focus Timer Badge (Appears when timer is running) -->
+        <div id="standbyLiveTimerBadge" class="standby-live-timer-badge" style="display:none;" onclick="toggleTimerPanel(event)" title="Click to open Focus Timer controls">
+          <span class="standby-live-dot"></span>
+          <span id="standbyLiveTimerText">25:00 Focus</span>
+        </div>
 
 
 

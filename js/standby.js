@@ -443,15 +443,36 @@ function updatePomodoroDisplay() {
     startBtn.style.background = isPomodoroRunning ? "var(--amber)" : "var(--accent)";
   }
 
+  const isSessionActive = isPomodoroRunning || pomodoroTimerId !== null || (pomodoroSeconds > 0) || (pomodoroMinutes !== 25);
+
+  // 1. Live Countdown Badge on StandBy Screen
+  const standbyLiveBadge = document.getElementById("standbyLiveTimerBadge");
+  const standbyLiveText = document.getElementById("standbyLiveTimerText");
+  if (standbyLiveBadge) {
+    if (isSessionActive) {
+      standbyLiveBadge.style.display = "inline-flex";
+      if (standbyLiveText) {
+        standbyLiveText.textContent = isPomodoroRunning ? `${formatted} Focus` : `${formatted} (Paused)`;
+      }
+    } else {
+      standbyLiveBadge.style.display = "none";
+    }
+  }
+
+  // 2. Global Floating Mini Focus Widget
   const pipWidget = document.getElementById("floatingFocusWidget");
   const pipTimerText = document.getElementById("floatingFocusTimerText");
   const pipPlayBtn = document.getElementById("floatingFocusPlayBtn");
   if (pipWidget) {
-    if (isPomodoroRunning || (pomodoroMinutes < 25 && pomodoroMinutes > 0)) {
-      pipWidget.style.display = "flex";
+    if (isSessionActive) {
+      pipWidget.style.display = "inline-flex";
       if (pipTimerText) pipTimerText.textContent = formatted;
-      if (pipPlayBtn) pipPlayBtn.innerHTML = isPomodoroRunning ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-    } else if (!isPomodoroRunning && pomodoroMinutes === 25 && pomodoroSeconds === 0) {
+      if (pipPlayBtn) {
+        pipPlayBtn.innerHTML = isPomodoroRunning
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+      }
+    } else {
       pipWidget.style.display = "none";
     }
   }

@@ -2868,6 +2868,127 @@ select {
 .analog-hand.minute { width: 4px; height: 38%; background: var(--accent); z-index: 6; }
 .analog-hand.second { width: 2px; height: 44%; background: var(--danger); z-index: 7; }
 
+/* Live Focus Timer Badges (StandBy & Global PIP) */
+.standby-live-timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  margin-bottom: 14px;
+  background: rgba(10, 132, 255, 0.12);
+  border: 1px solid rgba(10, 132, 255, 0.28);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-code);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  transition: all 180ms var(--ease-spring);
+}
+
+.standby-live-timer-badge:hover {
+  background: rgba(10, 132, 255, 0.22);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.standby-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
+
+/* Global Floating Picture-in-Picture Mini Focus Timer Widget */
+.floating-focus-widget {
+  position: fixed;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: var(--mat-4) !important;
+  backdrop-filter: var(--mat-4-blur) !important;
+  -webkit-backdrop-filter: var(--mat-4-blur) !important;
+  border: 1px solid var(--mat-4-border) !important;
+  border-radius: var(--radius-float) !important;
+  box-shadow: var(--shadow-float) !important;
+  z-index: 998;
+  cursor: pointer;
+  transition: all 180ms var(--ease-spring);
+  user-select: none;
+}
+
+.floating-focus-widget:hover {
+  transform: translateX(-50%) translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.floating-focus-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: pulseDot 2s infinite;
+  flex-shrink: 0;
+}
+
+#floatingFocusTimerText {
+  font-family: var(--font-code);
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
+}
+
+.floating-focus-task-title {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating-focus-btn {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 140ms ease;
+}
+
+.floating-focus-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.08);
+}
+
 /* ===================================================================
    13. STANDBY RED NIGHT MODE (Apple iOS StandBy Aesthetic)
    =================================================================== */
@@ -3003,6 +3124,18 @@ select {
 .standby-screen.night-mode #startTimerBtn {
   background: #FF453A !important;
   color: #050101 !important;
+}
+
+.standby-screen.night-mode .standby-live-timer-badge {
+  background: rgba(255, 69, 58, 0.15) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  color: #FF453A !important;
+  box-shadow: 0 4px 20px rgba(255, 69, 58, 0.25) !important;
+}
+
+.standby-screen.night-mode .standby-live-dot {
+  background: #FF453A !important;
+  box-shadow: 0 0 10px #FF453A !important;
 }
 
 /* ===================================================================
