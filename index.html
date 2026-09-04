@@ -1144,18 +1144,22 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- Supabase Cloud Authentication & Settings Modal (VisionOS Architecture) -->
-<dialog id="supabaseAuthModal">
+<dialog id="supabaseAuthModal" class="apple-glass-modal">
   <div class="auth-modal-card">
     <div class="auth-modal-header">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+      <div class="auth-header-top">
         <div class="auth-brand-row">
-          <img src="assets/icon-192.png" class="auth-brand-logo" alt="Productive OS">
-          <div>
-            <span class="auth-eyebrow">PRODUCTIVE CLOUD</span>
+          <div class="auth-icon-pod">
+            <img src="assets/icon-192.png" class="auth-brand-logo" alt="Productive OS">
+          </div>
+          <div class="auth-brand-copy">
+            <span class="auth-eyebrow">Productive Cloud</span>
             <h2 class="auth-title" id="authModalTitle">Welcome Back</h2>
           </div>
         </div>
-        <button type="button" class="pomodoro-close-btn" onclick="closeSupabaseAuthModal()" aria-label="Close Authentication Modal">&times;</button>
+        <button type="button" class="auth-close-btn" onclick="closeSupabaseAuthModal()" aria-label="Close Authentication Modal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <p class="auth-subtitle" id="authModalSubtitle">Sign in to sync your notes, tasks, time blocks & projects in real-time across all your devices.</p>
     </div>
@@ -1184,7 +1188,7 @@ if ('serviceWorker' in navigator) {
       </div>
 
       <div class="auth-input-group" id="authPasswordGroup">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="auth-label-row">
           <label for="authPasswordInput">Password</label>
           <button type="button" class="auth-forgot-link" id="authForgotBtn" onclick="handleForgotPassword(event)">Forgot password?</button>
         </div>
@@ -1213,7 +1217,7 @@ if ('serviceWorker' in navigator) {
     </form>
 
     <!-- Social Auth Actions -->
-    <div id="authSocialSection" style="display:flex; flex-direction:column; gap:10px;">
+    <div id="authSocialSection" class="auth-social-section">
       <div class="auth-divider" id="authDivider">
         <span>OR CONTINUE WITH</span>
       </div>
@@ -1225,63 +1229,65 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <!-- 2. Step 2: Enter 6-Digit Email Code (OTP) -->
-    <div id="authStepOtp" style="display:none; flex-direction:column; gap:16px; margin-top:16px;">
-      <div style="background:rgba(56, 189, 248, 0.08); border:1px solid rgba(56, 189, 248, 0.25); padding:12px 14px; border-radius:12px; font-size:0.85rem; color:var(--text); line-height:1.5;">
-        We sent a 6-digit code to <strong id="otpTargetEmail" style="color:var(--accent);">you@example.com</strong>.
+    <div id="authStepOtp" class="auth-step-otp" style="display:none;">
+      <div class="auth-otp-info-card">
+        We sent a 6-digit verification code to <strong id="otpTargetEmail">you@example.com</strong>.
       </div>
 
       <div class="auth-input-group">
         <label for="authOtpInput">6-Digit Verification Code</label>
-        <input type="text" id="authOtpInput" placeholder="123456" maxlength="6" style="font-family:var(--font-code); font-size:1.4rem; letter-spacing:8px; text-align:center; padding:12px; border-radius:10px; background:rgba(8, 8, 8, 0.95); border:1px solid rgba(255,255,255,0.15); color:var(--text); width:100%;">
+        <input type="text" id="authOtpInput" class="auth-otp-field" placeholder="123456" maxlength="6">
       </div>
 
-      <div style="display:flex; gap:10px;">
+      <div class="auth-otp-actions">
         <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtp(event)" class="auth-submit-btn" style="flex:2;">Verify Code</button>
-        <button type="button" class="secondary" onclick="handleResendOtp(event)" style="flex:1; border-radius:10px;">Resend</button>
+        <button type="button" class="auth-resend-btn" onclick="handleResendOtp(event)" style="flex:1;">Resend</button>
       </div>
 
-      <div style="text-align:center; margin-top:4px;">
-        <button type="button" class="text-link" onclick="switchAuthMode('otp')" style="font-size:0.8rem; color:var(--accent); background:none; border:none; cursor:pointer;">← Change Email Address</button>
+      <div class="auth-otp-back">
+        <button type="button" class="auth-text-link" onclick="switchAuthMode('otp')">← Change Email Address</button>
       </div>
     </div>
 
     <!-- 3. Step 3: Logged In Account Dashboard Card -->
-    <div id="authStepLoggedIn" style="display:none; flex-direction:column; gap:18px; margin-top:14px;">
+    <div id="authStepLoggedIn" class="auth-step-logged-in" style="display:none;">
       <div class="auth-user-card">
         <div id="loggedInUserAvatar" class="auth-user-avatar">U</div>
-        <div style="flex:1; min-width:0;">
-          <div class="auth-user-tag">CONNECTED ACCOUNT</div>
+        <div class="auth-user-info">
+          <div class="auth-user-tag">Connected</div>
           <div id="loggedInUserEmail" class="auth-user-email">user@example.com</div>
           <div class="auth-user-status">
-            <span class="auth-status-indicator"></span>
-            <span>Cloud Database Synced</span>
+            <span>PostgreSQL Cloud • Real-time Sync Active</span>
           </div>
         </div>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <button type="button" class="auth-submit-btn" onclick="handleManualSync()" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
+      <div class="auth-logged-in-actions">
+        <button type="button" class="auth-submit-btn" onclick="handleManualSync()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
           <span>Sync Cloud Data Now</span>
         </button>
-        <button type="button" class="auth-signout-btn" onclick="handleSignOut()" style="display:inline-flex; align-items:center; justify-content:center; gap:8px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <button type="button" class="auth-signout-btn" onclick="handleSignOut()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
           <span>Sign Out</span>
         </button>
       </div>
     </div>
 
     <!-- Custom Supabase Credentials Configuration -->
-    <div style="margin-top:20px; padding-top:14px; border-top:1px dashed rgba(255,255,255,0.1);">
+    <div class="auth-custom-creds">
       <details>
-        <summary style="font-size:0.75rem; color:var(--accent); font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Custom Supabase Credentials
+        <summary>
+          <span style="display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Custom Supabase Credentials
+          </span>
+          <svg class="auth-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
         </summary>
-        <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-          <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">
-          <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)" style="font-size:0.78rem; padding:8px 12px; border-radius:8px;">
-          <button type="button" class="secondary" onclick="saveCustomCredentialsFromModal()" style="padding:6px; font-size:0.78rem; border-radius:8px;">Save Credentials</button>
+        <div class="auth-custom-body">
+          <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)">
+          <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)">
+          <button type="button" class="auth-save-creds-btn" onclick="saveCustomCredentialsFromModal()">Save Credentials</button>
         </div>
       </details>
     </div>
