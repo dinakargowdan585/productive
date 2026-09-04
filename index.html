@@ -70,8 +70,8 @@ if ('serviceWorker' in navigator) {
               <h2 id="execGreetingText" style="margin:0; font-size:1.55rem; font-weight:800; letter-spacing:-0.5px;">Good Morning, Dinakar</h2>
               <div id="execDateText" style="font-size:0.88rem; color:var(--muted); font-family:var(--font-code); margin-top:4px;">Tuesday, Aug 4 • Morning Focus & Clarity</div>
             </div>
-            <div id="headerAccountBadge" onclick="openSupabaseAuthModal()" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:var(--os-accent-subtle); border:1px solid rgba(10, 132, 255, 0.25); border-radius:var(--os-radius-pill); padding:4px 12px; font-size:0.75rem; font-weight:700; color:var(--os-text); transition:all 180ms ease;" title="Supabase Cloud Account">
-              <span style="width:8px; height:8px; border-radius:50%; background:var(--os-text-tertiary); display:inline-block;"></span>
+            <div id="headerAccountBadge" onclick="openSupabaseAuthModal()" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:var(--os-radius-pill); padding:4px 12px; font-size:0.75rem; font-weight:600; color:var(--os-text); transition:all 180ms ease;" title="Supabase Cloud Account">
+              <span style="width:7px; height:7px; border-radius:50%; background:var(--os-text-tertiary); display:inline-block;"></span>
               <span>Local Mode</span>
             </div>
           </div>
@@ -82,7 +82,7 @@ if ('serviceWorker' in navigator) {
             <button type="button" id="syncStatusPill" onclick="toggleSyncPopover(event)" class="secondary" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; padding:6px 12px;" title="Cloud & Offline Sync Options">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg> Sync
             </button>
-            <button type="button" onclick="toggleAddCardMenu()" class="secondary" style="display:inline-flex; align-items:center; gap:6px; font-weight:700; background:var(--os-accent-subtle); color:var(--os-accent); border-color:rgba(10, 132, 255, 0.3);">
+            <button type="button" onclick="toggleAddCardMenu()" class="secondary" style="display:inline-flex; align-items:center; gap:6px; font-weight:600;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Card
             </button>
             <div id="addCardMenuDropdown" class="glass-level-2 task-card-menu-dropdown" style="display:none; top:44px; right:120px; min-width:240px; z-index:1100;"></div>
