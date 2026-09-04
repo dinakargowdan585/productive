@@ -685,32 +685,43 @@ if ('serviceWorker' in navigator) {
 
 
 
-    <!-- VIEW 5: Apple StandBy Mode -->
+    <!-- VIEW 5: Apple StandBy Mode (Fliqlo Minimalist Aesthetics) -->
     <main id="viewStandby" style="display:none;">
       <div id="standbyScreen" class="standby-screen">
-        <canvas id="standbyCosmicCanvas" class="standby-cosmic-canvas"></canvas>
-        <!-- Top-Left Glass Controls Bar (Timer + Clock Style) -->
-        <div class="standby-top-controls" style="z-index:10;">
-          <button type="button" class="timer-toggle-pill" id="timerTogglePill" onclick="toggleTimerPanel(event)" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Pomodoro Timer Panel">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
-            Timer
+        <canvas id="standbyCosmicCanvas" class="standby-cosmic-canvas" style="display:none;"></canvas>
+        
+        <!-- Apple Liquid Glass Top Floating Controls Bar -->
+        <div class="standby-top-controls" id="standbyTopControls">
+          <button type="button" class="timer-toggle-pill standby-pill-btn" id="timerTogglePill" onclick="toggleTimerPanel(event)" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Focus Timer Panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
+            <span>Timer</span>
           </button>
 
-          <button type="button" class="timer-toggle-pill" id="clockStyleTogglePill" onclick="toggleClockStylePanel(event)" aria-expanded="false" aria-controls="clockStylePopover" aria-label="Open Clock Style Panel">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Clock Style
+          <button type="button" class="timer-toggle-pill standby-pill-btn" id="clockStyleTogglePill" onclick="toggleClockStylePanel(event)" aria-expanded="false" aria-controls="clockStylePopover" aria-label="Open Clock Style Panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Face</span>
           </button>
 
-          <button type="button" class="timer-toggle-pill" id="soundTogglePill" onclick="if(typeof FX !== 'undefined'){ const state = FX.toggleSound(); this.innerHTML = state ? '<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><path d=\'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07\'/></svg> Sound' : '<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><line x1=\'23\' y1=\'9\' x2=\'17\' y2=\'15\'/><line x1=\'17\' y1=\'9\' x2=\'23\' y2=\'15\'/></svg> Muted'; }" aria-label="Toggle Sound Effects">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            Sound
+          <button type="button" class="timer-toggle-pill standby-pill-btn" id="soundTogglePill" onclick="if(typeof FX !== 'undefined'){ const state = FX.toggleSound(); this.innerHTML = state ? '<svg width=\'13\' height=\'13\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><path d=\'M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07\'/></svg><span>Sound</span>' : '<svg width=\'13\' height=\'13\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><polygon points=\'11 5 6 9 2 9 2 15 6 15 11 19 11 5\'/><line x1=\'23\' y1=\'9\' x2=\'17\' y2=\'15\'/><line x1=\'17\' y1=\'9\' x2=\'23\' y2=\'15\'/></svg><span>Muted</span>'; }" aria-label="Toggle Sound Effects">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <span>Sound</span>
+          </button>
+
+          <button type="button" class="standby-btn standby-pill-btn" id="toggleNightModeBtn" onclick="toggleNightMode()" aria-label="Toggle Red Night Mode">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span>Night</span>
+          </button>
+
+          <button type="button" class="standby-btn standby-pill-btn" id="fullScreenBtn" onclick="toggleFullscreenStandby()" aria-label="Fullscreen StandBy">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            <span>Fullscreen</span>
           </button>
 
           <!-- macOS Control Center Style Clock Style Popover Panel -->
-          <div id="clockStylePopover" class="theme-popover" role="dialog" aria-label="Clock Style Selector" aria-hidden="true" style="left:88px; display:none;">
+          <div id="clockStylePopover" class="theme-popover" role="dialog" aria-label="Clock Style Selector" aria-hidden="true" style="display:none;">
             <div class="popover-header">
               <div class="popover-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Clock Face Styles
               </div>
               <button type="button" class="pomodoro-close-btn" onclick="closeClockStylePanel()" aria-label="Close Clock Style Panel">&times;</button>
@@ -719,19 +730,19 @@ if ('serviceWorker' in navigator) {
           </div>
 
           <!-- macOS Control Center Style Pomodoro Focus Timer Popover Panel -->
-          <div id="pomodoroPanel" class="theme-popover pomodoro-panel" role="dialog" aria-label="Pomodoro Focus Timer" aria-hidden="true" style="left:0px; min-width:320px; display:none;">
+          <div id="pomodoroPanel" class="theme-popover pomodoro-panel" role="dialog" aria-label="Pomodoro Focus Timer" aria-hidden="true" style="min-width:320px; display:none;">
             <div class="popover-header">
               <div class="popover-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 Pomodoro Focus Timer
               </div>
               <button type="button" class="pomodoro-close-btn" onclick="closeTimerPanel()" aria-label="Close Timer Panel">&times;</button>
             </div>
 
-            <div style="padding:8px 2px 2px;">
-              <div class="timer-display" id="timerDisplay" title="Click to edit custom minutes" onclick="editCustomTimer()" style="cursor:pointer; font-family:var(--font-code); font-size:2.8rem; font-weight:800; color:var(--accent); text-align:center; margin:4px 0 10px; letter-spacing:1px;">25:00</div>
+            <div style="padding:10px 4px 4px;">
+              <div class="timer-display" id="timerDisplay" title="Click to edit custom minutes" onclick="editCustomTimer()" style="cursor:pointer; font-family:var(--font); font-size:3rem; font-weight:800; color:#FFFFFF; text-align:center; margin:6px 0 14px; letter-spacing:-1px;">25:00</div>
               
-              <div class="timer-controls" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+              <div class="timer-presets-row" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
                 <button type="button" class="standby-btn" onclick="adjustTimer(-5)">-5m</button>
                 <button type="button" class="standby-btn" onclick="setTimerPreset(15)">15m</button>
                 <button type="button" class="standby-btn" onclick="setTimerPreset(25)">25m</button>
@@ -739,14 +750,14 @@ if ('serviceWorker' in navigator) {
                 <button type="button" class="standby-btn" onclick="adjustTimer(5)">+5m</button>
               </div>
 
-              <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;">
-                <label style="font-size:0.8rem; opacity:0.8" for="customMinutes">Custom Mins:</label>
-                <input type="number" id="customMinutes" min="1" max="300" value="25" style="width:75px; text-align:center; padding:5px 8px; border-radius:var(--radius-sm);" placeholder="Mins">
-                <button type="button" class="standby-btn" onclick="setCustomMinutesFromInput()" style="padding:5px 12px; font-size:0.8rem">Set</button>
+              <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:14px; flex-wrap:wrap;">
+                <label style="font-size:0.8rem; color:#86868b;" for="customMinutes">Custom Mins:</label>
+                <input type="number" id="customMinutes" min="1" max="300" value="25" style="width:70px; text-align:center; padding:6px 8px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#FFF;" placeholder="Mins">
+                <button type="button" class="standby-btn" onclick="setCustomMinutesFromInput()" style="padding:6px 12px; font-size:0.8rem">Set</button>
               </div>
               
-              <div class="timer-controls" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
-                <button type="button" class="standby-btn" id="startTimerBtn" onclick="toggleTimer()" style="background:var(--accent); color:#05070A; font-weight:700; flex:1;">Start Focus</button>
+              <div class="timer-controls" style="margin-top:14px; display:flex; gap:8px; justify-content:center;">
+                <button type="button" class="standby-btn" id="startTimerBtn" onclick="toggleTimer()" style="background:#0A84FF; color:#FFFFFF; font-weight:700; flex:1;">Start Focus</button>
                 <button type="button" class="standby-btn" onclick="resetTimer()" style="flex:1;">Reset</button>
               </div>
             </div>
@@ -756,7 +767,7 @@ if ('serviceWorker' in navigator) {
         <!-- Dynamic Clock Render Container -->
         <div id="clockDisplayContainer" class="clock-display-container"></div>
 
-        <!-- 3D Mechanical Split-Flap Clock -->
+        <!-- 3D Mechanical Split-Flap Clock (Fliqlo Style) -->
         <div class="flip-clock-wrap" id="flipClockWrap">
           <!-- Hours -->
           <div class="flip-group">
@@ -816,23 +827,13 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
+        <!-- Subtle Apple-Style Date Display -->
         <div class="standby-date" id="standbyDate">MONDAY, AUG 3</div>
 
-        <!-- Live Active Focus Timer Badge (Appears when timer is running) -->
+        <!-- Live Active Focus Timer Capsule (Appears when focus timer is active) -->
         <div id="standbyLiveTimerBadge" class="standby-live-timer-badge" style="display:none;" onclick="toggleTimerPanel(event)" title="Click to open Focus Timer controls">
           <span class="standby-live-dot"></span>
           <span id="standbyLiveTimerText">25:00 Focus</span>
-        </div>
-
-
-
-        <div style="display:flex; gap:12px; margin-top:15px; flex-wrap:wrap; justify-content:center;">
-          <button type="button" class="standby-btn" id="toggleNightModeBtn" onclick="toggleNightMode()" style="display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Toggle Red Night Mode
-          </button>
-          <button type="button" class="standby-btn" id="fullScreenBtn" onclick="toggleFullscreenStandby()" style="display:inline-flex; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Fullscreen StandBy
-          </button>
         </div>
       </div>
     </main>

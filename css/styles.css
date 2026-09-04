@@ -260,10 +260,10 @@ main {
   background-attachment: fixed;
 }
 
-/* View 5: StandBy Mode (Subtle Blue → Violet Atmosphere) */
+/* View 5: StandBy Mode (Minimal Matte Black Fliqlo Aesthetics) */
 #viewStandby {
-  background-image: radial-gradient(circle at 50% 15%, rgba(139, 124, 255, 0.06) 0%, transparent 55%), radial-gradient(circle at 20% 80%, rgba(10, 132, 255, 0.04) 0%, transparent 50%);
-  background-attachment: fixed;
+  background: #000000 !important;
+  background-image: none !important;
 }
 
 /* View 6: Analytics & Completed (Subtle Green Atmosphere) */
@@ -2493,259 +2493,351 @@ select {
 }
 
 /* ===================================================================
-   12. STANDBY AMBIENT BEDSIDE MODE
+   12. STANDBY AMBIENT BEDSIDE MODE (Fliqlo Minimalist Zen & Apple Design)
    =================================================================== */
 
 .standby-screen {
-  background: var(--surface);
+  background: transparent !important;
   color: #FFFFFF;
-  border-radius: var(--radius-lg);
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   padding: 40px 20px;
-  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 480px;
+  min-height: calc(100vh - 120px);
+  width: 100%;
   text-align: center;
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--border);
-  --clock-unit-w: clamp(40px, 5.2vw, 62px);
-  --clock-unit-h: clamp(58px, 7.4vw, 88px);
-  --clock-unit-font: clamp(2.4rem, 3.8vw, 3.8rem);
-  --clock-custom-font: clamp(2.8rem, 4.8vw, 4.8rem);
-  --analog-size: clamp(170px, 24vmin, 220px);
-  transition: transform 450ms var(--ease-spring), opacity 450ms ease, background 300ms ease !important;
+  box-sizing: border-box;
+
+  /* Responsive Fliqlo proportions */
+  --clock-unit-w: clamp(52px, 7.8vw, 120px);
+  --clock-unit-h: clamp(74px, 11vw, 168px);
+  --clock-unit-font: clamp(3.4rem, 7.2vw, 7.6rem);
+  --clock-custom-font: clamp(4rem, 8.5vw, 9rem);
+  --analog-size: clamp(200px, 28vmin, 320px);
+  transition: background 300ms ease, color 300ms ease !important;
 }
 
 .standby-cosmic-canvas {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  pointer-events: none !important;
-  z-index: 0 !important;
+  display: none !important;
 }
 
 .standby-screen:fullscreen,
 .standby-screen:-webkit-full-screen,
 .standby-screen.is-fullscreen {
-  border-radius: 0 !important;
-  border: none !important;
   width: 100vw !important;
   height: 100vh !important;
   min-height: 100vh !important;
   max-height: 100vh !important;
-  padding: 40px 24px !important;
+  background: #000000 !important;
+  padding: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
-  background: #05070A !important;
-  --clock-unit-w: clamp(65px, 8.5vw, 115px);
-  --clock-unit-h: clamp(92px, 12vw, 160px);
-  --clock-unit-font: clamp(3.8rem, 6.2vw, 7.2rem);
-  --clock-custom-font: clamp(4.2rem, 7.5vw, 8.4rem);
-  --analog-size: clamp(260px, 40vmin, 420px);
+  border: none !important;
+  border-radius: 0 !important;
+  --clock-unit-w: clamp(80px, 11.5vw, 175px);
+  --clock-unit-h: clamp(112px, 16vw, 245px);
+  --clock-unit-font: clamp(5.2rem, 10.5vw, 11.2rem);
+  --clock-custom-font: clamp(6rem, 13vw, 13rem);
+  --analog-size: clamp(280px, 42vmin, 440px);
 }
 
+/* Apple Liquid Glass Top Floating Controls Bar */
 .standby-top-controls {
   position: absolute;
-  top: 18px;
-  left: 20px;
+  top: clamp(16px, 2.8vh, 32px);
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
-  z-index: 20;
+  gap: 4px;
+  padding: 4px 6px;
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  z-index: 100;
+  transition: opacity 350ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 350ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.timer-toggle-pill {
+.timer-toggle-pill,
+.standby-pill-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(20, 27, 36, 0.8);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: var(--text);
+  background: transparent;
+  border: none;
+  color: #A1A1A6;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
   font-size: 0.78rem;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
+  font-weight: 500;
+  padding: 6px 13px;
+  border-radius: 9999px;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: none;
   transition: all 160ms ease;
+  user-select: none;
 }
 
-.timer-toggle-pill:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: var(--border-hover);
+.timer-toggle-pill:hover,
+.standby-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
+}
+
+.timer-toggle-pill[aria-expanded="true"],
+.timer-toggle-pill.active,
+.standby-pill-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-toggle-pill svg,
+.standby-pill-btn svg {
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+/* StandBy Idle State: Smoothly fade controls & dock */
+.standby-screen.standby-idle .standby-top-controls {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(-10px) !important;
+  transition: opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+.macos-dock-container.standby-dock-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) translateY(28px) scale(0.96) !important;
+  transition: opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
 /* Popover Sheet (Clock Style & Timer Popover) */
 .theme-popover,
 .pomodoro-panel {
   position: absolute;
-  top: 48px;
-  left: 0;
-  background: rgba(13, 17, 23, 0.96) !important;
-  backdrop-filter: blur(40px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-  border: 1px solid rgba(56, 189, 248, 0.3) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85) !important;
-  border-radius: var(--radius-md);
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(24, 24, 26, 0.94) !important;
+  backdrop-filter: blur(36px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  border-radius: 18px !important;
   padding: 16px;
   min-width: 320px;
+  max-width: 90vw;
   display: none;
   flex-direction: column;
   gap: 12px;
-  z-index: 99999 !important;
+  z-index: 200 !important;
 }
 
 .theme-popover.is-open,
 .theme-popover.open,
 .pomodoro-panel.is-open,
-.pomodoro-panel.open { display: flex !important; }
+.pomodoro-panel.open {
+  display: flex !important;
+}
 
-.popover-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-.popover-title { font-size: 0.85rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+.popover-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .theme-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr) !important;
-  gap: 10px;
+  gap: 8px;
   max-height: 280px;
   overflow-y: auto;
 }
 .theme-card {
   background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px;
   padding: 10px 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  transition: all 180ms ease;
+  gap: 3px;
+  transition: all 160ms ease;
   text-align: left;
 }
-.theme-card:hover { background: rgba(56, 189, 248, 0.2) !important; border-color: var(--accent) !important; transform: translateY(-2px); }
+.theme-card:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px);
+}
 .theme-card.selected,
 .theme-card.active {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: var(--accent);
-  box-shadow: 0 0 16px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
-.theme-title { font-size: 0.78rem; font-weight: 700; color: var(--text); }
-.theme-desc { font-size: 0.68rem; color: var(--muted); line-height: 1.2; }
+.theme-title { font-size: 0.82rem; font-weight: 600; color: #FFFFFF; }
+.theme-desc { font-size: 0.7rem; color: #86868b; line-height: 1.25; }
 
-/* 3D Split-Flap Clock Styling */
+.standby-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+.standby-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* 3D Split-Flap Clock (Fliqlo Precision Mechanical Split-Flap) */
 .flip-clock-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(6px, 1.4vw, 20px);
   perspective: 1200px;
-  margin-bottom: 18px;
+  -webkit-perspective: 1200px;
+  margin: 0;
   user-select: none;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.65));
 }
 
 .flip-group {
   display: flex;
-  gap: 4px;
+  gap: clamp(3px, 0.5vw, 6px);
   position: relative;
 }
 
 .flip-unit {
   position: relative;
-  width: var(--clock-unit-w, 58px);
-  height: var(--clock-unit-h, 82px);
-  font-family: var(--font-code);
-  font-size: var(--clock-unit-font, 3.6rem);
-  font-weight: 900;
-  color: #F8FAFC;
-  border-radius: 10px;
-  perspective: 600px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
-  background: #080C14;
+  width: var(--clock-unit-w, 75px);
+  height: var(--clock-unit-h, 105px);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--clock-unit-font, 5rem);
+  font-weight: 800;
+  color: #F5F5F7;
+  border-radius: clamp(8px, 1.2vw, 14px);
+  perspective: 800px;
+  -webkit-perspective: 800px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 4px 14px rgba(0, 0, 0, 0.5);
+  background: #121214;
 }
 
-.flip-unit::before, .flip-unit::after {
+/* Split Hinge Notches */
+.flip-unit::before,
+.flip-unit::after {
   content: "";
   position: absolute;
   top: 50%;
   width: 3px;
-  height: 8px;
-  background: #000;
+  height: 6px;
+  background: #08080a;
   border-radius: 2px;
   transform: translateY(-50%);
-  z-index: 10;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.15);
+  z-index: 12;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.9), 0 1px 0 rgba(255, 255, 255, 0.08);
 }
-.flip-unit::before { left: -2px; }
-.flip-unit::after { right: -2px; }
+.flip-unit::before { left: -1.5px; }
+.flip-unit::after { right: -1.5px; }
 
-.flip-top-static, .flip-bottom-static, .flip-top-fold, .flip-bottom-fold {
+/* Flip Card Half Plates */
+.flip-top-static,
+.flip-bottom-static,
+.flip-top-fold,
+.flip-bottom-fold {
   position: absolute;
   left: 0;
   right: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, #172136 0%, #0E1626 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
   display: flex;
   justify-content: center;
   box-sizing: border-box;
 }
 
-.flip-top-static, .flip-top-fold {
+.flip-top-static,
+.flip-top-fold {
   top: 0;
   height: 50%;
-  border-radius: 8px 8px 0 0;
+  border-radius: clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px) 0 0;
   align-items: flex-start;
-  border-bottom: 1.5px solid rgba(0, 0, 0, 0.95);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, #242426 0%, #1a1a1c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.flip-bottom-static, .flip-bottom-fold {
+.flip-bottom-static,
+.flip-bottom-fold {
   bottom: 0;
   height: 50%;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px);
   align-items: flex-end;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, #18181a 0%, #121214 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.45);
 }
 
-.flip-top-static span, .flip-top-fold span {
+/* Perfect Digit Alignment */
+.flip-top-static span,
+.flip-top-fold span {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  line-height: var(--clock-unit-h, 82px);
-  height: var(--clock-unit-h, 82px);
+  line-height: var(--clock-unit-h, 105px);
+  height: var(--clock-unit-h, 105px);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
 }
-.flip-bottom-static span, .flip-bottom-fold span {
+
+.flip-bottom-static span,
+.flip-bottom-fold span {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  line-height: var(--clock-unit-h, 82px);
-  height: var(--clock-unit-h, 82px);
+  line-height: var(--clock-unit-h, 105px);
+  height: var(--clock-unit-h, 105px);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
   transform: none !important;
 }
 
+/* 3D Leaf Transformations */
 .flip-top-fold {
   transform-origin: 50% 100%;
   z-index: 5;
@@ -2761,99 +2853,110 @@ select {
 }
 
 .flip-unit.flipping .flip-top-fold {
-  animation: flipTopLeafAnim 240ms cubic-bezier(0.4, 0, 0.7, 0.2) forwards;
+  animation: flipTopLeafAnim 220ms cubic-bezier(0.4, 0, 0.7, 0.2) forwards;
 }
 .flip-unit.flipping .flip-bottom-fold {
-  animation: flipBottomLeafAnim 240ms cubic-bezier(0.2, 0.8, 0.4, 1) 220ms forwards;
+  animation: flipBottomLeafAnim 220ms cubic-bezier(0.2, 0.8, 0.4, 1) 200ms forwards;
 }
 
 @keyframes flipTopLeafAnim {
   0% { transform: rotateX(0deg); filter: brightness(1); }
-  100% { transform: rotateX(-90deg); filter: brightness(0.35); }
+  100% { transform: rotateX(-90deg); filter: brightness(0.3); }
 }
 @keyframes flipBottomLeafAnim {
-  0% { transform: rotateX(90deg); filter: brightness(1.35); }
+  0% { transform: rotateX(90deg); filter: brightness(1.3); }
   100% { transform: rotateX(0deg); filter: brightness(1); }
 }
 
 .flip-divider {
-  font-family: var(--font-code);
-  font-size: calc(var(--clock-unit-font, 3.6rem) * 0.75);
-  font-weight: 800;
-  color: var(--accent);
-  margin: 0 1px;
-  opacity: 0.9;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: calc(var(--clock-unit-font, 5rem) * 0.7);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 clamp(1px, 0.3vw, 4px);
 }
 
 .flip-ampm-wrap {
   display: flex;
   align-self: flex-end;
-  margin-bottom: 6px;
-  margin-left: 2px;
+  margin-bottom: clamp(6px, 1vh, 12px);
+  margin-left: clamp(2px, 0.5vw, 6px);
 }
 .flip-ampm-badge {
-  background: linear-gradient(180deg, #172136 0%, #0E1626 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 5px;
-  padding: 3px 6px;
-  font-family: var(--font-code);
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.8px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 3px 7px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: clamp(0.68rem, 0.9vw, 0.82rem);
+  font-weight: 700;
+  color: #86868b;
+  letter-spacing: 0.06em;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
+/* Subtle Apple-Style Date Display */
+.standby-date {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  font-size: clamp(0.92rem, 1.35vw, 1.25rem);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: #86868b;
+  text-transform: uppercase;
+  margin-top: clamp(28px, 4.5vh, 52px);
+  transition: color 250ms ease;
+}
+
+/* Apple StandBy Alternative Clock Faces */
 .apple-standby-clock-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .apple-standby-digits {
-  font-family: var(--font);
-  font-size: var(--clock-custom-font, 4.4rem);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  font-size: var(--clock-custom-font, 6.5rem);
   font-weight: 800;
-  letter-spacing: -2px;
-  color: var(--text);
+  letter-spacing: -0.04em;
+  color: #FFFFFF;
   line-height: 1;
   display: flex;
   align-items: center;
 }
 
 .apple-standby-colon {
-  color: var(--accent);
+  color: rgba(255, 255, 255, 0.35);
   animation: pulseColon 2s infinite;
   margin: 0 4px;
 }
 @keyframes pulseColon { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 .apple-standby-date {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: var(--font-code);
-  color: var(--muted);
-  letter-spacing: 2px;
+  font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  color: #86868b;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-/* Swiss Analog Clock Styling */
+/* Swiss Analog Clock Face */
 .analog-clock-wrap {
   width: var(--analog-size, 210px);
   height: var(--analog-size, 210px);
   border-radius: 50%;
-  border: 4px solid var(--accent);
-  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 20px rgba(0, 0, 0, 0.8);
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.9);
   position: relative;
-  background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+  background: radial-gradient(circle, #1a1a1c 0%, #0d0d0e 100%);
 }
 .analog-center-dot {
   position: absolute;
   top: 50%; left: 50%;
-  width: 12px; height: 12px;
-  background: var(--accent);
+  width: 10px; height: 10px;
+  background: #FFFFFF;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
@@ -2864,45 +2967,45 @@ select {
   transform-origin: 50% 100%;
   border-radius: 4px;
 }
-.analog-hand.hour { width: 6px; height: 28%; background: var(--text); z-index: 5; }
-.analog-hand.minute { width: 4px; height: 38%; background: var(--accent); z-index: 6; }
-.analog-hand.second { width: 2px; height: 44%; background: var(--danger); z-index: 7; }
+.analog-hand.hour { width: 5px; height: 28%; background: #F5F5F7; z-index: 5; }
+.analog-hand.minute { width: 3.5px; height: 38%; background: #E5E5EA; z-index: 6; }
+.analog-hand.second { width: 2px; height: 44%; background: #FF453A; z-index: 7; }
 
-/* Live Focus Timer Badges (StandBy & Global PIP) */
+/* Live Active Focus Timer Capsule */
 .standby-live-timer-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  margin-bottom: 14px;
-  background: rgba(10, 132, 255, 0.12);
-  border: 1px solid rgba(10, 132, 255, 0.28);
+  margin-top: clamp(16px, 2.5vh, 28px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-pill);
-  font-family: var(--font-code);
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--accent);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #F5F5F7;
   cursor: pointer;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   position: relative;
   z-index: 10;
-  transition: all 180ms var(--ease-spring);
+  transition: all 180ms ease;
 }
 
 .standby-live-timer-badge:hover {
-  background: rgba(10, 132, 255, 0.22);
-  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
   transform: translateY(-1px);
 }
 
 .standby-live-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+  background: #30D158;
+  box-shadow: 0 0 8px #30D158;
   animation: pulseDot 2s infinite;
 }
 
@@ -2990,76 +3093,50 @@ select {
 }
 
 /* ===================================================================
-   13. STANDBY RED NIGHT MODE (Apple iOS StandBy Aesthetic)
+   13. STANDBY RED NIGHT MODE (Apple Watch Ultra / Darkroom Aesthetic)
    =================================================================== */
 
 .standby-screen.night-mode {
-  background: radial-gradient(ellipse at center, rgba(160, 20, 20, 0.22) 0%, #050101 68%, #000000 100%) !important;
+  background: #000000 !important;
   color: #FF453A !important;
-  border-color: rgba(255, 69, 58, 0.25) !important;
-  box-shadow: 0 0 50px rgba(255, 69, 58, 0.12), inset 0 0 100px rgba(0, 0, 0, 0.9) !important;
 }
 
-.standby-screen.night-mode .standby-cosmic-canvas {
-  filter: hue-rotate(320deg) saturate(220%) brightness(0.7) !important;
-  opacity: 0.3 !important;
+.standby-screen.night-mode .standby-top-controls {
+  background: rgba(24, 4, 4, 0.85) !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), 0 0 16px rgba(255, 69, 58, 0.15) !important;
 }
 
 .standby-screen.night-mode .timer-toggle-pill,
-.standby-screen.night-mode .standby-btn {
-  background: rgba(255, 69, 58, 0.1) !important;
-  color: #FF453A !important;
-  border-color: rgba(255, 69, 58, 0.32) !important;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 69, 58, 0.2) !important;
+.standby-screen.night-mode .standby-pill-btn {
+  color: rgba(255, 69, 58, 0.7) !important;
 }
 
 .standby-screen.night-mode .timer-toggle-pill:hover,
-.standby-screen.night-mode .standby-btn:hover,
-.standby-screen.night-mode .standby-btn.active,
-.standby-screen.night-mode .timer-toggle-pill[aria-expanded="true"] {
-  background: rgba(255, 69, 58, 0.25) !important;
-  border-color: #FF453A !important;
+.standby-screen.night-mode .standby-pill-btn:hover,
+.standby-screen.night-mode .timer-toggle-pill[aria-expanded="true"],
+.standby-screen.night-mode .standby-pill-btn.active {
+  background: rgba(255, 69, 58, 0.18) !important;
   color: #FF453A !important;
-  box-shadow: 0 0 16px rgba(255, 69, 58, 0.35) !important;
-}
-
-.standby-screen.night-mode .timer-toggle-pill svg,
-.standby-screen.night-mode .standby-btn svg {
-  stroke: #FF453A !important;
-}
-
-.standby-screen.night-mode .apple-standby-digits {
-  color: #FF453A !important;
-  text-shadow: 0 0 35px rgba(255, 69, 58, 0.65), 0 0 10px rgba(255, 69, 58, 0.9) !important;
-}
-
-.standby-screen.night-mode .apple-standby-colon {
-  color: #FF453A !important;
-  text-shadow: 0 0 25px rgba(255, 69, 58, 0.8) !important;
-}
-
-.standby-screen.night-mode .apple-standby-date,
-.standby-screen.night-mode .standby-date {
-  color: rgba(255, 69, 58, 0.85) !important;
-  text-shadow: 0 0 16px rgba(255, 69, 58, 0.45) !important;
-}
-
-.standby-screen.night-mode .standby-clock {
-  color: #FF453A !important;
-  text-shadow: 0 0 30px rgba(255, 69, 58, 0.7) !important;
 }
 
 .standby-screen.night-mode .flip-unit {
-  background: #140202 !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.9), 0 0 16px rgba(255, 69, 58, 0.2) !important;
+  background: #0d0101 !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 0 24px rgba(255, 69, 58, 0.12) !important;
 }
 
 .standby-screen.night-mode .flip-top-static,
+.standby-screen.night-mode .flip-top-fold {
+  background: linear-gradient(180deg, #1c0303 0%, #120101 100%) !important;
+  border-color: rgba(255, 69, 58, 0.18) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.95) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 69, 58, 0.15) !important;
+}
+
 .standby-screen.night-mode .flip-bottom-static,
-.standby-screen.night-mode .flip-top-fold,
 .standby-screen.night-mode .flip-bottom-fold {
-  background: #180202 !important;
-  border-color: rgba(255, 69, 58, 0.25) !important;
+  background: linear-gradient(180deg, #120101 0%, #0a0000 100%) !important;
+  border-color: rgba(255, 69, 58, 0.12) !important;
 }
 
 .standby-screen.night-mode .flip-top-static span,
@@ -3067,58 +3144,70 @@ select {
 .standby-screen.night-mode .flip-top-fold span,
 .standby-screen.night-mode .flip-bottom-fold span {
   color: #FF453A !important;
-  text-shadow: 0 0 20px rgba(255, 69, 58, 0.65) !important;
+  text-shadow: 0 0 24px rgba(255, 69, 58, 0.5) !important;
 }
 
-.standby-screen.night-mode .flip-divider {
-  color: #FF453A !important;
-  text-shadow: 0 0 20px rgba(255, 69, 58, 0.8) !important;
-}
-
+.standby-screen.night-mode .flip-divider,
 .standby-screen.night-mode .flip-ampm-badge {
-  background: #180202 !important;
   color: #FF453A !important;
-  border-color: rgba(255, 69, 58, 0.35) !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  background: #140202 !important;
+}
+
+.standby-screen.night-mode .standby-date,
+.standby-screen.night-mode .apple-standby-date {
+  color: rgba(255, 69, 58, 0.6) !important;
+}
+
+.standby-screen.night-mode .apple-standby-digits,
+.standby-screen.night-mode .apple-standby-colon {
+  color: #FF453A !important;
+  text-shadow: 0 0 30px rgba(255, 69, 58, 0.55) !important;
 }
 
 .standby-screen.night-mode .analog-clock-wrap {
-  border-color: rgba(255, 69, 58, 0.5) !important;
-  box-shadow: 0 0 35px rgba(255, 69, 58, 0.3), inset 0 0 24px rgba(0, 0, 0, 0.9) !important;
-  background: radial-gradient(circle, #250202 0%, #100101 100%) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 69, 58, 0.15) !important;
+  background: radial-gradient(circle, #1a0202 0%, #0d0101 100%) !important;
 }
 
 .standby-screen.night-mode .analog-center-dot {
   background: #FF453A !important;
-  box-shadow: 0 0 12px #FF453A !important;
+  box-shadow: 0 0 10px #FF453A !important;
 }
 
 .standby-screen.night-mode .analog-hand.hour,
-.standby-screen.night-mode .analog-hand.minute {
-  background: #FF453A !important;
-  box-shadow: 0 0 10px rgba(255, 69, 58, 0.8) !important;
-}
-
+.standby-screen.night-mode .analog-hand.minute,
 .standby-screen.night-mode .analog-hand.second {
-  background: #FF3B30 !important;
-  box-shadow: 0 0 10px rgba(255, 59, 48, 0.9) !important;
+  background: #FF453A !important;
+  box-shadow: 0 0 8px rgba(255, 69, 58, 0.8) !important;
 }
 
 .standby-screen.night-mode .theme-popover,
 .standby-screen.night-mode .pomodoro-panel {
-  background: rgba(18, 2, 2, 0.95) !important;
-  border-color: rgba(255, 69, 58, 0.35) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 69, 58, 0.2) !important;
+  background: rgba(20, 2, 2, 0.95) !important;
+  border-color: rgba(255, 69, 58, 0.3) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 69, 58, 0.2) !important;
 }
 
-.standby-screen.night-mode .popover-title,
-.standby-screen.night-mode .pomodoro-title,
-.standby-screen.night-mode .theme-title {
+.standby-screen.night-mode .popover-title {
   color: #FF453A !important;
 }
 
 .standby-screen.night-mode .timer-display {
   color: #FF453A !important;
-  text-shadow: 0 0 25px rgba(255, 69, 58, 0.6) !important;
+  text-shadow: 0 0 25px rgba(255, 69, 58, 0.5) !important;
+}
+
+.standby-screen.night-mode .standby-btn {
+  background: rgba(255, 69, 58, 0.12) !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  color: #FF453A !important;
+}
+
+.standby-screen.night-mode .standby-btn:hover {
+  background: rgba(255, 69, 58, 0.22) !important;
+  border-color: #FF453A !important;
 }
 
 .standby-screen.night-mode #startTimerBtn {

@@ -1,6 +1,6 @@
-/* Apple StandBy Bedside Mode & Pomodoro Timer Engine */
+/* Apple StandBy Bedside Mode & Pomodoro Timer Engine (Fliqlo Minimalist Zen) */
 
-let activeClockStyle = localStorage.getItem("learningClockStyle") || "apple";
+let activeClockStyle = localStorage.getItem("learningClockStyle") || "flip";
 let previewClockStyle = null;
 let isNightMode = false;
 let pomodoroMinutes = 25;
@@ -13,8 +13,6 @@ const AppleStandbyClock = {
     const hours12 = now.getHours() % 12 || 12;
     const h = String(hours12).padStart(2, '0');
     const m = String(now.getMinutes()).padStart(2, '0');
-    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-    const dateStr = `${now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()} • ${ampm}`;
     return `
       <div class="apple-standby-clock-wrap">
         <div class="apple-standby-digits">
@@ -22,7 +20,6 @@ const AppleStandbyClock = {
           <span class="apple-standby-colon">:</span>
           <span>${m}</span>
         </div>
-        <div class="apple-standby-date">${dateStr}</div>
       </div>
     `;
   }
@@ -41,7 +38,7 @@ function updateClockVisibility() {
     clockDisplayContainer.style.setProperty("display", style === "flip" ? "none" : "flex", "important");
   }
   if (standbyDate) {
-    standbyDate.style.setProperty("display", style === "apple" ? "none" : "block", "important");
+    standbyDate.style.setProperty("display", "block", "important");
   }
 }
 
@@ -210,20 +207,72 @@ function renderClockStyleGrid() {
   if (!grid) return;
 
   const styles = [
-    { id: "apple", title: "Apple StandBy", desc: "VisionOS 12h clock with date" },
-    { id: "flip", title: "3D Flip Clock", desc: "Retro mechanical split-flap" },
-    { id: "led", title: "LED Neon", desc: "Glowing cyan digital" },
-    { id: "analog", title: "Swiss Analog", desc: "Moving watch hands" },
-    { id: "minimal", title: "Minimalist Mono", desc: "Lightweight font" }
+    { id: "flip", title: "Fliqlo Flip Clock", desc: "Mechanical split-flap cards" },
+    { id: "apple", title: "Apple StandBy", desc: "VisionOS minimal typography" },
+    { id: "analog", title: "Swiss Analog", desc: "Fine moving watch hands" },
+    { id: "led", title: "LED Digital", desc: "Glowing digital clock" },
+    { id: "minimal", title: "Minimal Mono", desc: "Ultra-thin lightweight font" }
   ];
 
   grid.innerHTML = styles.map(s => `
     <div class="theme-card ${activeClockStyle === s.id ? 'selected active' : ''}" 
          onclick="selectClockStyle('${s.id}', event)" role="button" tabindex="0">
-      <div class="theme-title" style="font-weight:700; font-size:0.85rem; color:var(--text);">${s.title}</div>
-      <div class="theme-desc" style="font-size:0.75rem; color:var(--muted); margin-top:2px;">${s.desc}</div>
+      <div class="theme-title" style="font-weight:600; font-size:0.84rem; color:var(--text);">${s.title}</div>
+      <div class="theme-desc" style="font-size:0.72rem; color:var(--muted); margin-top:2px;">${s.desc}</div>
     </div>
   `).join('');
+}
+
+/* ===================================================================
+   StandBy Idle State Controller (Fliqlo Minimalist Zen Experience)
+   =================================================================== */
+
+let standbyIdleTimeout = null;
+
+function resetStandbyIdleTimer() {
+  const screen = document.getElementById("standbyScreen");
+  const viewStandby = document.getElementById("viewStandby");
+  if (!viewStandby || viewStandby.style.display === "none") return;
+
+  if (screen) {
+    screen.classList.remove("standby-idle");
+  }
+  const dock = document.querySelector(".macos-dock-container");
+  if (dock) {
+    dock.classList.remove("standby-dock-hidden");
+  }
+
+  if (standbyIdleTimeout) {
+    clearTimeout(standbyIdleTimeout);
+  }
+
+  // Check if popovers are open
+  const clockPopover = document.getElementById("clockStylePopover");
+  const timerPanel = document.getElementById("pomodoroPanel");
+  const isPopoverOpen = (clockPopover && (clockPopover.style.display === "flex" || clockPopover.classList.contains("is-open") || clockPopover.classList.contains("open"))) ||
+                        (timerPanel && (timerPanel.style.display === "flex" || timerPanel.classList.contains("is-open") || timerPanel.classList.contains("open")));
+
+  if (!isPopoverOpen) {
+    standbyIdleTimeout = setTimeout(() => {
+      const currentView = typeof getCurrentActiveView === "function" ? getCurrentActiveView() : (window.currentActiveView || "dashboard");
+      const currentStandby = document.getElementById("viewStandby");
+      if (currentView === "standby" && currentStandby && currentStandby.style.display !== "none") {
+        if (screen) screen.classList.add("standby-idle");
+        if (dock) dock.classList.add("standby-dock-hidden");
+      }
+    }, 3500);
+  }
+}
+
+if (typeof window !== "undefined") {
+  ["mousemove", "mousedown", "touchstart", "touchmove", "pointermove", "keydown", "wheel"].forEach(evtName => {
+    window.addEventListener(evtName, () => {
+      const viewStandby = document.getElementById("viewStandby");
+      if (viewStandby && viewStandby.style.display !== "none") {
+        resetStandbyIdleTimer();
+      }
+    }, { passive: true });
+  });
 }
 
 document.addEventListener("click", (e) => {
@@ -522,6 +571,7 @@ if (typeof window !== "undefined") {
   window.adjustTimer = adjustTimer;
   window.startFocusSessionForBlock = startFocusSessionForBlock;
   window.renderStandbyFocusWidget = renderStandbyFocusWidget;
+  window.resetStandbyIdleTimer = resetStandbyIdleTimer;
 }
 
 // Initial clock visibility & tick timer

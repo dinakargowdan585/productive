@@ -48,6 +48,11 @@ function switchView(viewName) {
   const dockEl = document.getElementById("dock" + viewName.charAt(0).toUpperCase() + viewName.slice(1));
   if (dockEl) dockEl.classList.add("active");
 
+  const dockContainer = document.querySelector(".macos-dock-container");
+  if (dockContainer && viewName !== "standby") {
+    dockContainer.classList.remove("standby-dock-hidden");
+  }
+
   if (viewName === "dashboard" && typeof renderDashboard === "function") renderDashboard();
   if (viewName === "planner" && typeof renderPlanner === "function") renderPlanner();
   if (viewName === "notes" && typeof renderNotes === "function") renderNotes();
@@ -56,7 +61,7 @@ function switchView(viewName) {
   if (viewName === "standby") {
     if (typeof updateStandbyClock === "function") updateStandbyClock();
     if (typeof renderStandbyFocusWidget === "function") renderStandbyFocusWidget();
-    if (typeof FX !== "undefined" && typeof FX.initStandbyCosmicCanvas === "function") FX.initStandbyCosmicCanvas();
+    if (typeof resetStandbyIdleTimer === "function") resetStandbyIdleTimer();
   }
 }
 
