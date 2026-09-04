@@ -527,6 +527,46 @@ function deleteSubtask(taskId, subtaskId) {
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
 }
 
+let currentTaskFilter = "ALL";
+
+function setTaskFilter(filterVal) {
+  currentTaskFilter = filterVal || "ALL";
+  const hiddenInput = document.getElementById("filterTaskStatus");
+  if (hiddenInput) hiddenInput.value = currentTaskFilter;
+
+  document.querySelectorAll(".planner-tab-btn").forEach(btn => {
+    if (btn.getAttribute("data-filter") === currentTaskFilter) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  if (typeof FX !== "undefined") FX.playClick();
+  renderPlanner();
+}
+
+function handleTaskSearchInput(input) {
+  const clearBtn = document.getElementById("clearTaskSearchBtn");
+  if (clearBtn) {
+    clearBtn.style.display = (input && input.value.trim().length > 0) ? "inline-flex" : "none";
+  }
+  renderPlanner();
+}
+
+function clearTaskSearch() {
+  const input = document.getElementById("searchTaskInput");
+  const clearBtn = document.getElementById("clearTaskSearchBtn");
+  if (input) {
+    input.value = "";
+    input.focus();
+  }
+  if (clearBtn) {
+    clearBtn.style.display = "none";
+  }
+  renderPlanner();
+}
+
 function handleAddSubtaskInput(e, taskId, input) {
   if (e.key === "Enter") {
     e.preventDefault();
@@ -539,15 +579,35 @@ function renderPlanner() {
   populateProjectAndGoalSelects();
 
   const tasks = loadTasks();
-  const filterEl = document.getElementById("filterTaskStatus");
-  const filter = filterEl ? filterEl.value : "ALL";
+  const hiddenFilterInput = document.getElementById("filterTaskStatus");
+  const filter = (hiddenFilterInput ? hiddenFilterInput.value : currentTaskFilter) || currentTaskFilter || "ALL";
   const searchInput = document.getElementById("searchTaskInput");
   const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
 
   const total = tasks.length;
   const completed = tasks.filter(t => t.completed).length;
   const pending = total - completed;
+  const habitsCount = tasks.filter(t => t.isDaily).length;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  // Update tab counts
+  const countAllEl = document.getElementById("countAllTasks");
+  const countPendingEl = document.getElementById("countPendingTasks");
+  const countDailyEl = document.getElementById("countDailyTasks");
+  const countCompletedEl = document.getElementById("countCompletedTasks");
+  if (countAllEl) countAllEl.textContent = total;
+  if (countPendingEl) countPendingEl.textContent = pending;
+  if (countDailyEl) countDailyEl.textContent = habitsCount;
+  if (countCompletedEl) countCompletedEl.textContent = completed;
+
+  // Ensure active tab button matches filter state
+  document.querySelectorAll(".planner-tab-btn").forEach(btn => {
+    if (btn.getAttribute("data-filter") === filter) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
 
   const ringPercentEl = document.getElementById("ringPercentText");
   const ringSvgEl = document.getElementById("ringSvgPath");
@@ -579,7 +639,7 @@ function renderPlanner() {
   container.innerHTML = "";
 
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>${searchQuery ? 'Try clearing your search query.' : 'Add your first task using the Add Task button above.'}</p></div>`;
+    container.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>${searchQuery ? 'No tasks match your search filter.' : 'Add your first task using the Add Task button above.'}</p></div>`;
     return;
   }
 
@@ -811,4 +871,7 @@ window.deleteSubtask = deleteSubtask;
 window.handleAddSubtaskInput = handleAddSubtaskInput;
 window.renderPlanner = renderPlanner;
 window.toggleDueDateField = toggleDueDateField;
+window.setTaskFilter = setTaskFilter;
+window.handleTaskSearchInput = handleTaskSearchInput;
+window.clearTaskSearch = clearTaskSearch;
 

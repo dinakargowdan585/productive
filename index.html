@@ -351,20 +351,34 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
 
-      <div class="planner-toolbar">
-        <div class="planner-filter-group">
-          <select id="filterTaskStatus" onchange="renderPlanner()">
-            <option value="ALL">All Tasks</option>
-            <option value="DAILY">Daily Habits</option>
-            <option value="PENDING">Pending Tasks</option>
-            <option value="COMPLETED">Completed Tasks</option>
-          </select>
+      <!-- Spacious Segmented Tabs Filter & Search Toolbar -->
+      <div class="planner-toolbar-wrap">
+        <div class="planner-segmented-control" role="tablist" aria-label="Task Status Filter">
+          <button type="button" class="planner-tab-btn active" data-filter="ALL" onclick="setTaskFilter('ALL')">
+            <span>All</span>
+            <span class="planner-tab-count" id="countAllTasks">0</span>
+          </button>
+          <button type="button" class="planner-tab-btn" data-filter="PENDING" onclick="setTaskFilter('PENDING')">
+            <span>Pending</span>
+            <span class="planner-tab-count" id="countPendingTasks">0</span>
+          </button>
+          <button type="button" class="planner-tab-btn" data-filter="DAILY" onclick="setTaskFilter('DAILY')">
+            <span>Habits</span>
+            <span class="planner-tab-count" id="countDailyTasks">0</span>
+          </button>
+          <button type="button" class="planner-tab-btn" data-filter="COMPLETED" onclick="setTaskFilter('COMPLETED')">
+            <span>Done</span>
+            <span class="planner-tab-count" id="countCompletedTasks">0</span>
+          </button>
+          <input type="hidden" id="filterTaskStatus" value="ALL">
         </div>
-        <div class="planner-search-group search-box" style="margin:0;">
-          <span class="search-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+
+        <div class="planner-search-container">
+          <span class="planner-search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </span>
-          <input type="text" id="searchTaskInput" placeholder="Filter tasks..." oninput="renderPlanner()">
+          <input type="text" id="searchTaskInput" placeholder="Search tasks & habits..." oninput="handleTaskSearchInput(this)" class="planner-search-input">
+          <button type="button" id="clearTaskSearchBtn" class="planner-search-clear-btn" onclick="clearTaskSearch()" style="display:none;" title="Clear search" aria-label="Clear search">✕</button>
         </div>
       </div>
 
