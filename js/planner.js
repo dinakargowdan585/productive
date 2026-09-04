@@ -1,5 +1,24 @@
 /* Task Planner Engine (Things 3 & Linear Inspired Cards) */
 
+function openAddTaskModal() {
+  populateProjectAndGoalSelects();
+  const modal = document.getElementById("addTaskModal");
+  if (modal && typeof modal.showModal === "function") {
+    modal.showModal();
+    const titleInput = document.getElementById("taskTitle");
+    if (titleInput) {
+      setTimeout(() => titleInput.focus(), 60);
+    }
+  }
+}
+
+function closeAddTaskModal() {
+  const modal = document.getElementById("addTaskModal");
+  if (modal && typeof modal.close === "function") {
+    modal.close();
+  }
+}
+
 function createTask(e) {
   if (e) e.preventDefault();
   const titleInput = document.getElementById("taskTitle");
@@ -41,6 +60,7 @@ function createTask(e) {
   saveTasks(tasks);
 
   if (titleInput) titleInput.value = "";
+  closeAddTaskModal();
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof showToast === "function") showToast("Task created successfully", "success");
@@ -118,6 +138,7 @@ function addCustomDailyHabit() {
   saveTasks(tasks);
 
   if (titleInput) titleInput.value = "";
+  closeAddTaskModal();
   renderPlanner();
   if (typeof renderDashboard === "function") renderDashboard();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
@@ -318,12 +339,14 @@ const TASK_SVGS = {
   habits: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
   calendar: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   flame: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
-  edit: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-  trash: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
-  subtasks: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-  focus: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  edit: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  subtasks: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  focus: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   project: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
-  goal: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`
+  goal: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+  info: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  more: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>`
 };
 
 function parseTimeToMinutes(timeStr) {
@@ -347,18 +370,12 @@ function getTimeBlocksByTask(taskId) {
   return loadTimeBlocks().filter(b => b.taskId === taskId);
 }
 
-function toggleTaskDetails(taskId) {
+function toggleTaskDetails(taskId, e) {
+  if (e) e.stopPropagation();
+  closeAllTaskMenus();
   const el = document.getElementById(`taskDetails-${taskId}`);
-  const btn = document.getElementById(`taskDetailsBtn-${taskId}`);
   if (!el) return;
-  const isOpen = el.classList.contains("open");
-  if (isOpen) {
-    el.classList.remove("open");
-    if (btn) btn.innerHTML = `<span>Details</span>`;
-  } else {
-    el.classList.add("open");
-    if (btn) btn.innerHTML = `<span>Hide</span>`;
-  }
+  el.classList.toggle("open");
 }
 
 function toggleTaskMenu(taskId, e) {
@@ -366,8 +383,14 @@ function toggleTaskMenu(taskId, e) {
   const menu = document.getElementById(`taskMenu-${taskId}`);
   if (!menu) return;
   const isOpen = menu.style.display === "flex";
+  closeAllTaskMenus();
+  if (!isOpen) {
+    menu.style.display = "flex";
+  }
+}
+
+function closeAllTaskMenus() {
   document.querySelectorAll(".task-card-menu-dropdown").forEach(m => m.style.display = "none");
-  if (!isOpen) menu.style.display = "flex";
 }
 
 function renderRelationshipChips(t) {
@@ -408,6 +431,7 @@ function toggleDueDateField(chk) {
 /* In-Place Task Title Editing */
 function startEditTaskTitle(taskId, e) {
   if (e) e.stopPropagation();
+  closeAllTaskMenus();
   const wrap = document.getElementById(`taskTitleWrap-${taskId}`);
   if (!wrap) return;
   const currentTitle = wrap.getAttribute("data-title") || "";
@@ -517,8 +541,12 @@ function renderPlanner() {
   const tasks = loadTasks();
   const filterEl = document.getElementById("filterTaskStatus");
   const filter = filterEl ? filterEl.value : "ALL";
+  const searchInput = document.getElementById("searchTaskInput");
+  const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
   const total = tasks.length;
   const completed = tasks.filter(t => t.completed).length;
+  const pending = total - completed;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const ringPercentEl = document.getElementById("ringPercentText");
@@ -526,23 +554,32 @@ function renderPlanner() {
   if (ringPercentEl) ringPercentEl.textContent = `${percent}%`;
   if (ringSvgEl) {
     ringSvgEl.setAttribute("stroke-dasharray", `${percent}, 100`);
-    ringSvgEl.style.stroke = percent >= 80 ? "var(--green)" : (percent >= 40 ? "var(--accent)" : "var(--amber)");
+    ringSvgEl.style.stroke = percent >= 80 ? "var(--os-success, #30D158)" : (percent >= 40 ? "var(--os-accent, #0A84FF)" : "var(--os-warning, #FF9F0A)");
   }
 
   const legacyPercentEl = document.getElementById("taskProgressPercent");
   if (legacyPercentEl) legacyPercentEl.textContent = `${percent}%`;
+
+  const summaryEl = document.getElementById("plannerTaskSummary");
+  if (summaryEl) {
+    summaryEl.textContent = total === 0 ? "No tasks yet. Create one to get started." : `${pending} pending • ${completed} completed of ${total} total`;
+  }
 
   let filtered = tasks;
   if (filter === "DAILY") filtered = tasks.filter(t => t.isDaily);
   else if (filter === "PENDING") filtered = tasks.filter(t => !t.completed);
   else if (filter === "COMPLETED") filtered = tasks.filter(t => t.completed);
 
+  if (searchQuery) {
+    filtered = filtered.filter(t => (t.title || "").toLowerCase().includes(searchQuery));
+  }
+
   const container = document.getElementById("tasksList");
   if (!container) return;
   container.innerHTML = "";
 
   if (!filtered.length) {
-    container.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>Add your first task in the planner form.</p></div>`;
+    container.innerHTML = `<div class="empty-state"><h3>No tasks found</h3><p>${searchQuery ? 'Try clearing your search query.' : 'Add your first task using the Add Task button above.'}</p></div>`;
     return;
   }
 
@@ -555,14 +592,14 @@ function renderPlanner() {
     const isDone = isTaskCompletedOnDate(t, todayIso);
     item.className = `task-card-redesign ${isDone ? 'completed' : ''}`;
     item.style.borderLeftColor = cal.color;
-    if (isOverdue) item.style.borderColor = "rgba(255, 59, 48, 0.4)";
+    if (isOverdue) item.style.borderColor = "rgba(255, 69, 58, 0.4)";
 
     let dateLabel = 'No due date';
     if (t.isDaily) {
       dateLabel = 'Daily Reset';
     } else if (t.dueDate) {
       if (isOverdue) {
-        dateLabel = `<span style="color:var(--danger); font-weight:700;">Overdue (${t.dueDate})</span>`;
+        dateLabel = `<span style="color:var(--os-danger, #FF453A); font-weight:700;">Overdue (${t.dueDate})</span>`;
       } else {
         dateLabel = `${t.dueDate}`;
       }
@@ -595,7 +632,7 @@ function renderPlanner() {
       <div class="subtasks-container">
         <div class="subtasks-header">
           <span>${TASK_SVGS.subtasks} Sub-steps ${subtasksTotal > 0 ? `(${subtasksDone}/${subtasksTotal})` : ''}</span>
-          <span style="color:var(--accent); font-weight:800;">${progressPct}%</span>
+          <span style="color:var(--os-accent); font-weight:700;">${progressPct}%</span>
         </div>
         ${subtasksList.map(st => `
           <div class="subtask-item ${st.completed ? 'completed' : ''}">
@@ -611,33 +648,45 @@ function renderPlanner() {
     item.innerHTML = `
       <div class="task-card-primary-row">
         <div class="task-checkbox-wrap">
-          <input type="checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+          <input type="checkbox" class="task-checkbox" ${isDone ? 'checked' : ''} onchange="toggleTask('${t.id}')" aria-label="Toggle task completion">
         </div>
         <div class="task-card-content">
-          <div id="taskTitleWrap-${t.id}" data-title="${escapeHTML(t.title)}" ondblclick="startEditTaskTitle('${t.id}', event)">
-            <div class="task-title-text" style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">
+          <div id="taskTitleWrap-${t.id}" data-title="${escapeHTML(t.title)}" ondblclick="startEditTaskTitle('${t.id}', event)" class="task-title-container" title="Double click to edit title">
+            <h4 class="task-title-text ${isDone ? 'task-title-done' : ''}">
               ${escapeHTML(t.title)}
-            </div>
+            </h4>
           </div>
           <div class="task-card-meta">
-            <span class="badge" style="background:${cal.color}15; color:${cal.color}; border:1px solid ${cal.color}35; display:inline-flex; align-items:center; gap:4px;">
-              ${catSvg} ${escapeHTML(cal.name)}
+            <span class="badge" style="background:${cal.color}18; color:${cal.color}; border:1px solid ${cal.color}35;">
+              ${catSvg} <span>${escapeHTML(cal.name)}</span>
             </span>
-            <span style="display:inline-flex; align-items:center; gap:4px;">${TASK_SVGS.calendar} ${dateLabel}</span>
-            ${t.isDaily ? `<span class="badge" style="background:rgba(255, 149, 0, 0.15); color:var(--amber); display:inline-flex; align-items:center; gap:4px;">${TASK_SVGS.flame} ${t.streak || 0}d</span>` : ''}
+            <span class="task-meta-item">${TASK_SVGS.calendar} <span>${dateLabel}</span></span>
+            ${t.isDaily ? `<span class="badge" style="background:rgba(255, 159, 10, 0.15); color:var(--os-warning, #FF9F0A); border:1px solid rgba(255, 159, 10, 0.3);">${TASK_SVGS.flame} <span>${t.streak || 0}d streak</span></span>` : ''}
+            <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to cycle priority">
+              ${priorityDot}
+            </span>
+            ${relationshipChipsHTML}
           </div>
         </div>
-        <div class="task-card-actions">
-          <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to change priority">
-            ${priorityDot}
-          </span>
-          <button type="button" class="secondary" onclick="startEditTaskTitle('${t.id}', event)" style="padding:4px 8px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" title="Edit Title">
-            ${TASK_SVGS.edit}
+        <div class="task-card-menu-wrap">
+          <button type="button" class="task-menu-trigger-btn" onclick="toggleTaskMenu('${t.id}', event)" title="More options" aria-label="Task options">
+            ${TASK_SVGS.more}
           </button>
-          <button type="button" class="secondary" id="taskDetailsBtn-${t.id}" onclick="toggleTaskDetails('${t.id}')" style="padding:4px 8px; font-size:0.75rem;">Details</button>
-          <button type="button" class="task-delete-front-btn" onclick="deleteTask('${t.id}')" title="Delete Task" style="display:inline-flex; align-items:center; gap:4px;">
-            ${TASK_SVGS.trash} Delete
-          </button>
+          <div id="taskMenu-${t.id}" class="task-card-menu-dropdown" style="display:none;">
+            <button type="button" class="task-menu-item" onclick="startEditTaskTitle('${t.id}', event)">
+              ${TASK_SVGS.edit} <span>Edit Task</span>
+            </button>
+            <button type="button" class="task-menu-item" onclick="toggleTaskDetails('${t.id}', event)">
+              ${TASK_SVGS.info} <span>View Details</span>
+            </button>
+            <button type="button" class="task-menu-item" onclick="closeAllTaskMenus(); promptCreateTimeBlock('${t.id}')">
+              ${TASK_SVGS.focus} <span>Add Focus Block</span>
+            </button>
+            <div class="task-menu-divider"></div>
+            <button type="button" class="task-menu-item destructive" onclick="closeAllTaskMenus(); deleteTask('${t.id}')">
+              ${TASK_SVGS.trash} <span>Delete Task</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -648,18 +697,14 @@ function renderPlanner() {
       ${subtasksHTML}
 
       ${nextBlock ? `
-        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(56, 189, 248, 0.06); border:1px solid rgba(56, 189, 248, 0.2); border-radius:var(--radius-sm); padding:8px 12px; font-size:0.78rem; margin-top:4px;">
-          <span style="color:var(--accent); font-weight:600; display:inline-flex; align-items:center; gap:6px;">${TASK_SVGS.focus} Next: ${nextBlock.date} ${formatTime12Hour(nextBlock.startTime)}–${formatTime12Hour(nextBlock.endTime)}</span>
-          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${nextBlock.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--accent); color:#05070a; font-weight:700; border:none; display:inline-flex; align-items:center; gap:4px;">Focus</button>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(10, 132, 255, 0.08); border:1px solid rgba(10, 132, 255, 0.25); border-radius:var(--os-radius-sm); padding:8px 12px; font-size:0.78rem; margin-top:4px;">
+          <span style="color:var(--os-accent); font-weight:600; display:inline-flex; align-items:center; gap:6px;">${TASK_SVGS.focus} Next: ${nextBlock.date} ${formatTime12Hour(nextBlock.startTime)}–${formatTime12Hour(nextBlock.endTime)}</span>
+          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${nextBlock.id}')" style="padding:3px 10px; font-size:0.72rem; background:var(--os-accent); color:#FFFFFF; font-weight:700; border:none; display:inline-flex; align-items:center; gap:4px;">Focus</button>
         </div>
-      ` : `
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
-          <button type="button" class="secondary" onclick="promptCreateTimeBlock('${t.id}')" style="padding:4px 12px; font-size:0.78rem; background:rgba(255,255,255,0.04); font-weight:600; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
-        </div>
-      `}
+      ` : ''}
 
       <div id="taskDetails-${t.id}" class="task-details-collapsible">
-        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:6px;">
+        <div style="font-size:0.8rem; color:var(--os-text-secondary); margin-bottom:6px;">
           <strong>Time Stats:</strong> ${timeStats.blockCount} Session(s) Scheduled • ${timeStats.efficiency}% Efficiency Rating
         </div>
         ${relationshipChipsHTML}
@@ -723,3 +768,47 @@ function bindTaskSwipe(item, taskId) {
     currentX = 0;
   });
 }
+
+// Global click listener to close dropdowns when clicking outside
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".task-card-menu-wrap")) {
+    closeAllTaskMenus();
+  }
+});
+
+// Setup dialog backdrop click close for addTaskModal
+document.addEventListener("DOMContentLoaded", () => {
+  const addTaskModal = document.getElementById("addTaskModal");
+  if (addTaskModal) {
+    addTaskModal.addEventListener("click", (e) => {
+      const rect = addTaskModal.getBoundingClientRect();
+      const isInDialog = (rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width);
+      if (!isInDialog) {
+        addTaskModal.close();
+      }
+    });
+  }
+});
+
+// Global window assignments for inline HTML handlers
+window.createTask = createTask;
+window.addCustomDailyHabit = addCustomDailyHabit;
+window.openAddTaskModal = openAddTaskModal;
+window.closeAddTaskModal = closeAddTaskModal;
+window.toggleTask = toggleTask;
+window.cycleTaskPriority = cycleTaskPriority;
+window.deleteTask = deleteTask;
+window.promptCreateTimeBlock = promptCreateTimeBlock;
+window.toggleTaskDetails = toggleTaskDetails;
+window.toggleTaskMenu = toggleTaskMenu;
+window.closeAllTaskMenus = closeAllTaskMenus;
+window.startEditTaskTitle = startEditTaskTitle;
+window.commitTaskTitleEdit = commitTaskTitleEdit;
+window.handleInlineEditKey = handleInlineEditKey;
+window.addSubtask = addSubtask;
+window.toggleSubtask = toggleSubtask;
+window.deleteSubtask = deleteSubtask;
+window.handleAddSubtaskInput = handleAddSubtaskInput;
+window.renderPlanner = renderPlanner;
+window.toggleDueDateField = toggleDueDateField;
+

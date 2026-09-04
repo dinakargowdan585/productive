@@ -1,6 +1,6 @@
 /* Productive OS Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "productive-os-cache-v31";
+const CACHE_NAME = "productive-os-cache-v32";
 const ASSETS = [
   "./",
   "./index.html",

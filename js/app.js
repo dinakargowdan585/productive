@@ -38,7 +38,7 @@ function switchView(viewName) {
   const views = ["Dashboard", "Notes", "Planner", "Vault", "Calendar", "Standby"];
   views.forEach(v => {
     const el = document.getElementById("view" + v);
-    if (el) el.style.display = (v.toLowerCase() === viewName) ? (v === "Notes" || v === "Planner" ? "grid" : "block") : "none";
+    if (el) el.style.display = (v.toLowerCase() === viewName) ? (v === "Notes" ? "grid" : "block") : "none";
   });
 
   const statsRow = document.getElementById("statsRow");
