@@ -2914,7 +2914,7 @@ select {
 /* Global Floating Picture-in-Picture Mini Focus Timer Widget */
 .floating-focus-widget {
   position: fixed;
-  bottom: 96px;
+  bottom: 108px;
   left: 50%;
   transform: translateX(-50%);
   display: inline-flex;
@@ -2926,7 +2926,7 @@ select {
   -webkit-backdrop-filter: var(--mat-4-blur) !important;
   border: 1px solid var(--mat-4-border) !important;
   border-radius: var(--radius-float) !important;
-  box-shadow: var(--shadow-float) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
   z-index: 998;
   cursor: pointer;
   transition: all 180ms var(--ease-spring);
@@ -2936,7 +2936,7 @@ select {
 .floating-focus-widget:hover {
   transform: translateX(-50%) translateY(-2px);
   border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .floating-focus-pulse {
@@ -4005,6 +4005,11 @@ dialog#supabaseAuthModal[open] {
     bottom: 16px;
     padding: 6px 10px;
     gap: 6px;
+  }
+  .floating-focus-widget {
+    bottom: 86px;
+    padding: 5px 12px;
+    gap: 8px;
   }
   .macos-app-icon {
     width: 38px;
