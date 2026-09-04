@@ -42,22 +42,7 @@ function switchView(viewName) {
   });
 
   const statsRow = document.getElementById("statsRow");
-  const cardNotes = document.getElementById("cardTotalNotes");
-  const cardTasks = document.getElementById("cardTasksDone");
-
-  if (statsRow && cardNotes && cardTasks) {
-    if (viewName === "notes") {
-      statsRow.style.display = "flex";
-      cardNotes.style.display = "flex";
-      cardTasks.style.display = "none";
-    } else if (viewName === "planner") {
-      statsRow.style.display = "flex";
-      cardNotes.style.display = "none";
-      cardTasks.style.display = "flex";
-    } else {
-      statsRow.style.display = "none";
-    }
-  }
+  if (statsRow) statsRow.style.display = "none";
 
   document.querySelectorAll(".dock-item").forEach(item => item.classList.remove("active"));
   const dockEl = document.getElementById("dock" + viewName.charAt(0).toUpperCase() + viewName.slice(1));

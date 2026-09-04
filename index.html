@@ -65,22 +65,11 @@ if ('serviceWorker' in navigator) {
   <!-- Main Content Layout (Extends seamlessly to top of viewport with bottom clearance for dock) -->
   <div class="main-content" style="padding:24px 32px 100px 32px;">
 
-    <!-- Contextual Section Metrics -->
-    <div class="stats" id="statsRow">
-      <div class="stat-card" id="cardTotalNotes"><b id="statTotal">0</b><span>Total Notes</span></div>
-      <div class="stat-card" id="cardTasksDone" style="display:none; flex-direction:column; min-width:280px; flex:1;">
-        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-          <div>
-            <b id="statTasks">0/0</b>
-            <span>Tasks Completed</span>
-          </div>
-          <b id="taskProgressPercent" style="font-size:1.4rem; color:var(--accent);">0%</b>
-        </div>
-        <div style="display:flex; gap:16px; margin-top:8px; font-size:0.78rem; color:var(--muted); font-family:var(--font-code);">
-          <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF9500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Streak: <strong id="streakCount" style="color:var(--amber);">0 days</strong></span>
-          <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Productivity: <strong id="productivityScore" style="color:var(--accent);">0%</strong></span>
-        </div>
-      </div>
+    <!-- Hidden metrics anchor for legacy references -->
+    <div id="statsRow" style="display:none;" aria-hidden="true">
+      <span id="statTotal" style="display:none;">0</span>
+      <span id="statTasks" style="display:none;">0/0</span>
+      <span id="taskProgressPercent" style="display:none;">0%</span>
     </div>
 
     <!-- VIEW 0: Intelligent Executive Command Center Dashboard -->
