@@ -324,6 +324,8 @@ function renderCalendarCategoryLegend() {
 function renderMonthView(grid, canvasHeader, tasks) {
   if (canvasHeader) {
     canvasHeader.style.display = "grid";
+    canvasHeader.style.gridTemplateColumns = "repeat(7, 1fr)";
+    canvasHeader.style.gap = "8px";
     canvasHeader.innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(h => `
       <div style="font-weight:700; font-size:0.75rem; color:var(--muted); text-align:center; font-family:var(--font-code); padding-bottom:4px;">${h}</div>
     `).join('');
@@ -331,7 +333,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
 
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(7, 1fr)";
-  grid.style.gap = "6px";
+  grid.style.gap = "8px";
   grid.innerHTML = "";
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();

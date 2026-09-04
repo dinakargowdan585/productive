@@ -48,7 +48,7 @@ function createTask(e) {
 
 function handleNaturalLanguageAdd(e) {
   if (e) e.preventDefault();
-  const input = document.getElementById("quickTaskInput");
+  const input = document.getElementById("quickTaskInput") || document.getElementById("nlEventInput");
   if (!input || !input.value.trim()) return;
 
   const text = input.value.trim();
@@ -72,7 +72,8 @@ function handleNaturalLanguageAdd(e) {
 
   saveTasks(tasks);
   input.value = "";
-  renderPlanner();
+  if (typeof renderPlanner === "function") renderPlanner();
+  if (typeof renderCalendar === "function") renderCalendar();
   if (typeof triggerBackgroundSync === "function") triggerBackgroundSync();
   if (typeof showToast === "function") showToast(`Added task: "${cleanTitle}"`, "success");
 }

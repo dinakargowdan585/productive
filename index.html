@@ -661,25 +661,25 @@ if ('serviceWorker' in navigator) {
             <div>
               <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:8px;">MY CALENDARS</span>
               <div style="display:flex; flex-direction:column; gap:4px;">
-                <label class="cal-category-item">
+                <label class="cal-category-item" onclick="toggleCalCategory('work')">
                   <span><span class="cal-color-dot" style="background:#6366F1;"></span> Work</span>
-                  <input type="checkbox" checked onchange="toggleCalCategory('Work', this.checked)">
+                  <input type="checkbox" checked onchange="toggleCalCategory('work', this.checked)">
                 </label>
-                <label class="cal-category-item">
+                <label class="cal-category-item" onclick="toggleCalCategory('personal')">
                   <span><span class="cal-color-dot" style="background:#14B8A6;"></span> Personal</span>
-                  <input type="checkbox" checked onchange="toggleCalCategory('Personal', this.checked)">
+                  <input type="checkbox" checked onchange="toggleCalCategory('personal', this.checked)">
                 </label>
-                <label class="cal-category-item">
+                <label class="cal-category-item" onclick="toggleCalCategory('study')">
                   <span><span class="cal-color-dot" style="background:#A855F7;"></span> Study</span>
-                  <input type="checkbox" checked onchange="toggleCalCategory('Study', this.checked)">
+                  <input type="checkbox" checked onchange="toggleCalCategory('study', this.checked)">
                 </label>
-                <label class="cal-category-item">
+                <label class="cal-category-item" onclick="toggleCalCategory('goals')">
                   <span><span class="cal-color-dot" style="background:#F59E0B;"></span> Goals</span>
-                  <input type="checkbox" checked onchange="toggleCalCategory('Goals', this.checked)">
+                  <input type="checkbox" checked onchange="toggleCalCategory('goals', this.checked)">
                 </label>
-                <label class="cal-category-item">
+                <label class="cal-category-item" onclick="toggleCalCategory('habits')">
                   <span><span class="cal-color-dot" style="background:#F43F5E;"></span> Habits</span>
-                  <input type="checkbox" checked onchange="toggleCalCategory('Habits', this.checked)">
+                  <input type="checkbox" checked onchange="toggleCalCategory('habits', this.checked)">
                 </label>
               </div>
             </div>
@@ -694,12 +694,12 @@ if ('serviceWorker' in navigator) {
           </aside>
 
           <!-- Right Calendar Main Canvas -->
-          <section style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; min-height:580px; overflow:hidden;">
-            <!-- Month View Header (Mon-Sun + W#) -->
-            <div id="calCanvasHeader" style="display:grid; grid-template-columns:30px repeat(7, 1fr); gap:6px; margin-bottom:8px;"></div>
+          <section class="cal-canvas-section">
+            <!-- Month View Header (Mon-Sun) -->
+            <div id="calCanvasHeader"></div>
             
             <!-- Calendar Content Container -->
-            <div id="calendarGrid"></div>
+            <div id="calendarGrid" class="cal-grid"></div>
           </section>
         </div>
       </div>
