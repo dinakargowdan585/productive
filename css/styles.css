@@ -2500,23 +2500,32 @@ select {
   background: var(--surface);
   color: #FFFFFF;
   border-radius: var(--radius-lg);
-  padding: 32px 20px;
+  padding: 40px 20px;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 420px;
+  min-height: 480px;
   text-align: center;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--border);
-  --clock-unit-w: clamp(38px, 4.8vw, 58px);
-  --clock-unit-h: clamp(54px, 6.8vw, 82px);
-  --clock-unit-font: clamp(2.2rem, 3.4vw, 3.6rem);
-  --clock-custom-font: clamp(2.6rem, 4.4vw, 4.4rem);
-  --analog-size: clamp(160px, 22vmin, 210px);
+  --clock-unit-w: clamp(40px, 5.2vw, 62px);
+  --clock-unit-h: clamp(58px, 7.4vw, 88px);
+  --clock-unit-font: clamp(2.4rem, 3.8vw, 3.8rem);
+  --clock-custom-font: clamp(2.8rem, 4.8vw, 4.8rem);
+  --analog-size: clamp(170px, 24vmin, 220px);
   transition: transform 450ms var(--ease-spring), opacity 450ms ease, background 300ms ease !important;
+}
+
+.standby-cosmic-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
 }
 
 .standby-screen:fullscreen,
@@ -2527,16 +2536,18 @@ select {
   width: 100vw !important;
   height: 100vh !important;
   min-height: 100vh !important;
+  max-height: 100vh !important;
   padding: 40px 24px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
-  --clock-unit-w: clamp(44px, 5.4vw, 70px);
-  --clock-unit-h: clamp(62px, 7.6vw, 98px);
-  --clock-unit-font: clamp(2.6rem, 4vw, 4.2rem);
-  --clock-custom-font: clamp(3.2rem, 5.2vw, 5.4rem);
-  --analog-size: clamp(190px, 26vmin, 260px);
+  background: #05070A !important;
+  --clock-unit-w: clamp(65px, 8.5vw, 115px);
+  --clock-unit-h: clamp(92px, 12vw, 160px);
+  --clock-unit-font: clamp(3.8rem, 6.2vw, 7.2rem);
+  --clock-custom-font: clamp(4.2rem, 7.5vw, 8.4rem);
+  --analog-size: clamp(260px, 40vmin, 420px);
 }
 
 .standby-top-controls {
