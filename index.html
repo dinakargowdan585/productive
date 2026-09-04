@@ -422,32 +422,15 @@ if ('serviceWorker' in navigator) {
 
     <!-- VIEW 3: Encrypted Vault (Executive Private Journal & Secret Store) -->
     <main id="viewVault" style="display:none;">
-      <!-- Vault Header Panel -->
-      <div class="panel" style="margin-bottom:20px; text-align:center; position:relative; overflow:hidden;">
-        <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); color:var(--accent); margin-bottom:10px;">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <!-- Vault Authentication Panel (Standalone Centered Apple-Glass Card) -->
+      <div id="vaultAuthPane" class="panel" style="max-width:440px; margin:60px auto 30px; text-align:center; padding:36px 28px;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); color:var(--accent); margin-bottom:16px;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <h2 style="margin:0 0 6px; font-size:1.4rem; font-weight:800;">Encrypted Vault & Private Journal</h2>
-        <p style="margin:0 0 16px; color:var(--muted); font-size:0.88rem;">AES-256 protected local storage for private notes, API keys, passwords, and sensitive strategies.</p>
-        
-        <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;">
-          <div id="vaultLockStatus" style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); padding:6px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:var(--font-code); font-size:0.85rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Status: Locked
-          </div>
-          <button type="button" class="secondary" id="vaultChangePinBtn" onclick="changeVaultPin()" style="display:none; padding:5px 12px; font-size:0.8rem; align-items:center; gap:6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-2-2l2 2m2 0l-3 3m0 0l-2 2a2 2 0 0 1-2.83 0l-.34-.34a2 2 0 0 1 0-2.83l2-2m3.17 3.17L9 16.5M9 16.5A4.5 4.5 0 1 1 3.5 11M9 16.5L3 21"/></svg> Change Passcode
-          </button>
-        </div>
-      </div>
-
-      <!-- Vault Authentication Panel -->
-      <div id="vaultAuthPane" class="panel" style="max-width:420px; margin:0 auto 24px; text-align:center;">
-        <h3 id="vaultAuthTitle" style="margin-top:0; font-size:1.1rem; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Enter Master Passcode
-        </h3>
-        <p id="vaultAuthDesc" style="font-size:0.82rem; color:var(--muted)">Enter your private Master Passcode PIN to access vault contents.</p>
+        <h3 id="vaultAuthTitle" style="margin:0 0 6px; font-size:1.25rem; font-weight:700;">Enter Master Passcode</h3>
+        <p id="vaultAuthDesc" style="font-size:0.85rem; color:var(--muted); margin:0 0 20px; line-height:1.4;">Enter your private PIN or password to unlock your AES-256 encrypted vault.</p>
         <form onsubmit="unlockVault(event); return false;" novalidate>
-          <div class="field-group">
+          <div class="field-group" style="margin-bottom:16px;">
             <input type="password" id="vaultPinInput" onkeydown="if(event.key === 'Enter'){ unlockVault(event); }" placeholder="••••" maxlength="32" style="text-align:center; font-size:1.6rem; letter-spacing:6px; font-family:var(--font-code);">
           </div>
           <button type="submit" id="vaultAuthSubmitBtn" onclick="unlockVault(event)" style="width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
@@ -472,7 +455,13 @@ if ('serviceWorker' in navigator) {
             </button>
           </div>
 
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button type="button" class="secondary" id="vaultChangePinBtn" onclick="changeVaultPin()" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-2-2l2 2m2 0l-3 3m0 0l-2 2a2 2 0 0 1-2.83 0l-.34-.34a2 2 0 0 1 0-2.83l2-2m3.17 3.17L9 16.5M9 16.5A4.5 4.5 0 1 1 3.5 11M9 16.5L3 21"/></svg> Change Passcode
+            </button>
+            <button type="button" class="secondary" id="vaultLockBtn" onclick="lockVault()" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Lock
+            </button>
             <button type="button" class="secondary" onclick="exportVaultBackup()" style="padding:5px 12px; font-size:0.78rem; display:inline-flex; align-items:center; gap:4px;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Backup
             </button>

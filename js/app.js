@@ -51,6 +51,7 @@ function switchView(viewName) {
   if (viewName === "dashboard" && typeof renderDashboard === "function") renderDashboard();
   if (viewName === "planner" && typeof renderPlanner === "function") renderPlanner();
   if (viewName === "notes" && typeof renderNotes === "function") renderNotes();
+  if (viewName === "vault" && typeof renderVault === "function") renderVault();
   if (viewName === "calendar" && typeof renderCalendar === "function") renderCalendar();
   if (viewName === "standby") {
     if (typeof updateStandbyClock === "function") updateStandbyClock();
