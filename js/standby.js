@@ -227,11 +227,19 @@ function renderClockStyleGrid() {
 }
 
 document.addEventListener("click", (e) => {
-  const popover = document.getElementById("clockStylePopover");
-  const btn = document.getElementById("clockStyleTogglePill");
-  if (popover && (popover.style.display === "flex" || popover.classList.contains("is-open") || popover.classList.contains("open"))) {
-    if (!popover.contains(e.target) && btn && !btn.contains(e.target)) {
+  const clockPopover = document.getElementById("clockStylePopover");
+  const clockBtn = document.getElementById("clockStyleTogglePill");
+  if (clockPopover && (clockPopover.style.display === "flex" || clockPopover.classList.contains("is-open") || clockPopover.classList.contains("open"))) {
+    if (!clockPopover.contains(e.target) && clockBtn && !clockBtn.contains(e.target)) {
       closeClockStylePanel();
+    }
+  }
+
+  const timerPanel = document.getElementById("pomodoroPanel");
+  const timerBtn = document.getElementById("timerTogglePill");
+  if (timerPanel && (timerPanel.style.display === "flex" || timerPanel.classList.contains("is-open") || timerPanel.classList.contains("open"))) {
+    if (!timerPanel.contains(e.target) && timerBtn && !timerBtn.contains(e.target)) {
+      closeTimerPanel();
     }
   }
 });
@@ -285,22 +293,36 @@ document.addEventListener("fullscreenchange", () => {
   }
 });
 
-function toggleTimerPanel() {
+function toggleTimerPanel(e) {
+  if (e) {
+    if (typeof e.stopPropagation === "function") e.stopPropagation();
+    if (typeof e.preventDefault === "function") e.preventDefault();
+  }
   const panel = document.getElementById("pomodoroPanel") || document.getElementById("pomodoroDrawer");
   if (!panel) return;
-  panel.classList.toggle("is-open");
-  panel.classList.toggle("open");
-  const isOpen = panel.classList.contains("is-open") || panel.classList.contains("open");
-  panel.setAttribute("aria-hidden", (!isOpen).toString());
-  updatePomodoroDisplay();
+  
+  const isOpen = panel.classList.contains("is-open") || panel.classList.contains("open") || (panel.style.display && panel.style.display !== "none");
+  if (isOpen) {
+    closeTimerPanel();
+  } else {
+    if (typeof closeClockStylePanel === "function") closeClockStylePanel();
+    panel.style.display = "flex";
+    panel.classList.add("is-open", "open");
+    panel.setAttribute("aria-hidden", "false");
+    const pill = document.getElementById("timerTogglePill");
+    if (pill) pill.setAttribute("aria-expanded", "true");
+    updatePomodoroDisplay();
+  }
 }
 
 function closeTimerPanel() {
   const panel = document.getElementById("pomodoroPanel") || document.getElementById("pomodoroDrawer");
   if (!panel) return;
-  panel.classList.remove("is-open");
-  panel.classList.remove("open");
+  panel.style.display = "none";
+  panel.classList.remove("is-open", "open");
   panel.setAttribute("aria-hidden", "true");
+  const pill = document.getElementById("timerTogglePill");
+  if (pill) pill.setAttribute("aria-expanded", "false");
 }
 
 function toggleTimer() {

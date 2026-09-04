@@ -713,7 +713,7 @@ if ('serviceWorker' in navigator) {
         <canvas id="standbyCosmicCanvas" class="standby-cosmic-canvas"></canvas>
         <!-- Top-Left Glass Controls Bar (Timer + Clock Style) -->
         <div class="standby-top-controls" style="z-index:10;">
-          <button type="button" class="timer-toggle-pill" id="timerTogglePill" onclick="toggleTimerPanel()" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Pomodoro Timer Panel">
+          <button type="button" class="timer-toggle-pill" id="timerTogglePill" onclick="toggleTimerPanel(event)" aria-expanded="false" aria-controls="pomodoroPanel" aria-label="Toggle Pomodoro Timer Panel">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
             Timer
           </button>
@@ -729,7 +729,7 @@ if ('serviceWorker' in navigator) {
           </button>
 
           <!-- macOS Control Center Style Clock Style Popover Panel -->
-          <div id="clockStylePopover" class="theme-popover" role="dialog" aria-label="Clock Style Selector" aria-hidden="true" style="left:88px;">
+          <div id="clockStylePopover" class="theme-popover" role="dialog" aria-label="Clock Style Selector" aria-hidden="true" style="left:88px; display:none;">
             <div class="popover-header">
               <div class="popover-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -738,6 +738,40 @@ if ('serviceWorker' in navigator) {
               <button type="button" class="pomodoro-close-btn" onclick="closeClockStylePanel()" aria-label="Close Clock Style Panel">&times;</button>
             </div>
             <div id="clockStyleGrid" class="theme-grid"></div>
+          </div>
+
+          <!-- macOS Control Center Style Pomodoro Focus Timer Popover Panel -->
+          <div id="pomodoroPanel" class="theme-popover pomodoro-panel" role="dialog" aria-label="Pomodoro Focus Timer" aria-hidden="true" style="left:0px; min-width:320px; display:none;">
+            <div class="popover-header">
+              <div class="popover-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Pomodoro Focus Timer
+              </div>
+              <button type="button" class="pomodoro-close-btn" onclick="closeTimerPanel()" aria-label="Close Timer Panel">&times;</button>
+            </div>
+
+            <div style="padding:8px 2px 2px;">
+              <div class="timer-display" id="timerDisplay" title="Click to edit custom minutes" onclick="editCustomTimer()" style="cursor:pointer; font-family:var(--font-code); font-size:2.8rem; font-weight:800; color:var(--accent); text-align:center; margin:4px 0 10px; letter-spacing:1px;">25:00</div>
+              
+              <div class="timer-controls" style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" class="standby-btn" onclick="adjustTimer(-5)">-5m</button>
+                <button type="button" class="standby-btn" onclick="setTimerPreset(15)">15m</button>
+                <button type="button" class="standby-btn" onclick="setTimerPreset(25)">25m</button>
+                <button type="button" class="standby-btn" onclick="setTimerPreset(45)">45m</button>
+                <button type="button" class="standby-btn" onclick="adjustTimer(5)">+5m</button>
+              </div>
+
+              <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                <label style="font-size:0.8rem; opacity:0.8" for="customMinutes">Custom Mins:</label>
+                <input type="number" id="customMinutes" min="1" max="300" value="25" style="width:75px; text-align:center; padding:5px 8px; border-radius:var(--radius-sm);" placeholder="Mins">
+                <button type="button" class="standby-btn" onclick="setCustomMinutesFromInput()" style="padding:5px 12px; font-size:0.8rem">Set</button>
+              </div>
+              
+              <div class="timer-controls" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+                <button type="button" class="standby-btn" id="startTimerBtn" onclick="toggleTimer()" style="background:var(--accent); color:#05070A; font-weight:700; flex:1;">Start Focus</button>
+                <button type="button" class="standby-btn" onclick="resetTimer()" style="flex:1;">Reset</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -807,39 +841,7 @@ if ('serviceWorker' in navigator) {
         <div class="standby-clock" id="standbyTime" style="display:none;">00:00:00</div>
         <div class="standby-date" id="standbyDate">MONDAY, AUG 3</div>
 
-        <!-- Hidden / Collapsible Pomodoro Panel -->
-        <div id="pomodoroPanel" class="pomodoro-panel" aria-hidden="true">
-          <div class="pomodoro-header">
-            <div class="pomodoro-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              Pomodoro Focus Timer
-            </div>
-            <button type="button" class="pomodoro-close-btn" onclick="closeTimerPanel()" aria-label="Close Timer Panel">&times;</button>
-          </div>
 
-          <div style="padding:0 20px 20px;">
-            <div class="timer-display" id="timerDisplay" title="Click to edit custom minutes" onclick="editCustomTimer()" style="cursor:pointer;">25:00</div>
-            
-            <div class="timer-controls">
-              <button type="button" class="standby-btn" onclick="adjustTimer(-5)">-5m</button>
-              <button type="button" class="standby-btn" onclick="setTimerPreset(15)">15m</button>
-              <button type="button" class="standby-btn" onclick="setTimerPreset(25)">25m</button>
-              <button type="button" class="standby-btn" onclick="setTimerPreset(45)">45m</button>
-              <button type="button" class="standby-btn" onclick="adjustTimer(5)">+5m</button>
-            </div>
-
-            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:14px; flex-wrap:wrap;">
-              <label style="font-size:0.82rem; opacity:0.8" for="customMinutes">Custom Mins:</label>
-              <input type="number" id="customMinutes" min="1" max="300" value="25" style="width:80px; text-align:center; padding:6px 8px; border-radius:var(--radius-sm);" placeholder="Mins">
-              <button type="button" class="standby-btn" onclick="setCustomMinutesFromInput()" style="padding:6px 14px; font-size:0.82rem">Set</button>
-            </div>
-            
-            <div class="timer-controls" style="margin-top:14px;">
-              <button type="button" class="standby-btn" id="startTimerBtn" onclick="toggleTimer()" style="background:var(--accent); color:#05070A; font-weight:700;">Start Focus</button>
-              <button type="button" class="standby-btn" onclick="resetTimer()">Reset</button>
-            </div>
-          </div>
-        </div>
 
         <div style="display:flex; gap:12px; margin-top:15px; flex-wrap:wrap; justify-content:center;">
           <button type="button" class="standby-btn" id="toggleNightModeBtn" onclick="toggleNightMode()" style="display:inline-flex; align-items:center; gap:6px;">
