@@ -463,10 +463,11 @@ button.danger:hover, .btn-danger:hover {
 }
 
 /* Form Inputs, Textarea, Select */
-input, select {
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+select {
   width: 100%;
-  height: 46px;
-  min-height: 46px;
+  height: 44px;
+  min-height: 44px;
   font-family: var(--font);
   font-size: 0.92rem;
   color: var(--text);
@@ -477,6 +478,62 @@ input, select {
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
   outline: none;
   box-sizing: border-box;
+}
+
+/* Explicit, Scoped Checkbox and Radio Sizing */
+input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 4px !important;
+  border: 1.5px solid var(--border-hover) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  cursor: pointer !important;
+  accent-color: var(--accent) !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  display: inline-block !important;
+}
+
+input[type="radio"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  accent-color: var(--accent) !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  display: inline-block !important;
+}
+
+/* Checkbox Field Label Wrapper */
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
 }
 
 textarea {
@@ -496,7 +553,7 @@ textarea {
   resize: vertical;
 }
 
-[data-theme="light"] input,
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 [data-theme="light"] textarea,
 [data-theme="light"] select {
   background: #FFFFFF !important;
@@ -504,13 +561,15 @@ textarea {
   border-color: rgba(0, 0, 0, 0.12) !important;
 }
 
-input:focus, textarea:focus, select:focus {
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px var(--accent-glow) !important;
   background: rgba(0, 0, 0, 0.4) !important;
 }
 
-[data-theme="light"] input:focus,
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):focus,
 [data-theme="light"] textarea:focus,
 [data-theme="light"] select:focus {
   background: #FFFFFF !important;
@@ -532,28 +591,41 @@ select {
 
 /* Field Group & Labels */
 .field-group {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .field-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   letter-spacing: 0.2px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 4px;
+  gap: 14px;
+  margin-bottom: 2px;
+}
+
+/* Add Task Form Compact & Spacious Layout */
+#taskForm .field-group {
+  margin-bottom: 12px;
+}
+#taskForm .form-row {
+  gap: 12px;
+  margin-bottom: 2px;
+}
+#taskForm .field-label {
+  font-size: 0.78rem;
+  margin-bottom: 2px;
 }
 
 /* Badges & Chips */
@@ -927,29 +999,80 @@ select {
   border-color: rgba(48, 209, 88, 0.3);
 }
 
-/* Task Cards */
+/* ===================================================================
+   8. TASK PLANNER & CARDS (Things 3 & Apple Liquid Glass Hierarchy)
+   =================================================================== */
+
+/* Planner Progress Velocity Card */
+.planner-progress-card {
+  padding: 16px 22px;
+  background: var(--mat-2) !important;
+  backdrop-filter: var(--mat-2-blur) !important;
+  -webkit-backdrop-filter: var(--mat-2-blur) !important;
+  border: 1px solid var(--mat-2-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm), var(--glass-specular) !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ring-text {
+  position: absolute;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* Liquid Glass Task Card Container */
 .task-card-redesign {
-  background: var(--mat-2);
-  border: 1px solid var(--border);
-  border-left: 3.5px solid var(--accent);
-  border-radius: var(--radius-md);
-  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 3px solid var(--accent) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 14px 18px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 12px;
   position: relative;
-  transition: all 180ms var(--ease-spring);
+  transition: transform 180ms var(--ease-spring), border-color 180ms ease, box-shadow 180ms ease !important;
+  cursor: default;
+}
+
+.task-card-redesign:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .task-card-redesign.completed {
-  opacity: 0.6;
+  opacity: 0.55;
+  border-left-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .task-card-redesign.completed .task-title-text {
   text-decoration: line-through;
-  color: var(--text-secondary);
+  color: var(--muted);
 }
 
+/* Primary Top Row */
 .task-card-primary-row {
   display: flex;
   align-items: flex-start;
@@ -957,126 +1080,230 @@ select {
   gap: 12px;
 }
 
-.task-card-checkbox-label {
+/* Scoped Task Checkbox */
+.task-checkbox-wrap {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
-.task-checkbox {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  border: 1.5px solid var(--border-hover);
-  background: rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  margin-top: 2px;
-  accent-color: var(--accent);
+.task-checkbox-wrap input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  accent-color: var(--accent) !important;
+}
+
+/* Task Title Hierarchy */
+.task-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .task-title-text {
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 600;
   color: var(--text);
   line-height: 1.35;
+  letter-spacing: -0.01em;
+  word-break: break-word;
 }
 
+/* Task Metadata (Muted 12-13px) */
 .task-card-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
   flex-wrap: wrap;
-  font-size: 0.76rem;
-  color: var(--text-secondary);
+  line-height: 1.3;
 }
 
+.task-card-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-card-meta .badge {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Card Actions & Priority */
 .task-card-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
-.task-card-btn,
-.task-delete-front-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: 4px 8px;
-  font-size: 0.74rem;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  transition: all 140ms ease;
-}
-
-.task-card-btn:hover,
-.task-delete-front-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text);
-  border-color: var(--border-hover);
-}
-
-.task-delete-front-btn {
-  color: var(--danger);
-}
-.task-delete-front-btn:hover {
-  background: rgba(255, 69, 58, 0.15);
-  border-color: rgba(255, 69, 58, 0.35);
-  color: var(--danger);
-}
-
-/* Priority Pills */
+/* Restrained Apple Priority Pills */
 .priority-pill {
   font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: var(--radius-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1;
+  transition: all 140ms ease;
+  user-select: none;
+  cursor: pointer;
 }
+
+.priority-beacon {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .priority-pill.priority-high {
-  background: rgba(255, 69, 58, 0.15);
-  color: var(--danger);
-  border: 1px solid rgba(255, 69, 58, 0.25);
+  background: rgba(255, 69, 58, 0.1) !important;
+  color: #FF6961 !important;
+  border: 1px solid rgba(255, 69, 58, 0.22) !important;
 }
+.priority-pill.priority-high .priority-beacon {
+  background: #FF6961;
+}
+
 .priority-pill.priority-med {
-  background: rgba(255, 179, 64, 0.15);
-  color: var(--amber);
-  border: 1px solid rgba(255, 179, 64, 0.25);
+  background: rgba(255, 159, 10, 0.1) !important;
+  color: #FFB340 !important;
+  border: 1px solid rgba(255, 159, 10, 0.22) !important;
 }
+.priority-pill.priority-med .priority-beacon {
+  background: #FFB340;
+}
+
 .priority-pill.priority-low {
-  background: rgba(48, 209, 88, 0.15);
-  color: var(--green);
-  border: 1px solid rgba(48, 209, 88, 0.25);
+  background: rgba(10, 132, 255, 0.08) !important;
+  color: #64D2FF !important;
+  border: 1px solid rgba(10, 132, 255, 0.18) !important;
+}
+.priority-pill.priority-low .priority-beacon {
+  background: #64D2FF;
+}
+
+/* Secondary Task Card Buttons */
+.task-card-actions button.secondary {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 2px 8px !important;
+  font-size: 0.74rem !important;
+  border-radius: 6px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+.task-card-actions button.secondary:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: var(--border-hover) !important;
+  color: #FFFFFF !important;
+}
+
+.task-delete-front-btn {
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 2px 8px !important;
+  font-size: 0.74rem !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--muted) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 140ms ease;
+  box-shadow: none !important;
+}
+
+.task-delete-front-btn:hover {
+  background: rgba(255, 69, 58, 0.12) !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  color: var(--danger) !important;
+}
+
+/* Thin Sleek Progress Bar */
+.bar-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 3px 0 2px;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 240ms ease;
 }
 
 /* Subtasks Container */
 .subtasks-container {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .subtasks-header {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .subtask-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
-  color: var(--text);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+.subtask-item input[type="checkbox"] {
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  max-width: 15px !important;
+  max-height: 15px !important;
+  margin: 0 !important;
 }
 
 .subtask-item.completed span {
@@ -1088,21 +1315,53 @@ select {
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
   margin-left: auto;
+  opacity: 0.6;
+  transition: opacity 120ms ease, color 120ms ease;
 }
-.subtask-delete-btn:hover { color: var(--danger); }
+.subtask-delete-btn:hover {
+  color: var(--danger);
+  opacity: 1;
+}
 
 .subtask-quick-input,
 .task-title-inline-input {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius-xs) !important;
-  padding: 5px 8px !important;
-  font-size: 0.8rem !important;
+  background: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 0.78rem !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  color: var(--text) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.subtask-quick-input:focus,
+.task-title-inline-input:focus {
+  border-color: var(--accent) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Collapsible Details */
+.task-details-collapsible {
+  display: none;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.task-details-collapsible.open {
+  display: block;
 }
 
 /* Main Layout Grid */

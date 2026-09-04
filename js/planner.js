@@ -568,7 +568,9 @@ function renderPlanner() {
       }
     }
 
-    const priorityDot = `<span class="priority-beacon"></span> ${(t.priority || 'HIGH').toUpperCase()}`;
+    const pRaw = (t.priority || 'HIGH').toUpperCase();
+    const prioLabel = pRaw === 'HIGH' ? 'High' : (pRaw === 'MED' || pRaw === 'MEDIUM' ? 'Med' : 'Low');
+    const priorityDot = `<span class="priority-beacon"></span> ${prioLabel}`;
     const relationshipChipsHTML = renderRelationshipChips(t);
     const timeStats = getTaskTimeStats(t.id);
     const blocks = getTimeBlocksByTask(t.id);
