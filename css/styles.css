@@ -1056,18 +1056,28 @@ input[type="checkbox"]:checked::after {
   position: relative;
   flex: 1;
   min-width: 200px;
+  display: flex;
+  align-items: center;
 }
-.search-box input {
-  padding-left: 32px;
+.search-box input,
+.search-box input[type="text"] {
+  padding-left: 36px !important;
+  padding-right: 14px !important;
+  box-sizing: border-box !important;
 }
 .search-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--os-text-tertiary);
   pointer-events: none;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  width: 15px;
+  height: 15px;
 }
 .toolbar-actions {
   display: flex;
@@ -1195,29 +1205,42 @@ input[type="checkbox"]:checked::after {
 .planner-search-icon {
   position: absolute;
   left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--os-text-tertiary);
   pointer-events: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  z-index: 3;
+  width: 16px;
+  height: 16px;
 }
 
-.planner-search-input {
-  width: 100%;
-  height: 40px;
-  padding: 0 34px 0 38px;
-  background: var(--os-surface-secondary);
-  border: 1px solid var(--os-border);
-  border-radius: var(--os-radius-pill);
-  font-size: 0.86rem;
-  color: var(--os-text);
-  transition: all 180ms ease;
+.planner-search-input,
+input.planner-search-input,
+input[type="text"].planner-search-input {
+  width: 100% !important;
+  height: 40px !important;
+  padding-left: 42px !important;
+  padding-right: 36px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  background: var(--os-surface-secondary) !important;
+  border: 1px solid var(--os-border) !important;
+  border-radius: var(--os-radius-pill) !important;
+  font-size: 0.86rem !important;
+  color: var(--os-text) !important;
+  box-sizing: border-box !important;
+  transition: all 180ms ease !important;
 }
 
-.planner-search-input:focus {
-  background: var(--os-surface);
-  border-color: var(--os-accent);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+.planner-search-input:focus,
+input.planner-search-input:focus,
+input[type="text"].planner-search-input:focus {
+  background: var(--os-surface) !important;
+  border-color: var(--os-accent) !important;
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15) !important;
 }
 
 .planner-search-clear-btn {
@@ -2132,12 +2155,31 @@ dialog::backdrop {
   margin-top: 22px;
 }
 
-/* Command Palette (⌘K) */
+/* Command Palette (⌘K) & Quick Search */
 #commandPaletteModal {
   max-width: 600px;
   padding: 0;
   overflow: hidden;
   border-color: var(--os-border);
+}
+.cmd-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--os-border);
+  border-radius: var(--os-radius-md);
+  margin-bottom: 12px;
+}
+.cmd-input-wrap input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--os-text) !important;
+  outline: none !important;
 }
 
 /* Popovers & Control Center Sheets */
