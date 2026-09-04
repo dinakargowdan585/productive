@@ -259,74 +259,8 @@ const FX = {
     };
 
     animate();
-  },
-
-  initStandbyCosmicCanvas() {
-    const canvas = document.getElementById("standbyCosmicCanvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let animFrame = null;
-
-    const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.parentElement ? canvas.parentElement.clientWidth * dpr : window.innerWidth * dpr;
-      canvas.height = canvas.parentElement ? canvas.parentElement.clientHeight * dpr : window.innerHeight * dpr;
-      ctx.scale(dpr, dpr);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const stars = [];
-    const count = 55;
-    const w = () => canvas.width / (window.devicePixelRatio || 1);
-    const h = () => canvas.height / (window.devicePixelRatio || 1);
-
-    for (let i = 0; i < count; i++) {
-      stars.push({
-        x: Math.random() * w(),
-        y: Math.random() * h(),
-        size: Math.random() * 2 + 0.8,
-        alpha: Math.random() * 0.7 + 0.2,
-        speedX: (Math.random() - 0.5) * 0.2,
-        speedY: (Math.random() - 0.5) * 0.2,
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-        twinkleDir: Math.random() > 0.5 ? 1 : -1
-      });
-    }
-
-    const draw = () => {
-      const width = w();
-      const height = h();
-      ctx.clearRect(0, 0, width, height);
-
-      stars.forEach(s => {
-        s.x += s.speedX;
-        s.y += s.speedY;
-        if (s.x < 0) s.x = width;
-        if (s.x > width) s.x = 0;
-        if (s.y < 0) s.y = height;
-        if (s.y > height) s.y = 0;
-
-        s.alpha += s.twinkleSpeed * s.twinkleDir;
-        if (s.alpha > 0.85) { s.alpha = 0.85; s.twinkleDir = -1; }
-        if (s.alpha < 0.15) { s.alpha = 0.15; s.twinkleDir = 1; }
-
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(56, 189, 248, ${s.alpha * 0.7})`;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = "rgba(56, 189, 248, 0.6)";
-        ctx.fill();
-      });
-
-      const standbyView = document.getElementById("viewStandby");
-      if (standbyView && standbyView.style.display !== "none") {
-        animFrame = requestAnimationFrame(draw);
-      }
-    };
-
-    draw();
   }
 };
 
 window.FX = FX;
+

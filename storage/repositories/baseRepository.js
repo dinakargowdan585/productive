@@ -92,6 +92,10 @@ function createRepository(storeName) {
       });
     },
 
+    async saveAll(items) {
+      return this.bulkPut(items);
+    },
+
     async count() {
       const store = await getStore(storeName, "readonly");
       return new Promise((resolve, reject) => {
@@ -110,5 +114,7 @@ const CalendarsRepository = createRepository("calendars");
 const TimeBlocksRepository = createRepository("timeBlocks");
 const ProjectsRepository = createRepository("projects");
 const GoalsRepository = createRepository("goals");
+const VaultNotesRepository = createRepository("vaultNotes");
 const SettingsRepository = createRepository("settings");
+
 

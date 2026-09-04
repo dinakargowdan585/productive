@@ -691,22 +691,8 @@ select {
 }
 
 /* ===================================================================
-   6. FLOATING MACOS DOCK & SIDE RAIL (Material 4)
+   6. FLOATING MACOS DOCK (Material 4)
    =================================================================== */
-
-/* Sidebar Rail (Deprecated / Removed for Clean Edge-to-Edge Canvas) */
-.side-rail {
-  display: none !important;
-}
-
-.sync-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--green);
-  display: inline-block;
-  box-shadow: 0 0 6px var(--green);
-}
 
 /* Floating Bottom Navigation Dock */
 .macos-dock-container {
@@ -4042,9 +4028,6 @@ dialog#supabaseAuthModal[open] {
 }
 
 @media (max-width: 768px) {
-  .side-rail {
-    display: none !important;
-  }
   .main-content {
     padding: 16px 16px 110px 16px;
   }

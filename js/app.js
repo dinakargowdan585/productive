@@ -72,12 +72,6 @@ function toggleTheme() {
   showToast(`Switched to ${next} mode`, "info");
 }
 
-// Clean up any legacy luxury theme attributes
-if (typeof document !== "undefined") {
-  document.documentElement.removeAttribute("data-luxury-theme");
-  try { localStorage.removeItem("productive_luxury_theme"); } catch (e) {}
-}
-
 function openCommandPalette() {
   const modal = document.getElementById("commandPaletteModal");
   if (modal && modal.showModal) {
