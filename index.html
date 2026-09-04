@@ -842,7 +842,7 @@ if ('serviceWorker' in navigator) {
         </div>
 
         <div style="display:flex; gap:12px; margin-top:15px; flex-wrap:wrap; justify-content:center;">
-          <button type="button" class="standby-btn" onclick="toggleNightMode()" style="display:inline-flex; align-items:center; gap:6px;">
+          <button type="button" class="standby-btn" id="toggleNightModeBtn" onclick="toggleNightMode()" style="display:inline-flex; align-items:center; gap:6px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon-moon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Toggle Red Night Mode
           </button>
           <button type="button" class="standby-btn" id="fullScreenBtn" onclick="toggleFullscreenStandby()" style="display:inline-flex; align-items:center; gap:6px;">

@@ -238,8 +238,27 @@ document.addEventListener("click", (e) => {
 
 function toggleNightMode() {
   isNightMode = !isNightMode;
+  try {
+    localStorage.setItem("learningStandbyNightMode", isNightMode ? "true" : "false");
+  } catch (e) {}
+  
   const screen = document.getElementById("standbyScreen");
-  if (screen) screen.classList.toggle("night-mode", isNightMode);
+  if (screen) {
+    screen.classList.toggle("night-mode", isNightMode);
+  }
+  
+  const btn = document.getElementById("toggleNightModeBtn");
+  if (btn) {
+    btn.classList.toggle("active", isNightMode);
+  }
+
+  if (typeof FX !== "undefined" && typeof FX.playClick === "function") {
+    FX.playClick();
+  }
+  
+  if (typeof showToast === "function") {
+    showToast(isNightMode ? "Red Night Mode activated" : "Standard mode restored", "info");
+  }
 }
 
 function toggleFullscreenStandby() {
@@ -465,6 +484,15 @@ if (typeof window !== "undefined") {
 // Initial clock visibility & tick timer
 if (typeof window !== "undefined") {
   window.addEventListener("DOMContentLoaded", () => {
+    try {
+      if (localStorage.getItem("learningStandbyNightMode") === "true") {
+        isNightMode = true;
+        const screen = document.getElementById("standbyScreen");
+        if (screen) screen.classList.add("night-mode");
+        const btn = document.getElementById("toggleNightModeBtn");
+        if (btn) btn.classList.add("active");
+      }
+    } catch (e) {}
     updateClockVisibility();
     updateStandbyClock();
     renderStandbyFocusWidget();

@@ -3075,35 +3075,7 @@ button:active { transform: scale(0.98); }
   text-transform: uppercase;
 }
 
-.apple-standby-clock-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-.apple-standby-digits {
-  font-family: var(--font);
-  font-size: var(--clock-custom-font, 6.2rem);
-  font-weight: 800;
-  letter-spacing: -3px;
-  color: var(--text);
-  line-height: 1;
-  display: flex;
-  align-items: center;
-}
-.apple-standby-colon {
-  color: var(--accent);
-  animation: pulseColon 2s infinite;
-  margin: 0 4px;
-}
-@keyframes pulseColon { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.apple-standby-date {
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: var(--font-code);
-  color: var(--muted);
-  letter-spacing: 3px;
-}
+
 
 /* StandBy Live Task & MIT Focus Widget */
 .standby-focus-card {
@@ -3235,26 +3207,229 @@ button:active { transform: scale(0.98); }
   color: var(--text);
 }
 
-/* StandBy Night Mode Adaptation */
-.standby-screen.night-mode .standby-focus-card {
-  background: rgba(35, 0, 0, 0.85) !important;
+/* ===================================================================
+   STANDBY RED NIGHT MODE (Apple iOS StandBy Aesthetic)
+   =================================================================== */
+
+.standby-screen.night-mode {
+  background: radial-gradient(ellipse at center, rgba(160, 20, 20, 0.22) 0%, #050101 68%, #000000 100%) !important;
+  color: #FF453A !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+  box-shadow: 0 0 50px rgba(255, 69, 58, 0.12), inset 0 0 100px rgba(0, 0, 0, 0.9) !important;
+}
+
+.standby-screen.night-mode .standby-cosmic-canvas {
+  filter: hue-rotate(320deg) saturate(220%) brightness(0.7) !important;
+  opacity: 0.3 !important;
+}
+
+/* StandBy Top Controls & Action Buttons */
+.standby-screen.night-mode .timer-toggle-pill,
+.standby-screen.night-mode .standby-btn {
+  background: rgba(255, 69, 58, 0.1) !important;
+  color: #FF453A !important;
+  border-color: rgba(255, 69, 58, 0.32) !important;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 69, 58, 0.2) !important;
+}
+
+.standby-screen.night-mode .timer-toggle-pill:hover,
+.standby-screen.night-mode .standby-btn:hover,
+.standby-screen.night-mode .standby-btn.active,
+.standby-screen.night-mode .timer-toggle-pill[aria-expanded="true"] {
+  background: rgba(255, 69, 58, 0.25) !important;
+  border-color: #FF453A !important;
+  color: #FF453A !important;
+  box-shadow: 0 0 16px rgba(255, 69, 58, 0.35) !important;
+}
+
+.standby-screen.night-mode .timer-toggle-pill svg,
+.standby-screen.night-mode .standby-btn svg {
+  stroke: #FF453A !important;
+}
+
+/* Apple StandBy Clock Face */
+.standby-screen.night-mode .apple-standby-digits {
+  color: #FF453A !important;
+  text-shadow: 0 0 35px rgba(255, 69, 58, 0.65), 0 0 10px rgba(255, 69, 58, 0.9) !important;
+}
+
+.standby-screen.night-mode .apple-standby-colon {
+  color: #FF453A !important;
+  text-shadow: 0 0 25px rgba(255, 69, 58, 0.8) !important;
+}
+
+.standby-screen.night-mode .apple-standby-date,
+.standby-screen.night-mode .standby-date {
+  color: rgba(255, 69, 58, 0.85) !important;
+  text-shadow: 0 0 16px rgba(255, 69, 58, 0.45) !important;
+}
+
+.standby-screen.night-mode .standby-clock {
+  color: #FF453A !important;
+  text-shadow: 0 0 30px rgba(255, 69, 58, 0.7) !important;
+}
+
+/* 3D Mechanical Split-Flap Clock in Night Mode */
+.standby-screen.night-mode .flip-unit {
+  background: #140202 !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.9), 0 0 16px rgba(255, 69, 58, 0.2) !important;
+}
+
+.standby-screen.night-mode .flip-unit::before,
+.standby-screen.night-mode .flip-unit::after {
+  background: #250202 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,69,58,0.3) !important;
+}
+
+.standby-screen.night-mode .flip-top-static,
+.standby-screen.night-mode .flip-bottom-static,
+.standby-screen.night-mode .flip-top-fold,
+.standby-screen.night-mode .flip-bottom-fold {
+  background: #180202 !important;
+  border-color: rgba(255, 69, 58, 0.25) !important;
+}
+
+.standby-screen.night-mode .flip-top-static span,
+.standby-screen.night-mode .flip-bottom-static span,
+.standby-screen.night-mode .flip-top-fold span,
+.standby-screen.night-mode .flip-bottom-fold span {
+  color: #FF453A !important;
+  text-shadow: 0 0 20px rgba(255, 69, 58, 0.65) !important;
+}
+
+.standby-screen.night-mode .flip-top-static,
+.standby-screen.night-mode .flip-top-fold {
+  box-shadow: inset 0 1px 1px rgba(255, 69, 58, 0.3) !important;
+  border-bottom: 1.5px solid rgba(15, 0, 0, 0.95) !important;
+}
+
+.standby-screen.night-mode .flip-bottom-static,
+.standby-screen.night-mode .flip-bottom-fold {
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.6) !important;
+  border-top: 1px solid rgba(255, 69, 58, 0.2) !important;
+}
+
+.standby-screen.night-mode .flip-divider {
+  color: #FF453A !important;
+  text-shadow: 0 0 20px rgba(255, 69, 58, 0.8) !important;
+}
+
+.standby-screen.night-mode .flip-ampm-badge {
+  background: #180202 !important;
+  color: #FF453A !important;
   border-color: rgba(255, 69, 58, 0.35) !important;
-  color: #ff453a !important;
-  box-shadow: 0 16px 40px rgba(255, 69, 58, 0.15) !important;
+  text-shadow: 0 0 10px rgba(255, 69, 58, 0.6) !important;
+}
+
+/* Swiss Analog Clock in Night Mode */
+.standby-screen.night-mode .analog-clock-wrap {
+  border-color: rgba(255, 69, 58, 0.5) !important;
+  box-shadow: 0 0 35px rgba(255, 69, 58, 0.3), inset 0 0 24px rgba(0, 0, 0, 0.9) !important;
+  background: radial-gradient(circle, #250202 0%, #100101 100%) !important;
+}
+
+.standby-screen.night-mode .analog-center-dot {
+  background: #FF453A !important;
+  box-shadow: 0 0 12px #FF453A !important;
+}
+
+.standby-screen.night-mode .analog-hand.hour,
+.standby-screen.night-mode .analog-hand.minute {
+  background: #FF453A !important;
+  box-shadow: 0 0 10px rgba(255, 69, 58, 0.8) !important;
+}
+
+.standby-screen.night-mode .analog-hand.second {
+  background: #FF3B30 !important;
+  box-shadow: 0 0 10px rgba(255, 59, 48, 0.9) !important;
+}
+
+/* Clock Style Popover & Theme Grid */
+.standby-screen.night-mode .theme-popover {
+  background: rgba(18, 2, 2, 0.95) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 69, 58, 0.2) !important;
+}
+
+.standby-screen.night-mode .popover-title {
+  color: #FF453A !important;
+}
+
+.standby-screen.night-mode .theme-card {
+  background: rgba(255, 69, 58, 0.06) !important;
+  border-color: rgba(255, 69, 58, 0.22) !important;
+}
+
+.standby-screen.night-mode .theme-card:hover,
+.standby-screen.night-mode .theme-card.active,
+.standby-screen.night-mode .theme-card.selected {
+  background: rgba(255, 69, 58, 0.22) !important;
+  border-color: #FF453A !important;
+}
+
+.standby-screen.night-mode .theme-title {
+  color: #FF453A !important;
+}
+
+.standby-screen.night-mode .theme-desc {
+  color: rgba(255, 69, 58, 0.7) !important;
+}
+
+/* Pomodoro Focus Drawer */
+.standby-screen.night-mode .pomodoro-panel {
+  background: rgba(20, 2, 2, 0.95) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(255, 69, 58, 0.2) !important;
+}
+
+.standby-screen.night-mode .pomodoro-title {
+  color: #FF453A !important;
+}
+
+.standby-screen.night-mode .timer-display {
+  color: #FF453A !important;
+  text-shadow: 0 0 25px rgba(255, 69, 58, 0.6) !important;
+}
+
+.standby-screen.night-mode #startTimerBtn {
+  background: #FF453A !important;
+  color: #050101 !important;
+  font-weight: 800 !important;
+}
+
+.standby-screen.night-mode input {
+  background: rgba(30, 2, 2, 0.8) !important;
+  color: #FF453A !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+}
+
+/* StandBy MIT / Focus Card Widget */
+.standby-screen.night-mode .standby-focus-card {
+  background: rgba(28, 2, 2, 0.88) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  color: #FF453A !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 69, 58, 0.15) !important;
 }
 
 .standby-screen.night-mode .standby-task-title {
-  color: #ff453a !important;
+  color: #FF453A !important;
 }
 
 .standby-screen.night-mode .standby-focus-nav-btn {
-  color: #ff453a !important;
+  color: #FF453A !important;
   border-color: rgba(255, 69, 58, 0.3) !important;
+  background: rgba(255, 69, 58, 0.1) !important;
 }
 
 .standby-screen.night-mode .standby-quick-input {
-  color: #ff453a !important;
+  color: #FF453A !important;
   border-color: rgba(255, 69, 58, 0.3) !important;
+  background: rgba(20, 2, 2, 0.8) !important;
+}
+
+.standby-screen.night-mode .standby-checkbox {
+  border-color: #FF453A !important;
+  accent-color: #FF453A !important;
 }
 
 /* Pomodoro Drawer Side-Sheet */
