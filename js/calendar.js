@@ -346,8 +346,12 @@ function renderMonthView(grid, canvasHeader, tasks) {
     `).join('');
   }
 
+  grid.className = "cal-grid";
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(7, 1fr)";
+  grid.style.flexDirection = "";
+  grid.style.gap = "";
+  grid.style.padding = "";
   grid.innerHTML = "";
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
@@ -529,9 +533,12 @@ function getWeekDates(year, month, dateStr) {
 
 function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
   if (canvasHeader) canvasHeader.style.display = "none";
+  grid.className = "cal-grid cal-week-grid";
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "65px repeat(7, 1fr)";
+  grid.style.flexDirection = "";
   grid.style.gap = "6px";
+  grid.style.padding = "16px";
   grid.innerHTML = "";
 
   const weekDates = getWeekDates(calYear, calMonth, selectedCalDateStr);
@@ -543,7 +550,7 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
   const curMin = now.getMinutes();
   const nowTimeString = `${curHr % 12 || 12}:${String(curMin).padStart(2, '0')} ${curHr >= 12 ? 'PM' : 'AM'}`;
 
-  grid.innerHTML += `<div style="font-weight:700; font-size:0.75rem; color:var(--muted); padding:8px 0; text-align:center; font-family:var(--font-code);">Time</div>`;
+  grid.innerHTML += `<div style="font-weight:700; font-size:0.75rem; color:var(--os-text-tertiary); padding:8px 0; text-align:center; font-family:var(--font-code);">Time</div>`;
   const daysHeader = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   weekDates.forEach((d, idx) => {
@@ -552,7 +559,7 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     const isToday = dateStr === todayIso;
     const isSelected = dateStr === selectedCalDateStr;
     grid.innerHTML += `
-      <div onclick="selectCalDate('${dateStr}')" style="text-align:center; font-weight:700; font-size:0.78rem; color:${isToday ? 'var(--accent)' : 'var(--text)'}; padding:6px 0; font-family:var(--font-code); border-bottom:1px solid var(--border); cursor:pointer; ${isSelected ? 'background:rgba(56,189,248,0.1); border-radius:4px;' : ''}">
+      <div onclick="selectCalDate('${dateStr}')" style="text-align:center; font-weight:700; font-size:0.78rem; color:${isToday ? 'var(--os-accent)' : 'var(--os-text)'}; padding:6px 0; font-family:var(--font-code); border-bottom:1px solid var(--os-border); cursor:pointer; ${isSelected ? 'background:rgba(10,132,255,0.12); border-radius:6px;' : ''}">
         ${daysHeader[idx]} <span style="font-size:0.7rem; opacity:0.8;">${d.getMonth() + 1}/${dayNum}</span>
       </div>
     `;
@@ -566,7 +573,7 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     const timeLabel = `${hr12}:00 ${ampm}`;
     const isCurrentHour = curHr === hr;
 
-    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--muted); font-family:var(--font-code); text-align:right; padding-right:8px; padding-top:6px; position:relative;">
+    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--os-text-tertiary); font-family:var(--font-code); text-align:right; padding-right:8px; padding-top:6px; position:relative;">
       ${timeLabel}
       ${isCurrentHour ? `<div class="cal-now-time-badge">${nowTimeString}</div>` : ''}
     </div>`;
@@ -586,7 +593,7 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
             <div class="cal-now-indicator-row" style="top:${Math.round((curMin / 60) * 100)}%;"></div>
           ` : ''}
           ${hrBlocks.map(b => `
-            <div class="cal-event-card" style="background:${b.color || 'var(--accent)'}25; border-left-color:${b.color || 'var(--accent)'}; color:var(--text);">
+            <div class="cal-event-card" style="background:${b.color || 'var(--os-accent)'}25; border-left-color:${b.color || 'var(--os-accent)'}; color:var(--os-text);">
               <span>${escapeHTML(b.taskTitle)}</span>
             </div>
           `).join('')}
@@ -603,9 +610,12 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
 
 function renderDayView(grid, canvasHeader, dateObj, tasks) {
   if (canvasHeader) canvasHeader.style.display = "none";
+  grid.className = "cal-agenda-view";
   grid.style.display = "flex";
   grid.style.flexDirection = "column";
-  grid.style.gap = "12px";
+  grid.style.gridTemplateColumns = "";
+  grid.style.gap = "28px";
+  grid.style.padding = "";
   grid.innerHTML = "";
 
   const curDateStr = getIsoDateStr(dateObj);
@@ -615,78 +625,175 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
   const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
   const allBlocks = loadTimeBlocks();
   const dayBlocks = allBlocks.filter(b => isBlockForDate(b, curDateStr));
+  const allProjects = typeof loadProjects === "function" ? loadProjects() : [];
+  const allGoals = typeof loadGoals === "function" ? loadGoals() : [];
+  const relativeBadge = getRelativeDateLabel(curDateStr);
 
-  grid.innerHTML += `
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-      <div style="font-size:1.15rem; font-weight:800; color:var(--accent);">
-        ${dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.72rem; margin-left:8px;">TODAY</span>` : ''}
+  let dayHTML = `
+    <div class="cal-agenda-container">
+      <div class="cal-agenda-header">
+        <div class="cal-agenda-header-left">
+          <div class="cal-agenda-date-badge">
+            <span class="cal-agenda-day-num" style="font-size:1.8rem;">${String(dateObj.getDate()).padStart(2, '0')}</span>
+            <div class="cal-agenda-date-meta">
+              <h2 class="cal-agenda-title">${dateObj.toLocaleDateString(undefined, { weekday: 'long' })}</h2>
+              <span class="cal-agenda-month-year" style="font-size:0.85rem;">${dateObj.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+            </div>
+            ${relativeBadge}
+          </div>
+        </div>
+        <div class="cal-agenda-header-actions">
+          <button type="button" class="cal-agenda-btn-secondary" onclick="openNewEventModal('${curDateStr}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Add Event</span>
+          </button>
+          <button type="button" class="cal-agenda-btn-secondary" onclick="promptCreateTimeBlock('')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>+ Focus Block</span>
+          </button>
+        </div>
       </div>
-      <div style="display:flex; gap:8px;">
-        <button type="button" class="secondary" onclick="openNewEventModal('${curDateStr}')" style="padding:5px 12px; font-size:0.8rem;">+ Add Task / Event</button>
+
+      <div class="cal-agenda-items-list">
+        ${!dayTasks.length && !dayBlocks.length ? `
+          <div class="cal-agenda-empty-state">
+            <div class="cal-agenda-empty-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3 class="cal-agenda-empty-title">No scheduled items for this day</h3>
+            <p class="cal-agenda-empty-desc">Enjoy your focus time or schedule a new task or event below.</p>
+          </div>
+        ` : ''}
+
+        ${dayBlocks.map(b => `
+          <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
+            <div class="cal-agenda-block-left">
+              <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="cal-agenda-block-info">
+                <div class="cal-agenda-block-title-row">
+                  <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
+                  <span class="cal-agenda-deepwork-badge">DEEP WORK</span>
+                </div>
+                <div class="cal-agenda-block-time">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
+                  <span class="cal-agenda-duration-dot">•</span>
+                  <span>${b.durationMinutes}m duration</span>
+                </div>
+              </div>
+            </div>
+            <div class="cal-agenda-block-right">
+              <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Launch Focus</span>
+              </button>
+            </div>
+          </div>
+        `).join('')}
+
+        ${dayTasks.map(t => {
+          const cal = getCalendarById(t.calendarId || t.category || "work");
+          const isDone = isTaskCompletedOnDate(t, curDateStr);
+          const proj = t.projectId ? allProjects.find(p => p.id === t.projectId) : null;
+          const goal = t.goalId ? allGoals.find(g => g.id === t.goalId) : null;
+          const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+          const subDone = subtasks.filter(s => s.completed).length;
+          const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
+
+          return `
+            <div class="cal-agenda-card" style="border-left: 4px solid ${cal.color}; ${!isToday ? 'opacity:0.92;' : ''}">
+              <div class="cal-agenda-card-left">
+                <input type="checkbox" class="cal-agenda-checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${curDateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
+                <div class="cal-agenda-card-body">
+                  <div class="cal-agenda-card-title-row">
+                    <span class="cal-agenda-task-title ${isDone ? 'is-done' : ''}">${escapeHTML(t.title)}</span>
+                  </div>
+                  <div class="cal-agenda-tags-row">
+                    <span class="cal-agenda-pill" style="background:${cal.color}18; color:${cal.color}; border:1px solid ${cal.color}30;">
+                      <span class="cal-color-dot" style="background:${cal.color}; width:6px; height:6px; margin-right:4px;"></span>
+                      ${escapeHTML(cal.name)}
+                    </span>
+                    ${proj ? `
+                      <span class="cal-agenda-pill cal-pill-project">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        ${escapeHTML(proj.name)}
+                      </span>
+                    ` : ''}
+                    ${goal ? `
+                      <span class="cal-agenda-pill cal-pill-goal">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        ${escapeHTML(goal.title)}
+                      </span>
+                    ` : ''}
+                    ${t.isDaily ? `
+                      <span class="cal-agenda-pill cal-pill-habit">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                        Daily Habit
+                      </span>
+                    ` : ''}
+                    ${subtasks.length > 0 ? `
+                      <div class="cal-agenda-subtasks-progress">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <span>${subDone}/${subtasks.length} Sub-steps</span>
+                        <div class="cal-agenda-subtasks-track">
+                          <div class="cal-agenda-subtasks-fill" style="width:${Math.round((subDone/subtasks.length)*100)}%; background:${cal.color};"></div>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="cal-agenda-card-right">
+                <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}">${(t.priority || 'MED').toUpperCase()}</span>
+                ${!isPast ? `
+                  <button type="button" class="cal-agenda-icon-btn" onclick="promptCreateTimeBlock('${t.id}')" title="Schedule Deep Work Block">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>+ Block</span>
+                  </button>
+                  <button type="button" class="cal-agenda-del-btn" onclick="deleteTask('${t.id}')" title="Delete Task">✕</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+
+        ${!isPast ? `
+          <div class="cal-agenda-quick-add-wrap">
+            <input type="text" class="cal-agenda-quick-add-input" placeholder="+ Add a task for this day (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${curDateStr}')">
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
 
-  if (!dayTasks.length && !dayBlocks.length) {
-    grid.innerHTML += `<div class="empty-state"><h3>No tasks or focus blocks scheduled</h3><p>Enjoy your free focus time, or schedule an event above!</p></div>`;
-  } else {
-    dayBlocks.forEach(b => {
-      grid.innerHTML += `
-        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-left:4px solid ${b.color || 'var(--accent)'};">
-          <div>
-            <strong style="color:var(--text); font-size:1rem;">${escapeHTML(b.taskTitle)}</strong>
-            <div style="font-size:0.8rem; color:var(--muted); margin-top:3px;">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
-          </div>
-          <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:5px 14px; font-weight:700; background:var(--accent); color:#05070a; border:none;">Focus</button>
-        </div>
-      `;
-    });
-
-    dayTasks.forEach(t => {
-      const cal = getCalendarById(t.calendarId || t.category || "work");
-      const isDone = isTaskCompletedOnDate(t, curDateStr);
-      const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
-      grid.innerHTML += `
-        <div class="panel" style="display:flex; justify-content:space-between; align-items:center; padding:12px 18px; border-left:4px solid ${cal.color}; ${!isToday ? 'opacity:0.85;' : ''}">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${curDateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
-            <div>
-              <span style="font-size:0.95rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
-              <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">● ${escapeHTML(cal.name)} • Priority: ${t.priority || 'MED'}${t.isDaily ? ' • Daily Habit' : ''}</div>
-            </div>
-          </div>
-          <button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>
-        </div>
-      `;
-    });
-  }
-
-  grid.innerHTML += `
-    <input type="text" class="cal-inspector-quick-input" placeholder="+ Add a task for this day (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${curDateStr}')">
-  `;
+  grid.innerHTML = dayHTML;
 }
 
 function getRelativeDateLabel(dateStr) {
   const todayIso = getIsoDateStr();
-  if (dateStr === todayIso) return `<span class="badge" style="background:rgba(56,189,248,0.2); color:var(--accent); font-weight:800; font-size:0.7rem;">TODAY</span>`;
+  if (dateStr === todayIso) return `<span class="badge" style="background:rgba(10,132,255,0.18); color:var(--os-accent); font-weight:800; font-size:0.72rem; border-radius:12px; padding:2px 8px;">TODAY</span>`;
   
   const d1 = new Date(todayIso + "T00:00:00");
   const d2 = new Date(dateStr + "T00:00:00");
   const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 1) return `<span class="badge" style="background:rgba(255,149,0,0.2); color:var(--amber); font-weight:800; font-size:0.7rem;">TOMORROW</span>`;
-  if (diffDays === -1) return `<span class="badge" style="background:rgba(255,59,48,0.2); color:var(--danger); font-weight:800; font-size:0.7rem;">YESTERDAY (LOCKED)</span>`;
-  if (diffDays < -1) return `<span class="badge" style="background:rgba(255,59,48,0.2); color:var(--danger); font-weight:800; font-size:0.7rem;">${Math.abs(diffDays)}d AGO (LOCKED)</span>`;
-  if (diffDays <= 7) return `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--text); font-weight:700; font-size:0.7rem;">In ${diffDays} days</span>`;
-  return `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--muted); font-weight:600; font-size:0.7rem;">In ${Math.round(diffDays / 7)}w</span>`;
+  if (diffDays === 1) return `<span class="badge" style="background:rgba(255,149,0,0.18); color:var(--os-warning); font-weight:800; font-size:0.72rem; border-radius:12px; padding:2px 8px;">TOMORROW</span>`;
+  if (diffDays === -1) return `<span class="badge" style="background:rgba(255,69,58,0.18); color:#FF453A; font-weight:800; font-size:0.72rem; border-radius:12px; padding:2px 8px;">YESTERDAY</span>`;
+  if (diffDays < -1) return `<span class="badge" style="background:rgba(255,69,58,0.14); color:#FF453A; font-weight:700; font-size:0.72rem; border-radius:12px; padding:2px 8px;">${Math.abs(diffDays)}d AGO</span>`;
+  if (diffDays <= 7) return `<span class="badge" style="background:rgba(255,255,255,0.08); color:var(--os-text); font-weight:600; font-size:0.72rem; border-radius:12px; padding:2px 8px;">In ${diffDays} days</span>`;
+  return `<span class="badge" style="background:rgba(255,255,255,0.05); color:var(--os-text-tertiary); font-weight:500; font-size:0.72rem; border-radius:12px; padding:2px 8px;">In ${Math.round(diffDays / 7)}w</span>`;
 }
 
 function renderAgendaView(grid, canvasHeader, tasks) {
   if (canvasHeader) canvasHeader.style.display = "none";
+  grid.className = "cal-agenda-view";
   grid.style.display = "flex";
   grid.style.flexDirection = "column";
-  grid.style.gap = "20px";
+  grid.style.gridTemplateColumns = "";
+  grid.style.gap = "32px";
+  grid.style.padding = "";
   grid.innerHTML = "";
 
   const allBlocks = loadTimeBlocks();
@@ -713,51 +820,97 @@ function renderAgendaView(grid, canvasHeader, tasks) {
 
   if (!sortedDates.length) {
     grid.innerHTML = `
-      <div class="empty-state">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" style="margin-bottom:12px; opacity:0.8;"><path d="M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
-        <h3>No upcoming milestones or focus blocks</h3>
-        <p>Schedule your upcoming goals, projects, and focus blocks in the planner to see your milestone horizon here.</p>
+      <div class="cal-agenda-empty-state">
+        <div class="cal-agenda-empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+        </div>
+        <h3 class="cal-agenda-empty-title">Horizon is completely clear</h3>
+        <p class="cal-agenda-empty-desc">No upcoming milestones, tasks, or deep work focus blocks scheduled in your calendar.</p>
+        <button type="button" class="cal-agenda-btn-secondary" onclick="openNewEventModal()" style="margin-top: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Schedule New Event</span>
+        </button>
       </div>
     `;
     return;
   }
 
+  const totalTasksCount = tasks.length;
+  const totalBlocksCount = allBlocks.length;
+
+  let agendaHTML = `
+    <div class="cal-agenda-container">
+      <div class="cal-agenda-header">
+        <div class="cal-agenda-header-left">
+          <h2 class="cal-agenda-title">Agenda & Milestone Horizon</h2>
+          <p class="cal-agenda-subtitle">${sortedDates.length} scheduled ${sortedDates.length === 1 ? 'day' : 'days'} · ${totalTasksCount} tasks · ${totalBlocksCount} focus blocks</p>
+        </div>
+        <div class="cal-agenda-header-actions">
+          <button type="button" class="cal-agenda-btn-secondary" onclick="openNewEventModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Add Event</span>
+          </button>
+          <button type="button" class="cal-agenda-btn-secondary" onclick="promptCreateTimeBlock('')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>+ Focus Block</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="cal-agenda-timeline">
+  `;
+
   sortedDates.forEach(dateStr => {
     const isToday = dateStr === todayIso;
     const isPast = dateStr < todayIso;
     const dateObj = new Date(dateStr + "T00:00:00");
-    const formatted = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
     const { tasks: dayTasks, blocks: dayBlocks } = dateMap[dateStr];
     const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked yet") : "Mark complete";
     const relativeBadge = getRelativeDateLabel(dateStr);
 
-    let groupHTML = `
-      <div class="cal-agenda-group">
-        <div class="cal-agenda-date-header">
-          <span style="display:flex; align-items:center; gap:8px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            ${formatted}
-          </span>
-          ${relativeBadge}
+    agendaHTML += `
+      <div class="cal-agenda-group ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''}">
+        <div class="cal-agenda-group-header">
+          <div class="cal-agenda-date-badge">
+            <span class="cal-agenda-day-num">${String(dateObj.getDate()).padStart(2, '0')}</span>
+            <div class="cal-agenda-date-meta">
+              <span class="cal-agenda-day-name">${dateObj.toLocaleDateString(undefined, { weekday: 'long' })}</span>
+              <span class="cal-agenda-month-year">${dateObj.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</span>
+            </div>
+          </div>
+          <div class="cal-agenda-header-pills">
+            ${relativeBadge}
+            <span class="cal-agenda-item-count">${dayTasks.length} ${dayTasks.length === 1 ? 'task' : 'tasks'}${dayBlocks.length ? ` · ${dayBlocks.length} block${dayBlocks.length > 1 ? 's' : ''}` : ''}</span>
+          </div>
+          <div class="cal-agenda-header-line"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
+
+        <div class="cal-agenda-items-list">
           ${dayBlocks.map(b => `
-            <div class="cal-agenda-card" style="border-left:4px solid ${b.color || 'var(--accent)'}; background:rgba(56, 189, 248, 0.04);">
-              <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                <div style="width:36px; height:36px; border-radius:8px; background:rgba(56, 189, 248, 0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
+              <div class="cal-agenda-block-left">
+                <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
-                <div style="min-width:0; flex:1;">
-                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <strong style="color:var(--text); font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(b.taskTitle)}</strong>
-                    <span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.68rem; font-weight:700;">DEEP WORK</span>
+                <div class="cal-agenda-block-info">
+                  <div class="cal-agenda-block-title-row">
+                    <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
+                    <span class="cal-agenda-deepwork-badge">DEEP WORK</span>
                   </div>
-                  <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m duration)</div>
+                  <div class="cal-agenda-block-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
+                    <span class="cal-agenda-duration-dot">•</span>
+                    <span>${b.durationMinutes}m duration</span>
+                  </div>
                 </div>
               </div>
-              <button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:6px 14px; font-size:0.78rem; background:var(--accent); color:#05070a; font-weight:800; border:none; display:inline-flex; align-items:center; gap:6px; flex-shrink:0; box-shadow:0 2px 10px rgba(56,189,248,0.3);">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Launch Focus
-              </button>
+              <div class="cal-agenda-block-right">
+                <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Launch Focus</span>
+                </button>
+              </div>
             </div>
           `).join('')}
 
@@ -770,40 +923,78 @@ function renderAgendaView(grid, canvasHeader, tasks) {
             const subDone = subtasks.filter(s => s.completed).length;
 
             return `
-              <div class="cal-agenda-card" style="border-left:4px solid ${cal.color}; ${!isToday ? 'opacity:0.9;' : ''}">
-                <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                  <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
-                  <div style="min-width:0; flex:1;">
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                      <span style="font-size:0.92rem; font-weight:600; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
-                      <span class="badge" style="background:${cal.color}18; color:${cal.color}; font-size:0.7rem;">${escapeHTML(cal.name)}</span>
-                      ${proj ? `<span class="badge" style="background:rgba(255,255,255,0.06); color:var(--text); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${escapeHTML(proj.name)}</span>` : ''}
-                      ${goal ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>${escapeHTML(goal.title)}</span>` : ''}
-                      ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem; display:inline-flex; align-items:center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Daily Habit</span>` : ''}
+              <div class="cal-agenda-card" style="border-left: 4px solid ${cal.color}; ${!isToday ? 'opacity:0.92;' : ''}">
+                <div class="cal-agenda-card-left">
+                  <input type="checkbox" class="cal-agenda-checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
+                  <div class="cal-agenda-card-body">
+                    <div class="cal-agenda-card-title-row">
+                      <span class="cal-agenda-task-title ${isDone ? 'is-done' : ''}">${escapeHTML(t.title)}</span>
                     </div>
-                    ${subtasks.length > 0 ? `
-                      <div style="font-size:0.72rem; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:6px;">
-                        <span style="display:inline-flex; align-items:center; gap:4px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>${subDone}/${subtasks.length} Sub-steps</span>
-                        <div style="width:50px; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-                          <div style="width:${Math.round((subDone/subtasks.length)*100)}%; height:100%; background:${cal.color};"></div>
+                    <div class="cal-agenda-tags-row">
+                      <span class="cal-agenda-pill" style="background:${cal.color}18; color:${cal.color}; border:1px solid ${cal.color}30;">
+                        <span class="cal-color-dot" style="background:${cal.color}; width:6px; height:6px; margin-right:4px;"></span>
+                        ${escapeHTML(cal.name)}
+                      </span>
+                      ${proj ? `
+                        <span class="cal-agenda-pill cal-pill-project">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                          ${escapeHTML(proj.name)}
+                        </span>
+                      ` : ''}
+                      ${goal ? `
+                        <span class="cal-agenda-pill cal-pill-goal">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                          ${escapeHTML(goal.title)}
+                        </span>
+                      ` : ''}
+                      ${t.isDaily ? `
+                        <span class="cal-agenda-pill cal-pill-habit">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                          Daily Habit
+                        </span>
+                      ` : ''}
+                      ${subtasks.length > 0 ? `
+                        <div class="cal-agenda-subtasks-progress">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                          <span>${subDone}/${subtasks.length} Sub-steps</span>
+                          <div class="cal-agenda-subtasks-track">
+                            <div class="cal-agenda-subtasks-fill" style="width:${Math.round((subDone/subtasks.length)*100)}%; background:${cal.color};"></div>
+                          </div>
                         </div>
-                      </div>
-                    ` : ''}
+                      ` : ''}
+                    </div>
                   </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
-                  <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" style="font-size:0.68rem; padding:2px 8px;">${(t.priority || 'MED').toUpperCase()}</span>
-                  <button type="button" class="secondary" onclick="promptCreateTimeBlock('${t.id}')" style="padding:4px 8px; font-size:0.72rem; display:inline-flex; align-items:center; gap:4px;" title="Schedule Deep Work Block">+ Block</button>
+                <div class="cal-agenda-card-right">
+                  <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}">${(t.priority || 'MED').toUpperCase()}</span>
+                  ${!isPast ? `
+                    <button type="button" class="cal-agenda-icon-btn" onclick="promptCreateTimeBlock('${t.id}')" title="Schedule Deep Work Block">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>+ Block</span>
+                    </button>
+                    <button type="button" class="cal-agenda-del-btn" onclick="deleteTask('${t.id}')" title="Delete Task">✕</button>
+                  ` : ''}
                 </div>
               </div>
             `;
           }).join('')}
+
+          ${!isPast ? `
+            <div class="cal-agenda-quick-add-wrap">
+              <input type="text" class="cal-agenda-quick-add-input" placeholder="+ Add a task for this day (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+            </div>
+          ` : ''}
         </div>
       </div>
     `;
-
-    grid.innerHTML += groupHTML;
   });
+
+  agendaHTML += `
+      </div>
+    </div>
+  `;
+
+  grid.innerHTML = agendaHTML;
 }
 
 /* Mobile Touch Gesture Support for Calendar */
