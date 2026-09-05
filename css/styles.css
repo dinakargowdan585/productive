@@ -485,6 +485,63 @@ select option {
   color: #1D1D1F;
 }
 
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+/* File Inputs & Browser File Selector Buttons */
+input[type="file"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--os-border) !important;
+  border-radius: var(--os-radius-sm);
+  color: var(--os-text) !important;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--os-text) !important;
+  border: 1px solid var(--os-border) !important;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+input[type="file"]::file-selector-button:hover,
+input[type="file"]::-webkit-file-upload-button:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: var(--os-border-hover) !important;
+}
+
+[data-theme="light"] input[type="file"] {
+  background: #FFFFFF !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: var(--os-text) !important;
+}
+
+[data-theme="light"] input[type="file"]::file-selector-button,
+[data-theme="light"] input[type="file"]::-webkit-file-upload-button {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: var(--os-text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
 /* Apple-Style Compact Checkboxes */
 input[type="checkbox"] {
   appearance: none;
