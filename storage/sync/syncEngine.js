@@ -128,6 +128,13 @@ const SyncEngine = {
       popoverLastSync.textContent = this.lastSyncedAt ? new Date(this.lastSyncedAt).toLocaleTimeString() : "Never";
     }
 
+    const modalLastSync = document.getElementById("authLastSyncDisplay");
+    if (modalLastSync) {
+      modalLastSync.textContent = this.lastSyncedAt
+        ? `Last synced ${new Date(this.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        : "Last synced just now";
+    }
+
     if (!dot || !label) return;
 
     if (!navigator.onLine) {

@@ -1232,28 +1232,34 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- Supabase Cloud Authentication & Settings Modal (VisionOS Architecture) -->
-<dialog id="supabaseAuthModal" class="apple-glass-modal">
-  <div class="auth-modal-card">
-    <div class="auth-modal-header">
-      <div class="auth-header-top">
-        <div class="auth-brand-row">
-          <div class="auth-icon-pod">
-            <img src="assets/icon-192.png" class="auth-brand-logo" alt="Productive OS">
-          </div>
-          <div class="auth-brand-copy">
-            <span class="auth-eyebrow">Productive Cloud</span>
-            <h2 class="auth-title" id="authModalTitle">Welcome Back</h2>
-          </div>
+<!-- Supabase Cloud Authentication & Settings Modal (Apple Native Dialog) -->
+<dialog id="supabaseAuthModal" class="apple-glass-modal cloud-account-dialog">
+  <div class="cloud-modal-wrapper">
+    <!-- Header: [small cloud icon] Productive Cloud       × -->
+    <div class="cloud-modal-header">
+      <div class="cloud-brand-pill">
+        <div class="cloud-brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
         </div>
-        <button type="button" class="auth-close-btn" onclick="closeSupabaseAuthModal()" aria-label="Close Authentication Modal">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+        <span class="cloud-brand-title">Productive Cloud</span>
       </div>
-      <p class="auth-subtitle" id="authModalSubtitle">Sign in to sync your notes, tasks, time blocks & projects in real-time across all your devices.</p>
+      <button type="button" class="cloud-close-btn" onclick="closeSupabaseAuthModal()" aria-label="Close Authentication Modal">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- Mode Toggle (Sign In / Create Account / 6-Digit OTP) -->
+    <!-- Title & Subtitle -->
+    <div class="cloud-title-block">
+      <h2 class="cloud-title" id="authModalTitle">Supabase Cloud Account</h2>
+      <p class="cloud-subtitle" id="authModalSubtitle">Your workspace is securely connected and syncing in real time.</p>
+    </div>
+
+    <!-- Mode Toggle (Sign In / Create Account / 6-Digit OTP) - Visible when NOT logged in -->
     <div class="auth-mode-toggle" id="authModeToggle">
       <button type="button" id="btnModeLogin" class="active" onclick="switchAuthMode('login')">Sign In</button>
       <button type="button" id="btnModeSignup" onclick="switchAuthMode('signup')">Create Account</button>
@@ -1262,56 +1268,53 @@ if ('serviceWorker' in navigator) {
 
     <!-- Error Banner -->
     <div id="authErrorBanner" class="auth-error-banner" style="display:none;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span id="authErrorMessage"></span>
     </div>
 
-    <!-- 1. Password / Signup / OTP Request Form -->
+    <!-- 1. Form (Sign in / Sign up / OTP request) -->
     <form id="authPasswordForm" class="auth-form" onsubmit="handleAuthFormSubmit(event)">
-      <div class="auth-input-group">
-        <label for="authEmailInput">Email Address</label>
-        <div class="auth-input-wrapper">
-          <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <div class="field-group">
+        <label class="field-label" for="authEmailInput">Email Address</label>
+        <div class="cloud-input-wrapper">
+          <svg class="cloud-field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           <input type="email" id="authEmailInput" placeholder="name@example.com" required autocomplete="email">
         </div>
       </div>
 
-      <div class="auth-input-group" id="authPasswordGroup">
-        <div class="auth-label-row">
-          <label for="authPasswordInput">Password</label>
+      <div class="field-group" id="authPasswordGroup">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label class="field-label" for="authPasswordInput" style="margin-bottom:0;">Password</label>
           <button type="button" class="auth-forgot-link" id="authForgotBtn" onclick="handleForgotPassword(event)">Forgot password?</button>
         </div>
-        <div class="auth-input-wrapper">
-          <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="cloud-input-wrapper">
+          <svg class="cloud-field-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <input type="password" id="authPasswordInput" placeholder="Enter your password" autocomplete="current-password">
           <button type="button" class="auth-password-toggle" onclick="togglePasswordVisibility('authPasswordInput', this)" aria-label="Toggle password visibility">
-            <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             <span class="toggle-text">Show</span>
           </button>
         </div>
       </div>
 
-      <!-- Remember Me Checkbox -->
       <div class="auth-remember-row" id="authRememberRow">
-        <label class="auth-remember-label">
+        <label class="checkbox-field" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:0.84rem; color:var(--os-text-secondary);">
           <input type="checkbox" id="authRememberCheckbox" checked>
           <span>Keep me signed in on this device</span>
         </label>
       </div>
 
-      <button type="submit" id="authSubmitBtn" class="auth-submit-btn">
+      <button type="submit" id="authSubmitBtn" class="cloud-primary-btn">
         <span id="authSubmitBtnText">Sign In</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </button>
     </form>
 
     <!-- Social Auth Actions -->
     <div id="authSocialSection" class="auth-social-section">
-      <div class="auth-divider" id="authDivider">
-        <span>OR CONTINUE WITH</span>
+      <div class="cloud-divider" id="authDivider">
+        <span>OR</span>
       </div>
 
-      <button type="button" class="auth-google-btn" id="authGoogleBtn" onclick="executeGoogleAuth(event)">
+      <button type="button" class="cloud-google-btn" id="authGoogleBtn" onclick="executeGoogleAuth(event)">
         <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12 0 14.5s.7 4.8 1.9 7.2l3.7-2.9z"/><path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"/></svg>
         <span>Sign in with Google</span>
       </button>
@@ -1323,62 +1326,84 @@ if ('serviceWorker' in navigator) {
         We sent a 6-digit verification code to <strong id="otpTargetEmail">you@example.com</strong>.
       </div>
 
-      <div class="auth-input-group">
-        <label for="authOtpInput">6-Digit Verification Code</label>
-        <input type="text" id="authOtpInput" class="auth-otp-field" placeholder="123456" maxlength="6">
+      <div class="field-group" style="margin-top:12px;">
+        <label class="field-label" for="authOtpInput">6-Digit Verification Code</label>
+        <input type="text" id="authOtpInput" class="auth-otp-field" placeholder="123456" maxlength="6" style="text-align:center; font-size:1.2rem; letter-spacing:4px; font-weight:600;">
       </div>
 
-      <div class="auth-otp-actions">
-        <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtp(event)" class="auth-submit-btn" style="flex:2;">Verify Code</button>
-        <button type="button" class="auth-resend-btn" onclick="handleResendOtp(event)" style="flex:1;">Resend</button>
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button type="button" id="btnVerifyOtp" onclick="handleVerifyOtp(event)" class="cloud-primary-btn" style="flex:2;">Verify Code</button>
+        <button type="button" class="btn-apple-secondary" onclick="handleResendOtp(event)" style="flex:1;">Resend</button>
       </div>
 
-      <div class="auth-otp-back">
+      <div style="text-align:center; margin-top:12px;">
         <button type="button" class="auth-text-link" onclick="switchAuthMode('otp')">← Change Email Address</button>
       </div>
     </div>
 
     <!-- 3. Step 3: Logged In Account Dashboard Card -->
-    <div id="authStepLoggedIn" class="auth-step-logged-in" style="display:none;">
-      <div class="auth-user-card">
-        <div id="loggedInUserAvatar" class="auth-user-avatar">U</div>
-        <div class="auth-user-info">
-          <div class="auth-user-tag">Connected</div>
-          <div id="loggedInUserEmail" class="auth-user-email">user@example.com</div>
-          <div class="auth-user-status">
-            <span>PostgreSQL Cloud • Real-time Sync Active</span>
+    <div id="authStepLoggedIn" class="cloud-logged-in-container" style="display:none;">
+      <!-- Connection Status Card -->
+      <div class="cloud-status-card">
+        <div class="cloud-status-header-row">
+          <div class="cloud-status-badge">
+            <span class="status-dot-active"></span>
+            <span class="status-state-label" id="authConnectionState">Connected</span>
           </div>
+          <div class="cloud-email-pill" id="loggedInUserEmail">user@example.com</div>
+        </div>
+        
+        <div class="cloud-status-details-row">
+          <div class="cloud-engine-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+            <span>PostgreSQL Cloud · Real-time Sync</span>
+          </div>
+          <div class="cloud-last-sync-label" id="authLastSyncDisplay">Last synced just now</div>
         </div>
       </div>
 
-      <div class="auth-logged-in-actions">
-        <button type="button" class="auth-submit-btn" onclick="handleManualSync()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>
-          <span>Sync Cloud Data Now</span>
-        </button>
-        <button type="button" class="auth-signout-btn" onclick="handleSignOut()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-          <span>Sign Out</span>
-        </button>
-      </div>
+      <!-- Primary Action: Sync Cloud Data Now -->
+      <button type="button" class="cloud-primary-sync-btn" onclick="handleManualSync()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+        </svg>
+        <span>Sync Cloud Data Now</span>
+      </button>
     </div>
 
-    <!-- Custom Supabase Credentials Configuration -->
-    <div class="auth-custom-creds">
-      <details>
-        <summary>
-          <span style="display:flex; align-items:center; gap:8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Custom Supabase Credentials
+    <!-- Custom Supabase Credentials Disclosure -->
+    <div class="cloud-custom-creds-wrap">
+      <details class="cloud-creds-details">
+        <summary class="cloud-creds-summary">
+          <span class="cloud-creds-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Custom Supabase Credentials</span>
           </span>
-          <svg class="auth-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg class="cloud-creds-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </summary>
-        <div class="auth-custom-body">
-          <input type="text" id="cfgSupabaseUrl" placeholder="SUPABASE_URL (https://xyz.supabase.co)">
-          <input type="text" id="cfgSupabaseKey" placeholder="SUPABASE_ANON_KEY (public key)">
-          <button type="button" class="auth-save-creds-btn" onclick="saveCustomCredentialsFromModal()">Save Credentials</button>
+        <div class="cloud-creds-body">
+          <div class="field-group">
+            <label class="field-label" for="cfgSupabaseUrl">Project URL</label>
+            <input type="text" id="cfgSupabaseUrl" placeholder="https://xyz.supabase.co">
+          </div>
+          <div class="field-group" style="margin-top:10px;">
+            <label class="field-label" for="cfgSupabaseKey">Anon Public Key</label>
+            <input type="text" id="cfgSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+          </div>
+          <button type="button" class="cloud-save-creds-btn" onclick="saveCustomCredentialsFromModal()">
+            Save Credentials
+          </button>
         </div>
       </details>
+    </div>
+
+    <!-- Sign Out Footer (Restrained Destructive) -->
+    <div id="authSignOutSection" class="cloud-signout-section" style="display:none;">
+      <div class="cloud-modal-divider"></div>
+      <button type="button" class="cloud-signout-btn" onclick="handleSignOut()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Sign Out</span>
+      </button>
     </div>
   </div>
 </dialog>

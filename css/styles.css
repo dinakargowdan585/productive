@@ -2939,6 +2939,496 @@ dialog::backdrop {
 }
 
 /* ===================================================================
+   SUPABASE CLOUD ACCOUNT MODAL (Apple Operating System Aesthetic)
+   =================================================================== */
+
+.cloud-account-dialog {
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  border-radius: 24px !important;
+  padding: 26px 28px !important;
+  background: var(--os-surface-elevated) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border: 1px solid var(--os-border) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  color: var(--os-text);
+  box-sizing: border-box;
+}
+
+.cloud-modal-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cloud-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cloud-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloud-brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: rgba(10, 132, 255, 0.12);
+  border: 1px solid rgba(10, 132, 255, 0.22);
+  color: var(--os-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cloud-brand-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--os-text-secondary);
+  letter-spacing: -0.01em;
+}
+
+.cloud-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--os-border) !important;
+  color: var(--os-text-secondary) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 !important;
+  box-shadow: none !important;
+  transition: all 160ms ease;
+  flex-shrink: 0;
+}
+
+.cloud-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: var(--os-text) !important;
+  border-color: var(--os-border-hover) !important;
+}
+
+.cloud-title-block {
+  margin-top: -2px;
+}
+
+.cloud-title {
+  font-size: 1.5rem !important; /* ~24px */
+  font-weight: 600 !important;
+  letter-spacing: -0.02em;
+  color: var(--os-text) !important;
+  margin: 0 0 6px 0 !important;
+  line-height: 1.25;
+}
+
+.cloud-subtitle {
+  font-size: 0.86rem !important; /* ~13.8px */
+  color: var(--os-text-secondary) !important;
+  line-height: 1.45;
+  margin: 0 !important;
+  font-weight: 400;
+}
+
+/* Connection Status Card */
+.cloud-status-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--os-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cloud-status-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cloud-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.status-dot-active {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #30D158;
+  box-shadow: 0 0 8px rgba(48, 209, 88, 0.5);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-state-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #30D158;
+}
+
+.cloud-email-pill {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--os-text);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: var(--os-radius-pill);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-status-details-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+}
+
+.cloud-engine-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--os-text-secondary);
+}
+
+.cloud-last-sync-label {
+  font-size: 0.76rem;
+  color: var(--os-text-tertiary);
+  font-family: var(--font-code);
+}
+
+/* Primary Action & Sync Buttons */
+.cloud-primary-sync-btn,
+.cloud-primary-btn {
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 12px !important;
+  background: var(--os-accent) !important;
+  color: #FFFFFF !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.28) !important;
+  transition: all 160ms ease !important;
+  cursor: pointer !important;
+  margin-top: 2px;
+}
+
+.cloud-primary-sync-btn:hover,
+.cloud-primary-btn:hover {
+  background: #0071E3 !important;
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.cloud-primary-sync-btn:active,
+.cloud-primary-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Custom Supabase Credentials */
+.cloud-custom-creds-wrap {
+  margin-top: 2px;
+}
+
+.cloud-creds-details {
+  border: 1px solid var(--os-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.cloud-creds-summary {
+  list-style: none !important;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--os-text-secondary);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.cloud-creds-summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.cloud-creds-summary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--os-text);
+}
+
+.cloud-creds-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloud-creds-chevron {
+  color: var(--os-text-tertiary);
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+
+.cloud-creds-details[open] .cloud-creds-chevron {
+  transform: rotate(90deg);
+}
+
+.cloud-creds-body {
+  padding: 14px;
+  border-top: 1px solid var(--os-border);
+  background: rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cloud-save-creds-btn {
+  margin-top: 6px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--os-border) !important;
+  color: var(--os-text) !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: all 160ms ease;
+  width: 100%;
+}
+
+.cloud-save-creds-btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: var(--os-border-hover) !important;
+}
+
+/* Sign Out Section (Restrained Destructive) */
+.cloud-signout-section {
+  margin-top: 2px;
+}
+
+.cloud-modal-divider {
+  height: 1px;
+  background: var(--os-border);
+  margin-bottom: 12px;
+}
+
+.cloud-signout-btn {
+  width: 100% !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 69, 58, 0.08) !important;
+  color: #FF453A !important;
+  border: 1px solid rgba(255, 69, 58, 0.22) !important;
+  font-size: 0.86rem !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 160ms ease !important;
+  box-shadow: none !important;
+}
+
+.cloud-signout-btn:hover {
+  background: rgba(255, 69, 58, 0.16) !important;
+  border-color: rgba(255, 69, 58, 0.45) !important;
+}
+
+/* Auth Mode Toggle & Social Login (For Login / Signup / OTP) */
+.auth-mode-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--os-border);
+  border-radius: 10px;
+  padding: 3px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+}
+
+.auth-mode-toggle button {
+  background: transparent !important;
+  border: none !important;
+  color: var(--os-text-secondary) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding: 6px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: all 140ms ease !important;
+}
+
+.auth-mode-toggle button:hover {
+  color: var(--os-text) !important;
+}
+
+.auth-mode-toggle button.active {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.cloud-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cloud-field-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--os-text-tertiary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cloud-input-wrapper input {
+  padding-left: 36px !important;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 10px;
+  background: transparent !important;
+  border: none !important;
+  color: var(--os-text-tertiary) !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  padding: 4px 6px !important;
+  box-shadow: none !important;
+}
+
+.auth-password-toggle:hover {
+  color: var(--os-text) !important;
+}
+
+.auth-forgot-link {
+  background: transparent !important;
+  border: none !important;
+  color: var(--os-accent) !important;
+  font-size: 0.78rem !important;
+  cursor: pointer;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.auth-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.auth-error-banner {
+  background: rgba(255, 69, 58, 0.12);
+  border: 1px solid rgba(255, 69, 58, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #FF453A;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cloud-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--os-text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 6px 0;
+}
+
+.cloud-divider::before,
+.cloud-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--os-border);
+}
+
+.cloud-divider::before { margin-right: 10px; }
+.cloud-divider::after { margin-left: 10px; }
+
+.cloud-google-btn {
+  width: 100% !important;
+  height: 42px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--os-border) !important;
+  color: var(--os-text) !important;
+  font-size: 0.86rem !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  transition: all 160ms ease !important;
+  box-shadow: none !important;
+}
+
+.cloud-google-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: var(--os-border-hover) !important;
+}
+
+.auth-otp-info-card {
+  background: rgba(10, 132, 255, 0.08);
+  border: 1px solid rgba(10, 132, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.84rem;
+  color: var(--os-text-secondary);
+}
+
+.auth-otp-info-card strong {
+  color: var(--os-text);
+}
+
+.auth-text-link {
+  background: transparent !important;
+  border: none !important;
+  color: var(--os-text-secondary) !important;
+  font-size: 0.8rem !important;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.auth-text-link:hover {
+  color: var(--os-text) !important;
+}
+
+/* ===================================================================
    13. RESPONSIVE DESIGN & ADAPTIVE LAYOUTS
    =================================================================== */
 

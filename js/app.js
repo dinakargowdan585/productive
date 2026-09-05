@@ -223,6 +223,26 @@ function updateAuthUI(user) {
     if (greetingText && username) {
       greetingText.textContent = `Welcome back, ${username.charAt(0).toUpperCase() + username.slice(1)}`;
     }
+
+    const connStateEl = document.getElementById("authConnectionState");
+    if (connStateEl) connStateEl.textContent = "Connected";
+
+    const lastSyncEl = document.getElementById("authLastSyncDisplay");
+    if (lastSyncEl) {
+      const lastSync = (typeof SyncEngine !== "undefined" && SyncEngine.lastSyncedAt)
+        ? SyncEngine.lastSyncedAt
+        : (typeof localStorage !== "undefined" ? localStorage.getItem("productive_last_sync") : null);
+      if (lastSync) {
+        try {
+          const d = new Date(lastSync);
+          lastSyncEl.textContent = `Last synced ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        } catch (e) {
+          lastSyncEl.textContent = "Last synced just now";
+        }
+      } else {
+        lastSyncEl.textContent = "Last synced just now";
+      }
+    }
   } else {
     if (emailEl) emailEl.textContent = "Guest (Local)";
     if (authBtn) {
@@ -239,6 +259,12 @@ function updateAuthUI(user) {
       headerBadge.style.display = "inline-flex";
       headerBadge.title = "Operating in local storage mode. Click to connect cloud.";
     }
+
+    const connStateEl = document.getElementById("authConnectionState");
+    if (connStateEl) connStateEl.textContent = "Disconnected";
+
+    const lastSyncEl = document.getElementById("authLastSyncDisplay");
+    if (lastSyncEl) lastSyncEl.textContent = "Local Mode";
   }
 }
 
@@ -277,6 +303,9 @@ function switchAuthMode(mode) {
   const divider = document.getElementById("authDivider");
   const googleBtn = document.getElementById("authGoogleBtn");
   const socialSection = document.getElementById("authSocialSection");
+
+  const signOutSec = document.getElementById("authSignOutSection");
+  if (signOutSec) signOutSec.style.display = "none";
 
   if (stepLoggedIn) stepLoggedIn.style.display = "none";
   if (stepOtp) stepOtp.style.display = "none";
@@ -372,6 +401,7 @@ async function openSupabaseAuthModal() {
   const socialSection = document.getElementById("authSocialSection");
   const title = document.getElementById("authModalTitle");
   const subtitle = document.getElementById("authModalSubtitle");
+  const signOutSec = document.getElementById("authSignOutSection");
 
   if (user && user.email) {
     if (stepLoggedIn) stepLoggedIn.style.display = "flex";
@@ -379,11 +409,13 @@ async function openSupabaseAuthModal() {
     if (socialSection) socialSection.style.display = "none";
     if (stepOtp) stepOtp.style.display = "none";
     if (modeToggle) modeToggle.style.display = "none";
+    if (signOutSec) signOutSec.style.display = "block";
     if (title) title.textContent = "Supabase Cloud Account";
-    if (subtitle) subtitle.textContent = "Your workspace is securely connected and actively synced to PostgreSQL Cloud.";
+    if (subtitle) subtitle.textContent = "Your workspace is securely connected and syncing in real time.";
     updateAuthUI(user);
   } else {
     if (stepLoggedIn) stepLoggedIn.style.display = "none";
+    if (signOutSec) signOutSec.style.display = "none";
     if (modeToggle) modeToggle.style.display = "grid";
     if (socialSection) socialSection.style.display = "flex";
     switchAuthMode(currentAuthMode || "login");
