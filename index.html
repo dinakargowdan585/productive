@@ -494,15 +494,15 @@ if ('serviceWorker' in navigator) {
         <!-- Top Calendar Navigation & Control Toolbar -->
         <div class="cal-toolbar">
           <div class="cal-toolbar-group">
-            <button type="button" class="secondary" onclick="prevMonth()" aria-label="Previous Month" style="padding:6px 12px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            <button type="button" class="cal-nav-btn" onclick="prevMonth()" aria-label="Previous Month">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button type="button" class="secondary" onclick="todayMonth()" style="padding:6px 14px; font-weight:700;">Today</button>
-            <button type="button" class="secondary" onclick="nextMonth()" aria-label="Next Month" style="padding:6px 12px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            <button type="button" class="cal-today-btn" onclick="todayMonth()">Today</button>
+            <button type="button" class="cal-nav-btn" onclick="nextMonth()" aria-label="Next Month">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <h2 id="calendarMonthTitle" style="margin:0 0 0 12px; font-size:1.3rem; font-weight:800; letter-spacing:-0.5px;">August 2026</h2>
+            <h2 id="calendarMonthTitle" class="cal-month-heading">September 2026</h2>
           </div>
 
           <!-- View Mode Switcher -->
@@ -515,12 +515,12 @@ if ('serviceWorker' in navigator) {
 
           <!-- Action Controls & Search -->
           <div class="cal-toolbar-group">
-            <div style="position:relative;">
-              <input type="text" id="calSearchInput" placeholder="Search events..." oninput="renderCalendar()" style="padding:6px 12px 6px 30px; font-size:0.82rem; width:150px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.5;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <div class="cal-search-wrapper">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cal-search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="calSearchInput" placeholder="Search events..." oninput="renderCalendar()" class="cal-search-input">
             </div>
             
-            <select id="calCategoryFilter" onchange="renderCalendar()" style="width:auto; font-size:0.82rem; padding:6px 10px;">
+            <select id="calCategoryFilter" onchange="renderCalendar()" class="cal-category-select">
               <option value="ALL">All Categories</option>
               <option value="work">Work</option>
               <option value="personal">Personal</option>
@@ -529,44 +529,45 @@ if ('serviceWorker' in navigator) {
               <option value="habits">Habits</option>
             </select>
 
-            <button type="button" onclick="openNewEventModal()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Event
+            <button type="button" class="cal-new-event-btn" onclick="openNewEventModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>New Event</span>
             </button>
           </div>
         </div>
 
-        <!-- Main Desktop Grid Layout (Sidebar + Calendar Canvas) -->
+        <!-- Main Desktop Grid Layout (Sidebar + Calendar Canvas + Day Detail Panel) -->
         <div class="cal-main-layout">
           <!-- Left Sticky Sidebar -->
           <aside class="cal-sidebar">
             <!-- Mini Month Calendar Picker -->
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span id="miniCalTitle" style="font-weight:700; font-size:0.85rem; font-family:var(--font-code);">AUG 2026</span>
-                <div style="display:flex; gap:4px;">
-                  <button type="button" class="secondary" onclick="prevMiniMonth()" style="padding:2px 6px; font-size:0.7rem;">◀</button>
-                  <button type="button" class="secondary" onclick="nextMiniMonth()" style="padding:2px 6px; font-size:0.7rem;">▶</button>
+            <div class="cal-sidebar-section">
+              <div class="cal-mini-header">
+                <span id="miniCalTitle" class="cal-mini-title">SEP 2026</span>
+                <div class="cal-mini-nav">
+                  <button type="button" class="cal-mini-nav-btn" onclick="prevMiniMonth()" aria-label="Previous Month">◀</button>
+                  <button type="button" class="cal-mini-nav-btn" onclick="nextMiniMonth()" aria-label="Next Month">▶</button>
                 </div>
               </div>
               <div id="miniCalGrid" class="mini-cal-grid"></div>
             </div>
 
-            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+            <div class="cal-sidebar-divider"></div>
 
             <!-- Quick Add Natural Language Event Input -->
-            <div>
-              <label style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:6px;">QUICK ADD (NATURAL LANGUAGE)</label>
+            <div class="cal-sidebar-section">
+              <label class="cal-sidebar-label" for="nlEventInput">QUICK ADD (NATURAL LANGUAGE)</label>
               <form onsubmit="event.preventDefault(); handleNaturalLanguageAdd();">
-                <input type="text" id="nlEventInput" placeholder="e.g. Exam tomorrow 10 AM" style="font-size:0.8rem; padding:6px 10px; width:100%;">
+                <input type="text" id="nlEventInput" placeholder="e.g. Exam tomorrow 10 AM" class="cal-quick-add-input">
               </form>
             </div>
 
-            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+            <div class="cal-sidebar-divider"></div>
 
             <!-- Calendars & Category Visibility Toggles -->
-            <div>
-              <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:8px;">MY CALENDARS</span>
-              <div style="display:flex; flex-direction:column; gap:4px;">
+            <div class="cal-sidebar-section">
+              <span class="cal-sidebar-label">MY CALENDARS</span>
+              <div class="cal-categories-list">
                 <label class="cal-category-item" onclick="toggleCalCategory('work')">
                   <span><span class="cal-color-dot" style="background:var(--os-indigo);"></span> Work</span>
                   <input type="checkbox" checked onchange="toggleCalCategory('work', this.checked)">
@@ -590,12 +591,12 @@ if ('serviceWorker' in navigator) {
               </div>
             </div>
 
-            <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+            <div class="cal-sidebar-divider"></div>
 
             <!-- Upcoming Schedule Sidebar Feed -->
-            <div>
-              <span style="font-size:0.75rem; font-weight:700; color:var(--muted); display:block; margin-bottom:8px;">UPCOMING SCHEDULE</span>
-              <div id="sidebarUpcomingEvents" style="display:flex; flex-direction:column; gap:6px;"></div>
+            <div class="cal-sidebar-section">
+              <span class="cal-sidebar-label">UPCOMING SCHEDULE</span>
+              <div id="sidebarUpcomingEvents" class="cal-upcoming-feed"></div>
             </div>
           </aside>
 
@@ -607,6 +608,9 @@ if ('serviceWorker' in navigator) {
             <!-- Calendar Content Container -->
             <div id="calendarGrid" class="cal-grid"></div>
           </section>
+
+          <!-- Apple Day Detail Panel (Floating/Side Sheet on Desktop, Bottom Sheet on Mobile) -->
+          <aside id="calDayDetailPanel" class="cal-day-detail-panel" style="display:none;"></aside>
         </div>
       </div>
     </main>

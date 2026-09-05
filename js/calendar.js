@@ -271,7 +271,7 @@ function renderMiniCalendar() {
 
   const dayHeaders = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
   dayHeaders.forEach(h => {
-    container.innerHTML += `<div style="font-weight:700; color:var(--muted); font-size:0.7rem;">${h}</div>`;
+    container.innerHTML += `<div class="mini-cal-header-day">${h}</div>`;
   });
 
   for (let i = 0; i < startingOffset; i++) {
@@ -286,7 +286,7 @@ function renderMiniCalendar() {
 
     container.innerHTML += `
       <div class="mini-cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
-        ${day}
+        <span>${day}</span>
       </div>
     `;
   }
@@ -298,13 +298,29 @@ function selectCalDate(dateStr) {
   calYear = parseInt(parts[0]);
   calMonth = parseInt(parts[1]) - 1;
   renderCalendar();
+  openCalDayDetail(dateStr);
+}
+
+function openCalDayDetail(dateStr) {
+  const panel = document.getElementById("calDayDetailPanel");
+  if (!panel) return;
+  const targetDate = dateStr || selectedCalDateStr || getIsoDateStr();
+  selectedCalDateStr = targetDate;
+  const tasks = loadTasks();
+  renderDayDetailPanel(panel, targetDate, tasks);
+  panel.style.display = "flex";
+  panel.classList.add("open");
   setTimeout(() => {
     const input = document.getElementById("calQuickAddInput");
-    if (input) {
-      input.focus();
-      input.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
+    if (input) input.focus();
   }, 60);
+}
+
+function closeCalDayDetail() {
+  const panel = document.getElementById("calDayDetailPanel");
+  if (!panel) return;
+  panel.classList.remove("open");
+  panel.style.display = "none";
 }
 
 function renderCalendarCategoryLegend() {
@@ -315,7 +331,7 @@ function renderCalendarCategoryLegend() {
     <div class="cal-category-item" onclick="filterCalCategory('${c.id}')">
       <span style="display:flex; align-items:center;">
         <span class="cal-color-dot" style="background:${c.color};"></span>
-        <span style="color:var(--text);">${escapeHTML(c.name)}</span>
+        <span style="color:var(--os-text);">${escapeHTML(c.name)}</span>
       </span>
     </div>
   `).join('');
@@ -325,33 +341,22 @@ function renderMonthView(grid, canvasHeader, tasks) {
   if (canvasHeader) {
     canvasHeader.style.display = "grid";
     canvasHeader.style.gridTemplateColumns = "repeat(7, 1fr)";
-    canvasHeader.style.gap = "8px";
     canvasHeader.innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(h => `
-      <div style="font-weight:700; font-size:0.75rem; color:var(--muted); text-align:center; font-family:var(--font-code); padding-bottom:4px;">${h}</div>
+      <div class="cal-canvas-header-cell">${h}</div>
     `).join('');
   }
 
   grid.style.display = "grid";
   grid.style.gridTemplateColumns = "repeat(7, 1fr)";
-  grid.style.gap = "8px";
   grid.innerHTML = "";
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const startingOffset = (firstDay + 6) % 7;
   const todayIso = getIsoDateStr();
-  const selectedDate = selectedCalDateStr || todayIso;
-
-  const [selY, selM, selD] = selectedDate.split("-").map(Number);
-  const isSelectedInMonth = (selY === calYear && selM === (calMonth + 1));
-  const selectedDayNum = isSelectedInMonth ? selD : null;
-  const selectedCol = selectedDayNum ? ((startingOffset + selectedDayNum - 1) % 7) : 0;
-  const selectedRow = selectedDayNum ? Math.floor((startingOffset + selectedDayNum - 1) / 7) : null;
-
-  let inspectorRendered = false;
 
   for (let i = 0; i < startingOffset; i++) {
-    grid.innerHTML += `<div class="cal-day-cell" style="opacity:0.3; background:transparent;"></div>`;
+    grid.innerHTML += `<div class="cal-day-cell other-month"></div>`;
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -360,44 +365,35 @@ function renderMonthView(grid, canvasHeader, tasks) {
     const isPast = curDateStr < todayIso;
     const isSelected = curDateStr === selectedCalDateStr;
     const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
-    const cellIndex = startingOffset + day - 1;
-    const isEndOfRow = (cellIndex % 7 === 6) || (day === daysInMonth);
-    const currentRow = Math.floor(cellIndex / 7);
 
     grid.innerHTML += `
       <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span class="cal-day-number">${day}</span>
-          ${isPast ? `<span style="display:inline-flex; align-items:center; opacity:0.6;" title="Past date (locked)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>` : (isToday ? `<span style="font-size:0.65rem; color:var(--accent); font-weight:800;">TODAY</span>` : '')}
-          ${dayTasks.length > 0 ? `<span style="font-size:0.7rem; color:var(--accent); font-weight:700;">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
+        <div class="cal-cell-header">
+          <span class="cal-day-number ${isToday ? 'today-pill' : ''}">${day}</span>
+          <div class="cal-cell-meta">
+            ${isToday ? `<span class="cal-today-badge">TODAY</span>` : ''}
+            ${dayTasks.length > 0 ? `<span class="cal-task-count-badge">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
+          </div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
-          ${dayTasks.slice(0, 3).map(t => {
+        <div class="cal-cell-events">
+          ${dayTasks.slice(0, 2).map(t => {
             const cal = getCalendarById(t.calendarId || t.category || "work");
             const isDone = isTaskCompletedOnDate(t, curDateStr);
             return `
-              <div class="cal-event-card" style="background:${cal.color}20; border-left-color:${cal.color}; color:var(--text); ${isPast ? 'opacity:0.75;' : ''}">
-                <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
+              <div class="cal-event-pill" style="border-left-color:${cal.color};">
+                <span class="${isDone ? 'is-done' : ''}">${escapeHTML(t.title)}</span>
               </div>
             `;
           }).join('')}
-          ${dayTasks.length > 3 ? `<span class="cal-more-btn">+${dayTasks.length - 3} more</span>` : ''}
+          ${dayTasks.length > 2 ? `<span class="cal-more-tag">+${dayTasks.length - 2} more</span>` : ''}
         </div>
       </div>
     `;
-
-    if (isSelectedInMonth && currentRow === selectedRow && isEndOfRow && !inspectorRendered) {
-      renderDayInspector(grid, selectedDate, tasks, selectedCol);
-      inspectorRendered = true;
-    }
-  }
-
-  if (!inspectorRendered) {
-    renderDayInspector(grid, selectedDate, tasks, 0);
   }
 }
 
-function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
+function renderDayDetailPanel(panel, dateStr, tasks) {
+  if (!panel) return;
   const dayTasks = tasks.filter(t => isTaskForDate(t, dateStr));
   const allBlocks = loadTimeBlocks();
   const dayBlocks = allBlocks.filter(b => isBlockForDate(b, dateStr));
@@ -408,78 +404,112 @@ function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
   const isPast = (dateStr < todayIso);
   const isFuture = (dateStr > todayIso);
 
-  const inspector = document.createElement("div");
-  inspector.className = "cal-day-inspector";
-  inspector.style.gridColumn = "1 / -1";
-
-  const caretPercent = (typeof colIndex === "number") ? ((colIndex * (100 / 7)) + (100 / 14)) : 50;
-
-  let itemsHTML = "";
-  if (!dayTasks.length && !dayBlocks.length) {
-    itemsHTML = `<div style="font-size:0.85rem; color:var(--muted); font-style:italic;">No tasks or focus blocks scheduled for this day.</div>`;
-  } else {
-    itemsHTML = `
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        ${dayBlocks.map(b => `
-          <div class="cal-inspector-item" style="border-left:3px solid ${b.color || 'var(--accent)'};">
-            <div>
-              <strong style="font-size:0.9rem; color:var(--text);">${escapeHTML(b.taskTitle)}</strong>
-              <div style="font-size:0.75rem; color:var(--muted);">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</div>
-            </div>
-            ${!isPast ? `<button type="button" class="secondary" onclick="startFocusSessionForBlock('${b.id}')" style="padding:4px 10px; font-size:0.75rem; background:var(--accent); color:#05070a; font-weight:700; border:none;">Focus</button>` : `<span style="font-size:0.72rem; color:var(--muted);">Completed</span>`}
-          </div>
-        `).join('')}
-        ${dayTasks.map(t => {
-          const cal = getCalendarById(t.calendarId || t.category || "work");
-          const isDone = isTaskCompletedOnDate(t, dateStr);
-          const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked until that day arrives") : "Mark completed";
-          return `
-            <div class="cal-inspector-item" style="border-left:3px solid ${cal.color}; ${!isToday ? 'opacity:0.85;' : ''}">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
-                <span style="font-size:0.9rem; color:var(--text); ${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''}">${escapeHTML(t.title)}</span>
-                ${t.isDaily ? `<span class="badge" style="background:rgba(255,149,0,0.15); color:var(--amber); font-size:0.68rem;">Daily</span>` : ''}
-                ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.68rem; border:1px solid rgba(255,59,48,0.25); display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Locked</span>` : ''}
-                ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.68rem;">Upcoming</span>` : ''}
-              </div>
-              ${!isPast ? `<button type="button" class="subtask-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">&times;</button>` : ''}
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
+  let summaryText = `${dayTasks.length} Task${dayTasks.length === 1 ? '' : 's'}`;
+  if (dayBlocks.length > 0) {
+    summaryText += ` · ${dayBlocks.length} Focus Block${dayBlocks.length === 1 ? '' : 's'}`;
   }
 
-  inspector.innerHTML = `
-    <div class="cal-inspector-pointer" style="left:${caretPercent}%;"></div>
-    <div class="cal-inspector-header">
-      <h3 class="cal-inspector-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        ${formattedDate}
-        ${isToday ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent); font-size:0.7rem; font-weight:800;">TODAY</span>` : ''}
-        ${isPast ? `<span class="badge" style="background:rgba(255,59,48,0.15); color:var(--danger); font-size:0.7rem; font-weight:800; border:1px solid rgba(255,59,48,0.3); display:inline-flex; align-items:center; gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>LOCKED HISTORY</span>` : ''}
-        ${isFuture ? `<span class="badge" style="background:rgba(56,189,248,0.1); color:var(--accent); font-size:0.7rem; font-weight:700;">UPCOMING</span>` : ''}
-      </h3>
-      <div style="display:flex; gap:8px;">
+  panel.innerHTML = `
+    <div class="cal-detail-card">
+      <div class="cal-detail-header">
+        <div class="cal-detail-header-text">
+          <div class="cal-detail-date-row">
+            <h3 class="cal-detail-title">${formattedDate}</h3>
+            ${isToday ? `<span class="cal-badge-pill today">Today</span>` : ''}
+            ${isPast ? `<span class="cal-badge-pill locked">Locked</span>` : ''}
+            ${isFuture ? `<span class="cal-badge-pill upcoming">Upcoming</span>` : ''}
+          </div>
+          <div class="cal-detail-subtitle">${summaryText}</div>
+        </div>
+        <button type="button" class="cal-detail-close-btn" onclick="closeCalDayDetail()" aria-label="Close detail panel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="cal-detail-body">
+        ${dayBlocks.length > 0 ? `
+          <div class="cal-detail-section">
+            <span class="cal-detail-section-label">FOCUS BLOCKS</span>
+            <div class="cal-detail-list">
+              ${dayBlocks.map(b => `
+                <div class="cal-detail-block-item" style="border-left-color:${b.color || 'var(--os-accent)'};">
+                  <div class="cal-detail-block-copy">
+                    <strong class="cal-detail-item-title">${escapeHTML(b.taskTitle)}</strong>
+                    <span class="cal-detail-item-time">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</span>
+                  </div>
+                  ${!isPast ? `
+                    <button type="button" class="cal-detail-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">Focus</button>
+                  ` : `
+                    <span class="cal-detail-done-tag">Done</span>
+                  `}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="cal-detail-section">
+          <span class="cal-detail-section-label">TASKS (${dayTasks.length})</span>
+          ${dayTasks.length > 0 ? `
+            <div class="cal-detail-list">
+              ${dayTasks.map(t => {
+                const cal = getCalendarById(t.calendarId || t.category || "work");
+                const isDone = isTaskCompletedOnDate(t, dateStr);
+                const lockTitle = !isToday ? (isPast ? "Past days are locked and cannot be ticked" : "Future days cannot be ticked until that day arrives") : "Mark completed";
+                return `
+                  <div class="cal-detail-task-item" style="border-left-color:${cal.color}; ${!isToday ? 'opacity:0.85;' : ''}">
+                    <div class="cal-detail-task-left">
+                      <input type="checkbox" ${isDone ? 'checked' : ''} ${!isToday ? 'disabled' : ''} onchange="toggleTask('${t.id}', '${dateStr}')" style="${!isToday ? 'cursor:not-allowed; opacity:0.4;' : ''}" title="${lockTitle}">
+                      <span class="cal-detail-task-title ${isDone ? 'is-done' : ''}">${escapeHTML(t.title)}</span>
+                    </div>
+                    <div class="cal-detail-task-right">
+                      ${t.isDaily ? `<span class="badge badge-daily">Daily</span>` : ''}
+                      ${!isPast ? `<button type="button" class="cal-detail-delete-btn" onclick="deleteTask('${t.id}')" title="Delete Task">✕</button>` : ''}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <div class="cal-detail-empty">No tasks scheduled for this day.</div>
+          `}
+        </div>
+
         ${!isPast ? `
-          <button type="button" class="secondary" onclick="promptCreateTimeBlock('')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Focus Block</button>
-          <button type="button" class="secondary" onclick="openNewEventModal('${dateStr}')" style="padding:4px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">+ Full Event</button>
+          <div class="cal-detail-quick-add-wrap">
+            <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for this day (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
+          </div>
         ` : `
-          <span style="font-size:0.75rem; color:var(--muted); font-style:italic; padding:4px 0;">Read-only Record</span>
+          <div class="cal-detail-locked-note">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Past dates are locked and cannot be modified.
+          </div>
+        `}
+      </div>
+
+      <div class="cal-detail-footer">
+        ${!isPast ? `
+          <button type="button" class="cal-detail-action-btn" onclick="promptCreateTimeBlock('')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>+ Focus Block</span>
+          </button>
+          <button type="button" class="cal-detail-action-btn" onclick="openNewEventModal('${dateStr}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Full Event</span>
+          </button>
+        ` : `
+          <span style="font-size:0.75rem; color:var(--os-text-tertiary); font-style:italic;">Read-only historical record</span>
         `}
       </div>
     </div>
-    ${itemsHTML}
-    ${!isPast ? `
-      <input type="text" id="calQuickAddInput" class="cal-inspector-quick-input" placeholder="+ Add a task for ${dateStr} (Press Enter)..." onkeydown="handleQuickDayTaskAdd(event, '${dateStr}')">
-    ` : `
-      <div style="font-size:0.78rem; color:var(--muted); font-style:italic; padding:8px 12px; background:rgba(255,255,255,0.02); border-radius:4px; text-align:center; border:1px dashed var(--border);">
-        Past dates are locked — tasks cannot be added or modified in the past.
-      </div>
-    `}
   `;
+}
 
-  container.appendChild(inspector);
+function renderDayInspector(container, dateStr, tasks, colIndex = 0) {
+  const panel = document.getElementById("calDayDetailPanel");
+  if (panel) {
+    renderDayDetailPanel(panel, dateStr, tasks);
+  }
 }
 
 function getWeekDates(year, month, dateStr) {
@@ -565,8 +595,10 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     });
   });
 
-  const selWeekIdx = weekDates.findIndex(d => getIsoDateStr(d) === (selectedCalDateStr || todayIso));
-  renderDayInspector(grid, selectedCalDateStr || todayIso, tasks, selWeekIdx >= 0 ? selWeekIdx : 0);
+  const panel = document.getElementById("calDayDetailPanel");
+  if (panel && panel.classList.contains("open")) {
+    renderDayDetailPanel(panel, selectedCalDateStr || todayIso, tasks);
+  }
 }
 
 function renderDayView(grid, canvasHeader, dateObj, tasks) {
