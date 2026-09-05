@@ -53,12 +53,17 @@ function switchView(viewName) {
     dockContainer.classList.remove("standby-dock-hidden");
   }
 
+  if (viewName !== "standby") {
+    document.body.removeAttribute("data-night-mode");
+  }
+
   if (viewName === "dashboard" && typeof renderDashboard === "function") renderDashboard();
   if (viewName === "planner" && typeof renderPlanner === "function") renderPlanner();
   if (viewName === "notes" && typeof renderNotes === "function") renderNotes();
   if (viewName === "vault" && typeof renderVault === "function") renderVault();
   if (viewName === "calendar" && typeof renderCalendar === "function") renderCalendar();
   if (viewName === "standby") {
+    if (typeof applyNightModeState === "function") applyNightModeState();
     if (typeof updateStandbyClock === "function") updateStandbyClock();
     if (typeof renderStandbyFocusWidget === "function") renderStandbyFocusWidget();
     if (typeof resetStandbyIdleTimer === "function") resetStandbyIdleTimer();

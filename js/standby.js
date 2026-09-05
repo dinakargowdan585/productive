@@ -214,13 +214,19 @@ function renderClockStyleGrid() {
     { id: "minimal", title: "Minimal Mono", desc: "Ultra-thin lightweight font" }
   ];
 
-  grid.innerHTML = styles.map(s => `
-    <div class="theme-card ${activeClockStyle === s.id ? 'selected active' : ''}" 
-         onclick="selectClockStyle('${s.id}', event)" role="button" tabindex="0">
-      <div class="theme-title" style="font-weight:600; font-size:0.84rem; color:var(--text);">${s.title}</div>
-      <div class="theme-desc" style="font-size:0.72rem; color:var(--muted); margin-top:2px;">${s.desc}</div>
-    </div>
-  `).join('');
+  grid.innerHTML = styles.map(s => {
+    const isSel = (previewClockStyle || activeClockStyle) === s.id;
+    return `
+      <div class="theme-card ${isSel ? 'selected active' : ''}" 
+           onclick="selectClockStyle('${s.id}', event)" role="button" tabindex="0">
+        <div class="theme-card-header">
+          <span class="theme-title">${s.title}</span>
+          ${isSel ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--os-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+        </div>
+        <div class="theme-desc">${s.desc}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 /* ===================================================================
@@ -293,21 +299,34 @@ document.addEventListener("click", (e) => {
   }
 });
 
+function applyNightModeState() {
+  const screen = document.getElementById("standbyScreen");
+  const viewStandby = document.getElementById("viewStandby");
+  const btn = document.getElementById("toggleNightModeBtn");
+  
+  if (screen) {
+    screen.classList.toggle("night-mode", isNightMode);
+  }
+  if (viewStandby) {
+    viewStandby.classList.toggle("night-mode", isNightMode);
+  }
+  if (btn) {
+    btn.classList.toggle("active", isNightMode);
+  }
+  if (isNightMode) {
+    document.body.setAttribute("data-night-mode", "true");
+  } else {
+    document.body.removeAttribute("data-night-mode");
+  }
+}
+
 function toggleNightMode() {
   isNightMode = !isNightMode;
   try {
     localStorage.setItem("learningStandbyNightMode", isNightMode ? "true" : "false");
   } catch (e) {}
   
-  const screen = document.getElementById("standbyScreen");
-  if (screen) {
-    screen.classList.toggle("night-mode", isNightMode);
-  }
-  
-  const btn = document.getElementById("toggleNightModeBtn");
-  if (btn) {
-    btn.classList.toggle("active", isNightMode);
-  }
+  applyNightModeState();
 
   if (typeof FX !== "undefined" && typeof FX.playClick === "function") {
     FX.playClick();
@@ -561,6 +580,7 @@ if (typeof window !== "undefined") {
   window.toggleTimerPanel = toggleTimerPanel;
   window.closeTimerPanel = closeTimerPanel;
   window.toggleNightMode = toggleNightMode;
+  window.applyNightModeState = applyNightModeState;
   window.toggleFullscreenStandby = toggleFullscreenStandby;
   window.updateStandbyClock = updateStandbyClock;
   window.startPomodoro = startPomodoro;
@@ -580,12 +600,9 @@ if (typeof window !== "undefined") {
     try {
       if (localStorage.getItem("learningStandbyNightMode") === "true") {
         isNightMode = true;
-        const screen = document.getElementById("standbyScreen");
-        if (screen) screen.classList.add("night-mode");
-        const btn = document.getElementById("toggleNightModeBtn");
-        if (btn) btn.classList.add("active");
       }
     } catch (e) {}
+    applyNightModeState();
     updateClockVisibility();
     updateStandbyClock();
     renderStandbyFocusWidget();
