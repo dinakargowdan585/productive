@@ -1,6 +1,6 @@
-/* Productive OS Offline Caching & PWA Service Worker */
+/* DHARIN Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "productive-os-cache-v45";
+const CACHE_NAME = "dharin-os-cache-v46";
 const ASSETS = [
   "./",
   "./index.html",

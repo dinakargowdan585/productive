@@ -472,7 +472,7 @@ function tickPomodoro() {
     if (typeof showToast === "function") showToast("Focus session completed!", "success");
     try {
       if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        new Notification("Productive OS", { body: "Focus session completed!" });
+        new Notification("DHARIN", { body: "Focus session completed!" });
       }
     } catch (e) {}
   }

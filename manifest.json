@@ -1,8 +1,8 @@
 {
   "id": "/index.html",
-  "name": "Productive OS — Executive Suite",
-  "short_name": "ProductiveOS",
-  "description": "Executive Productivity & Relational Workspace",
+  "name": "DHARIN — Executive Suite",
+  "short_name": "DHARIN",
+  "description": "DHARIN Executive Productivity & Relational Workspace",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

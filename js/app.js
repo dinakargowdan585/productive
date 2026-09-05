@@ -778,7 +778,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
   pwaBtns.forEach(btn => {
     btn.style.display = "flex";
   });
-  console.log("📲 Productive OS PWA install prompt ready.");
+  console.log("📲 DHARIN PWA install prompt ready.");
 });
 
 window.addEventListener("appinstalled", () => {
@@ -788,7 +788,7 @@ window.addEventListener("appinstalled", () => {
     btn.style.display = "none";
   });
   if (typeof showToast === "function") {
-    showToast("🎉 Productive OS is now installed on your desktop/mobile!", "success");
+    showToast("🎉 DHARIN is now installed on your device!", "success");
   }
 });
 
@@ -803,7 +803,7 @@ async function promptPwaInstall() {
   const { outcome } = await deferredPwaPrompt.userChoice;
   if (outcome === "accepted") {
     if (typeof showToast === "function") {
-      showToast("🚀 Productive OS installation initiated!", "success");
+      showToast("🚀 DHARIN installation initiated!", "success");
     }
   }
   deferredPwaPrompt = null;
@@ -826,7 +826,7 @@ async function exportFullDataBackup() {
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
     const dateStr = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
-    downloadAnchor.setAttribute("download", `productive-os-backup-${dateStr}.json`);
+    downloadAnchor.setAttribute("download", `dharin-backup-${dateStr}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();

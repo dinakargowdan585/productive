@@ -387,7 +387,7 @@ function exportNotesJSON() {
 
 function exportNotesMarkdown() {
   const notes = loadNotes();
-  let mdStr = `# Productive OS Notes Export (${getIsoDateStr()})\n\n`;
+  let mdStr = `# DHARIN Notes Export (${getIsoDateStr()})\n\n`;
   notes.forEach(n => {
     mdStr += `## ${n.topic || n.title}\n**Category**: ${n.category} | **Date**: ${new Date(n.createdAt).toLocaleDateString()}\n\n${n.takeaway || n.content}\n\n---\n\n`;
   });

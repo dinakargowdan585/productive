@@ -330,7 +330,7 @@ function exportFullDataBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `productive-os-backup-${getIsoDateStr()}.json`;
+  a.download = `dharin-backup-${getIsoDateStr()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
