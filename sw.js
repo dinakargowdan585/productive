@@ -1,6 +1,6 @@
 /* DHARIN Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "dharin-os-cache-v47";
+const CACHE_NAME = "dharin-os-cache-v48";
 const ASSETS = [
   "./",
   "./index.html",
@@ -21,7 +21,8 @@ const ASSETS = [
   "./storage/repositories/baseRepository.js",
   "./storage/sync/syncEngine.js",
   "./assets/icon-192.png",
-  "./assets/icon-512.png"
+  "./assets/icon-512.png",
+  "./assets/task-complete.mp3"
 ];
 
 self.addEventListener("install", (e) => {

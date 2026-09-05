@@ -34,8 +34,43 @@ const FX = {
     }
   },
 
+  completionAudio: null,
+
+  initAudio() {
+    if (typeof Audio !== "undefined" && !this.completionAudio) {
+      try {
+        this.completionAudio = new Audio("assets/task-complete.mp3");
+        this.completionAudio.preload = "auto";
+        this.completionAudio.load();
+      } catch (e) {}
+    }
+  },
+
   playChime() {
     if (!this.soundEnabled) return;
+    try {
+      if (!this.completionAudio) {
+        this.initAudio();
+      }
+      if (this.completionAudio) {
+        const sound = this.completionAudio.cloneNode();
+        sound.volume = 0.85;
+        const playPromise = sound.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            this.playSynthChime();
+          });
+        }
+        return;
+      }
+    } catch (e) {
+      this.playSynthChime();
+      return;
+    }
+    this.playSynthChime();
+  },
+
+  playSynthChime() {
     try {
       const ctx = this.getAudioContext();
       if (!ctx) return;
@@ -263,4 +298,14 @@ const FX = {
 };
 
 window.FX = FX;
+
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", () => {
+    FX.initAudio();
+  });
+  document.addEventListener("pointerdown", () => {
+    FX.initAudio();
+  }, { once: true });
+}
+
 
