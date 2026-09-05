@@ -62,7 +62,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- VIEW 0: Intelligent Executive Command Center Dashboard -->
     <main id="viewDashboard" style="display:block;">
-      <div style="display:flex; flex-direction:column; gap:24px; padding-bottom:140px;">
+      <div style="display:flex; flex-direction:column; gap:24px; padding-bottom:32px;">
         <!-- Top Executive Header: Atmospheric Greeting Aura, Quick Search & Theme Switcher -->
         <div id="execGreetingBanner" class="exec-greeting-banner" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; position:relative;">
           <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; z-index:2;">
@@ -102,7 +102,7 @@ if ('serviceWorker' in navigator) {
           <div class="panel" id="cardBox-mits" style="display:flex; flex-direction:column; gap:14px; position:relative;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <h3 style="margin:0; font-size:1.05rem; font-weight:800; display:flex; align-items:center; gap:8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="2"/></svg>
                 Today's Focus (Top 3 MITs)
               </h3>
               <button type="button" onclick="hideDashboardCard('mits')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
@@ -126,7 +126,7 @@ if ('serviceWorker' in navigator) {
           <div class="panel" id="cardBox-goal" style="display:flex; flex-direction:column; gap:12px; position:relative;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <h3 style="margin:0; font-size:1.05rem; font-weight:800; display:flex; align-items:center; gap:8px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="6"/><circle cx="12" cy="2"/></svg>
                 Active Goal
               </h3>
               <button type="button" onclick="hideDashboardCard('goal')" style="background:none; border:none; color:var(--muted); font-size:1rem; cursor:pointer;" title="Hide Card">✕</button>
@@ -171,23 +171,63 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
-        <!-- Section 8: 365-Day Productivity & Habit Consistency Heatmap Matrix -->
+        <!-- Section: Productivity Summary -->
+        <div class="prod-summary-panel" id="dashboardProductivitySummary">
+          <div class="prod-summary-top">
+            <div class="prod-summary-badge-group">
+              <div class="prod-summary-status-badge">
+                <span class="prod-summary-status-dot"></span>
+                <span class="prod-summary-status-heading">Today's Progress</span>
+              </div>
+              <span id="prodSummaryStatusText" class="prod-summary-status-desc">Ready to Execute</span>
+            </div>
+            <div class="prod-summary-deepwork-badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="prodSummaryFocusTime">0m Deep Work</span>
+            </div>
+          </div>
+
+          <div class="prod-summary-metrics-row">
+            <div class="prod-summary-metric">
+              <span class="prod-summary-metric-val" id="prodSummaryPercent">0%</span>
+              <span class="prod-summary-metric-label">Complete</span>
+            </div>
+            <div class="prod-summary-metric-sep"></div>
+            <div class="prod-summary-metric">
+              <span class="prod-summary-metric-val" id="prodSummaryTasks">0 / 0</span>
+              <span class="prod-summary-metric-label">Tasks Done</span>
+            </div>
+            <div class="prod-summary-metric-sep"></div>
+            <div class="prod-summary-metric">
+              <span class="prod-summary-metric-val" id="prodSummaryRemaining">0</span>
+              <span class="prod-summary-metric-label">Remaining</span>
+            </div>
+          </div>
+
+          <div class="prod-summary-track-container">
+            <div class="prod-summary-progress-track">
+              <div class="prod-summary-progress-fill" id="prodSummaryProgressFill" style="width: 0%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: 365-Day Productivity Consistency Heatmap Matrix -->
         <div class="heatmap-card" id="cardBox-heatmap">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
-            <h3 style="margin:0; font-size:1.05rem; font-weight:800; display:flex; align-items:center; gap:8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
-              Productivity Consistency Heatmap
-            </h3>
-            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-              <span id="heatmapTotalCount" style="font-size:0.8rem; font-family:var(--font-code); color:var(--accent); font-weight:700;">0 tasks completed this year</span>
+          <div class="heatmap-header">
+            <div class="heatmap-title-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--os-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+              <h3 class="heatmap-title">Productivity Consistency</h3>
+            </div>
+            <div class="heatmap-header-meta">
+              <span id="heatmapTotalCount" class="heatmap-total-count">0 tasks completed this year</span>
               <div class="heatmap-legend">
-                <span>Less</span>
-                <span class="heatmap-cell" style="display:inline-block;"></span>
-                <span class="heatmap-cell" data-level="1" style="display:inline-block;"></span>
-                <span class="heatmap-cell" data-level="2" style="display:inline-block;"></span>
-                <span class="heatmap-cell" data-level="3" style="display:inline-block;"></span>
-                <span class="heatmap-cell" data-level="4" style="display:inline-block;"></span>
-                <span>More</span>
+                <span class="heatmap-legend-label">Less</span>
+                <span class="heatmap-cell heatmap-legend-cell"></span>
+                <span class="heatmap-cell heatmap-legend-cell" data-level="1"></span>
+                <span class="heatmap-cell heatmap-legend-cell" data-level="2"></span>
+                <span class="heatmap-cell heatmap-legend-cell" data-level="3"></span>
+                <span class="heatmap-cell heatmap-legend-cell" data-level="4"></span>
+                <span class="heatmap-legend-label">More</span>
               </div>
             </div>
           </div>

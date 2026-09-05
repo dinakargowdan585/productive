@@ -157,6 +157,66 @@ function renderProductivityHeatmap() {
   }).join('');
 }
 
+function renderProductivitySummary() {
+  const summaryEl = document.getElementById("dashboardProductivitySummary");
+  if (!summaryEl) return;
+
+  const todayIso = getIsoDateStr();
+  const tasks = loadTasks();
+
+  const todayTasks = tasks.filter(t => {
+    if (t.isDaily) return true;
+    if (t.dueDate === todayIso) return true;
+    if (t.lastCompletedDate === todayIso) return true;
+    return false;
+  });
+
+  const targetList = todayTasks.length > 0 ? todayTasks : tasks;
+  const total = targetList.length;
+  const completed = targetList.filter(t => isTaskCompletedOnDate(t, todayIso)).length;
+  const remaining = Math.max(0, total - completed);
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const blocks = loadTimeBlocks().filter(b => b.date === todayIso);
+  const completedFocusMins = blocks.filter(b => b.completed).reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
+  const scheduledFocusMins = blocks.reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
+  const displayFocusMins = completedFocusMins > 0 ? completedFocusMins : scheduledFocusMins;
+
+  let statusText = "Ready to Execute";
+  if (total === 0) {
+    statusText = "All Clear";
+  } else if (percent === 100) {
+    statusText = "Completed for Today";
+  } else if (percent >= 60) {
+    statusText = "On Track";
+  } else if (percent > 0) {
+    statusText = "In Progress";
+  } else {
+    statusText = `${remaining} task${remaining === 1 ? '' : 's'} remaining`;
+  }
+
+  const percentEl = document.getElementById("prodSummaryPercent");
+  if (percentEl) percentEl.textContent = `${percent}%`;
+
+  const tasksEl = document.getElementById("prodSummaryTasks");
+  if (tasksEl) tasksEl.textContent = `${completed} / ${total}`;
+
+  const remainingEl = document.getElementById("prodSummaryRemaining");
+  if (remainingEl) remainingEl.textContent = `${remaining}`;
+
+  const statusEl = document.getElementById("prodSummaryStatusText");
+  if (statusEl) statusEl.textContent = statusText;
+
+  const focusEl = document.getElementById("prodSummaryFocusTime");
+  if (focusEl) {
+    const timeStr = displayFocusMins > 0 ? formatDurationHuman(displayFocusMins) : "0m";
+    focusEl.textContent = `${timeStr} Deep Work`;
+  }
+
+  const fillEl = document.getElementById("prodSummaryProgressFill");
+  if (fillEl) fillEl.style.width = `${percent}%`;
+}
+
 function renderDashboard() {
   const visibleCards = getVisibleDashboardCards();
   ALL_DASHBOARD_CARDS.forEach(c => {
@@ -203,6 +263,7 @@ function renderDashboard() {
     dateEl.textContent = `${now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} • ${subtitle}`;
   }
 
+  renderProductivitySummary();
   renderProductivityHeatmap();
 
   const tasks = loadTasks();
