@@ -666,7 +666,7 @@ document.addEventListener("click", (e) => {
   const popover = document.getElementById("syncPopover");
   const btn = document.getElementById("syncStatusPill");
   if (popover && popover.style.display === "flex") {
-    if (!popover.contains(e.target) && btn && !btn.contains(e.target)) {
+    if (!popover.contains(e.target) && (!btn || !btn.contains(e.target))) {
       closeSyncPopover();
     }
   }
