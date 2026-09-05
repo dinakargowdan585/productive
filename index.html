@@ -199,38 +199,63 @@ if ('serviceWorker' in navigator) {
       </div>
     </main>
 
-    <!-- VIEW 1: Notes Editor & Grid -->
-    <main id="viewNotes" class="layout" style="display:none;">
-      <aside class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title" id="formTitle">New Note</h2>
-          <div class="editor-modes">
-            <button type="button" class="mode-btn active" id="modeWriteBtn" onclick="setEditorMode('write')">Write</button>
-            <button type="button" class="mode-btn" id="modePreviewBtn" onclick="setEditorMode('preview')">Preview</button>
-          </div>
+    <!-- VIEW 1: Notes Workspace (2-Pane Apple Notes Architecture) -->
+    <main id="viewNotes" class="notes-page-container" style="display:none;">
+      <!-- Notes Top Header -->
+      <header class="notes-header">
+        <div>
+          <h2 class="notes-title">Notes</h2>
+          <p class="notes-subtitle" id="notesSummaryCount">Capture ideas, architecture docs, and markdown insights.</p>
         </div>
-
-        <form id="noteForm" onsubmit="handleSaveNote(event)" novalidate>
-          <div class="field-group">
-            <label class="field-label" for="templateSelect">Quick Template</label>
-            <select id="templateSelect" onchange="applyTemplate(this.value)">
-              <option value="">-- Blank Note --</option>
-              <option value="meeting">Meeting Summary</option>
-              <option value="book">Book / Article Note</option>
-              <option value="bug">Bug / Solution Note</option>
-              <option value="journal">Daily Reflection</option>
-            </select>
+        <div class="notes-header-actions">
+          <!-- More Actions Dropdown (Export / Import) -->
+          <div class="notes-actions-menu-wrap">
+            <button type="button" class="btn-apple-secondary" onclick="toggleNotesActionMenu(event)" id="btnNotesActionMenu" title="More Note Actions">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Actions</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:2px; opacity:0.6;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="notesActionMenuDropdown" class="notes-actions-dropdown" style="display:none;">
+              <button type="button" class="notes-dropdown-item" onclick="exportNotesJSON(); closeAllNoteMenus();">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export JSON</span>
+              </button>
+              <button type="button" class="notes-dropdown-item" onclick="exportNotesMarkdown(); closeAllNoteMenus();">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Export Markdown</span>
+              </button>
+              <div class="notes-dropdown-divider"></div>
+              <button type="button" class="notes-dropdown-item" onclick="document.getElementById('importFile').click(); closeAllNoteMenus();">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Import JSON</span>
+              </button>
+            </div>
+            <input class="sr-only" id="importFile" type="file" accept=".json" onchange="handleImportFile(event)">
           </div>
 
-          <div class="field-group">
-            <label class="field-label" for="topic">Topic Title</label>
-            <input id="topic" placeholder="e.g., Executive Strategy 2026">
-          </div>
+          <!-- + New Note Primary Button -->
+          <button type="button" class="btn-apple-primary" onclick="openNewNoteModal()" id="btnOpenNewNote">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Note</span>
+          </button>
+        </div>
+      </header>
 
-          <div class="form-row">
-            <div class="field-group">
-              <label class="field-label" for="category">Category</label>
-              <select id="category">
+      <!-- 2-Pane Notes Container -->
+      <div class="notes-2pane-layout">
+        <!-- LEFT SIDEBAR: Note List / Browser (280px–320px) -->
+        <aside class="notes-sidebar-pane">
+          <div class="notes-sidebar-controls">
+            <!-- Search Box -->
+            <div class="notes-search-box">
+              <span class="notes-search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+              <input id="search" placeholder="Search notes, tags... (Cmd+K)" oninput="renderNotes()">
+            </div>
+
+            <!-- Filter & Sort Row -->
+            <div class="notes-filter-sort-row">
+              <select id="filterCategory" onchange="renderNotes()" title="Filter by category">
+                <option value="ALL">All Categories</option>
                 <option value="General">General</option>
                 <option value="Work">Work</option>
                 <option value="Personal">Personal</option>
@@ -238,87 +263,25 @@ if ('serviceWorker' in navigator) {
                 <option value="Code">Code</option>
                 <option value="Reference">Reference</option>
               </select>
-            </div>
-            <div class="field-group" style="display:flex; align-items:flex-end; padding-bottom:12px;">
-              <label class="checkbox-field">
-                <input type="checkbox" id="isPinned">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>
-                Pin to Top
-              </label>
+              <select id="sortMode" onchange="renderNotes()" title="Sort notes">
+                <option value="pinned">Pinned & Newest</option>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="topic">Topic A-Z</option>
+              </select>
             </div>
           </div>
 
-          <div class="field-group">
-            <div class="field-label">
-              <span>Takeaway (Markdown)</span>
-              <span id="charCount" style="font-size:0.75rem; color:var(--muted); font-family:var(--font-code);">0 words • 0 chars</span>
-            </div>
-            <div class="format-bar" style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; gap:4px;">
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('bold')" title="Bold">B</button>
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('italic')" title="Italic">I</button>
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('heading')" title="Heading">H1</button>
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('code')" title="Code">&lt;/&gt;</button>
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('list')" title="List">• List</button>
-                <button type="button" class="fmt-btn" onclick="formatMarkdown('quote')" title="Quote">“ Quote</button>
-                <button type="button" class="fmt-btn" onclick="openSlashMenuManual()" title="Slash Commands" style="color:var(--accent); font-weight:800;">/</button>
-              </div>
-              <span style="font-size:0.68rem; color:var(--muted); font-family:var(--font-code); opacity:0.8;">Type <strong style="color:var(--accent);">/</strong> for menu</span>
-            </div>
-            <div class="textarea-wrap" id="writePane">
-              <textarea id="takeaway" rows="8" placeholder="Type / for commands (e.g. /h1, /todo, /code, /callout, /table)..." oninput="handleTakeawayInput(event)" onkeydown="handleTakeawayKeydown(event)"></textarea>
-              <div id="slashCommandMenu" class="slash-menu" style="display:none;"></div>
-              <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceDictation()" title="Voice Dictation">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Voice
-              </button>
-            </div>
-            <div id="previewPane" class="markdown-preview-pane" style="display:none;"></div>
-          </div>
+          <!-- Note Items Scroll List -->
+          <div id="notesListScroll" class="notes-list-scroll"></div>
+        </aside>
 
-          <div class="field-group">
-            <label class="field-label" for="tags">Tags</label>
-            <input id="tags" placeholder="strategy, growth, meeting (comma-separated)">
-          </div>
+        <!-- RIGHT MAIN WORKSPACE: Document View / Reader -->
+        <section id="notesMainWorkspace" class="notes-main-workspace"></section>
+      </div>
 
-          <div class="button-row" style="display:flex; gap:10px; margin-top:16px;">
-            <button type="button" style="flex:1" id="saveBtn" onclick="handleSaveNote(event)">Save Note</button>
-            <button type="button" class="secondary" id="cancelEditBtn" onclick="cancelEditing()" hidden>Cancel</button>
-          </div>
-        </form>
-
-        <div class="toolbar-actions">
-          <button type="button" class="secondary" onclick="exportNotesJSON()">Export JSON</button>
-          <button type="button" class="secondary" onclick="exportNotesMarkdown()">Export MD</button>
-          <button type="button" class="secondary" onclick="importFile.click()">Import</button>
-          <input class="sr-only" id="importFile" type="file" accept=".json" onchange="handleImportFile(event)">
-        </div>
-      </aside>
-
-      <section>
-        <div class="toolbar">
-          <div class="search-box">
-            <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-            <input id="search" placeholder="Search notes, markdown, tags... (Cmd+K)" oninput="render()">
-          </div>
-          <select id="filterCategory" onchange="render()">
-            <option value="ALL">All Categories</option>
-            <option value="General">General</option>
-            <option value="Work">Work</option>
-            <option value="Personal">Personal</option>
-            <option value="Ideas">Ideas</option>
-            <option value="Code">Code</option>
-            <option value="Reference">Reference</option>
-          </select>
-          <select id="sortMode" onchange="render()">
-            <option value="pinned">Pinned & Newest</option>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="topic">Topic A-Z</option>
-          </select>
-        </div>
-
-        <div id="notesGrid" class="grid"></div>
-      </section>
+      <!-- Hidden anchor for legacy references -->
+      <div id="notesGrid" style="display:none;" aria-hidden="true"></div>
     </main>
 
     <!-- VIEW 2: Task Planner -->
@@ -802,6 +765,106 @@ if ('serviceWorker' in navigator) {
     </main>
   </div>
 </div>
+
+<!-- Note Creation / Edit Modal Dialog -->
+<dialog id="noteModal" class="apple-glass-modal" style="max-width:680px; width:92%;">
+  <div class="modal-header">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="modal-icon-badge">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div>
+        <h3 class="modal-title" id="formTitle">New Note</h3>
+        <p class="modal-subtitle">Compose rich markdown notes, architecture docs, or checklists</p>
+      </div>
+    </div>
+    <button type="button" class="modal-close-btn" onclick="closeNoteModal()" aria-label="Close modal">✕</button>
+  </div>
+
+  <form id="noteForm" onsubmit="handleSaveNote(event)" novalidate>
+    <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+      <div class="field-group" style="margin-bottom:0;">
+        <label class="field-label" for="templateSelect">Quick Template</label>
+        <select id="templateSelect" onchange="applyTemplate(this.value)">
+          <option value="">-- Blank Note --</option>
+          <option value="Meeting">Meeting Summary</option>
+          <option value="Architecture">System Architecture</option>
+          <option value="Learning">Learning Log</option>
+          <option value="Book">Book / Article Note</option>
+          <option value="Bug">Bug Analysis & Resolution</option>
+          <option value="Journal">Daily Reflection</option>
+        </select>
+      </div>
+      <div class="field-group" style="margin-bottom:0;">
+        <label class="field-label" for="category">Category</label>
+        <select id="category">
+          <option value="General">General</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Ideas">Ideas</option>
+          <option value="Code">Code</option>
+          <option value="Reference">Reference</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label" for="topic">Topic Title</label>
+      <input id="topic" placeholder="e.g., Executive Strategy 2026" required autocomplete="off">
+    </div>
+
+    <div class="field-group" style="margin-bottom:12px;">
+      <label class="checkbox-field" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:0.84rem; color:var(--os-text-secondary);">
+        <input type="checkbox" id="isPinned">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>
+        Pin Note to Top
+      </label>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span>Content (Markdown)</span>
+        <span id="charCount" style="font-size:0.75rem; color:var(--os-text-tertiary); font-family:var(--font-code);">0 words • 0 chars</span>
+      </div>
+
+      <!-- Format bar & Mode Switcher -->
+      <div class="note-modal-editor-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <div class="format-bar" style="margin-bottom:0; display:flex; gap:4px; align-items:center;">
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('bold')" title="Bold">B</button>
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('italic')" title="Italic">I</button>
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('heading')" title="Heading">H2</button>
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('code')" title="Code">&lt;/&gt;</button>
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('list')" title="List">• List</button>
+          <button type="button" class="fmt-btn" onclick="formatMarkdown('quote')" title="Quote">“ Quote</button>
+          <button type="button" class="fmt-btn" onclick="openSlashMenuManual()" title="Slash Commands" style="color:var(--os-accent); font-weight:800;">/</button>
+        </div>
+        <div class="editor-modes" style="display:flex; gap:4px;">
+          <button type="button" class="mode-btn active" id="modeWriteBtn" onclick="setEditorMode('write')">Write</button>
+          <button type="button" class="mode-btn" id="modePreviewBtn" onclick="setEditorMode('preview')">Preview</button>
+        </div>
+      </div>
+
+      <div class="textarea-wrap" id="writePane">
+        <textarea id="takeaway" rows="9" placeholder="Type / for commands (e.g. /h1, /todo, /code, /callout, /table)..." oninput="handleTakeawayInput(event)" onkeydown="handleTakeawayKeydown(event)"></textarea>
+        <div id="slashCommandMenu" class="slash-menu" style="display:none;"></div>
+        <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceDictation()" title="Voice Dictation">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Voice
+        </button>
+      </div>
+      <div id="previewPane" class="markdown-preview-pane" style="display:none; max-height:260px; overflow-y:auto;"></div>
+    </div>
+
+    <div class="field-group" style="margin-top:10px;">
+      <label class="field-label" for="tags">Tags</label>
+      <input id="tags" placeholder="strategy, roadmap, architecture (comma-separated)">
+    </div>
+
+    <div class="modal-action-row" style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button type="button" class="btn-apple-secondary" id="cancelEditBtn" onclick="closeNoteModal()">Cancel</button>
+      <button type="submit" class="btn-apple-primary" id="saveBtn">Save Note</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- Add Task Modal Dialog -->
 <dialog id="addTaskModal" class="apple-glass-modal" style="max-width:500px; width:90%;">
