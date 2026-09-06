@@ -1,40 +1,56 @@
 {
-  "id": "/index.html",
+  "id": "/",
   "name": "DHARIN — Executive Suite",
   "short_name": "DHARIN",
   "description": "DHARIN Executive Productivity & Relational Workspace",
-  "start_url": "./index.html",
-  "scope": "./",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#05070A",
   "theme_color": "#0D1117",
   "orientation": "any",
-  "categories": ["productivity", "utilities"],
+  "categories": ["productivity", "utilities", "business"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "New Task",
       "short_name": "Task",
-      "url": "./index.html?action=new-task",
+      "url": "/?action=new-task",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "New Note",
       "short_name": "Note",
-      "url": "./index.html?action=new-note",
+      "url": "/?action=new-note",
       "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }]
     }
   ]

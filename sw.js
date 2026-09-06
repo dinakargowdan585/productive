@@ -1,6 +1,6 @@
 /* DHARIN Offline Caching & PWA Service Worker */
 
-const CACHE_NAME = "dharin-os-cache-v48";
+const CACHE_NAME = "dharin-os-cache-v49";
 const ASSETS = [
   "./",
   "./index.html",
