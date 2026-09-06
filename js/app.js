@@ -678,26 +678,24 @@ async function handleManualSync() {
     if (typeof showToast === "function") {
       showToast("🔑 Please sign in with your email & password first to sync cloud data.", "info");
     }
-    openSupabaseAuthModal();
+    if (typeof openSupabaseAuthModal === "function") openSupabaseAuthModal();
     return;
   }
 
   if (typeof showToast === "function") showToast("🔄 Syncing with Supabase Cloud...", "info");
 
   try {
-    const success = (typeof SyncEngine !== "undefined" && typeof SyncEngine.triggerSync === "function")
-      ? await SyncEngine.triggerSync()
-      : false;
-    closeSupabaseAuthModal();
-    if (success) {
+    if (typeof SyncEngine !== "undefined" && typeof SyncEngine.triggerSync === "function") {
+      await SyncEngine.triggerSync();
+      closeSupabaseAuthModal();
       if (typeof showToast === "function") showToast("⚡ Cloud sync completed successfully!", "success");
     } else {
-      if (typeof showToast === "function") showToast("⚠️ Cloud sync did not complete. Please retry.", "error");
+      throw new Error("Sync Engine is initializing. Please retry in a moment.");
     }
   } catch (err) {
     console.error("Sync error:", err);
     closeSupabaseAuthModal();
-    if (typeof showToast === "function") showToast(`⚠️ Sync Error: ${err.message || String(err)}`, "error");
+    if (typeof showToast === "function") showToast(`⚠️ ${err.message || String(err)}`, "error");
   }
 }
 

@@ -255,23 +255,36 @@ const SyncEngine = {
 
   async triggerSync() {
     if (this.isSyncingActive) {
-      console.log("🔒 Sync Engine already running.");
-      return false;
+      console.log("🔒 Sync Engine already running, waiting for active sync to complete...");
+      let waited = 0;
+      while (this.isSyncingActive && waited < 4000) {
+        await new Promise(r => setTimeout(r, 200));
+        waited += 200;
+      }
+      if (this.isSyncingActive) {
+        this.isSyncingActive = false; // Release stuck mutex lock
+      } else {
+        return true;
+      }
     }
     if (!navigator.onLine) {
       this.updateState("offline");
-      return false;
+      throw new Error("Device is offline. Please check your internet connection.");
     }
-    if (typeof getSupabaseUser !== "function") return false;
+    if (typeof getSupabaseUser !== "function") {
+      throw new Error("Supabase auth module is loading. Please retry.");
+    }
 
     const user = await getSupabaseUser();
     if (!user || !user.id) {
       this.updateState("offline");
-      return false;
+      throw new Error("Not signed in. Please sign in with your email & password first.");
     }
 
     const client = typeof getSupabase === "function" ? getSupabase() : null;
-    if (!client) return false;
+    if (!client) {
+      throw new Error("Unable to connect to Supabase Cloud.");
+    }
 
     this.isSyncingActive = true;
     this.updateState("syncing");
