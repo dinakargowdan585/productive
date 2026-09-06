@@ -2,11 +2,14 @@
 
 let supabaseClient = null;
 
+const DEFAULT_SUPABASE_URL = "https://tezokbquswkbuudyrsuq.supabase.co";
+const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable__L7MiJgwGWZC8EOdUc8C7g_bTWfCJ9B";
+
 function getSupabaseConfig() {
-  const storedUrl = (localStorage.getItem("SUPABASE_URL") || "").trim();
-  const storedKey = (localStorage.getItem("SUPABASE_ANON_KEY") || "").trim();
-  const url = (storedUrl || window.SUPABASE_URL || "").trim();
-  const key = (storedKey || window.SUPABASE_ANON_KEY || "").trim();
+  const storedUrl = (typeof localStorage !== "undefined" ? localStorage.getItem("SUPABASE_URL") || "" : "").trim();
+  const storedKey = (typeof localStorage !== "undefined" ? localStorage.getItem("SUPABASE_ANON_KEY") || "" : "").trim();
+  const url = (storedUrl || window.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
+  const key = (storedKey || window.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY).trim();
   return { url, key };
 }
 
