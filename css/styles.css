@@ -9,44 +9,44 @@
    1. GLOBAL DESIGN TOKENS
    =================================================================== */
 :root {
-  /* Near-Black Neutral Canvas */
-  --os-bg: #050505;
+  /* Studio Matte Obsidian Canvas */
+  --os-bg: #000000;
   --os-bg-secondary: #0a0a0c;
-  --os-bg-elevated: #111114;
+  --os-bg-elevated: #141416;
 
-  /* Subtle Solid Charcoal Surfaces */
-  --os-surface: #101013;
-  --os-surface-hover: #151518;
-  --os-surface-active: #19191d;
-  --os-surface-elevated: #18181c;
-  --os-surface-secondary: #0c0c0e;
+  /* Deep Solid Obsidian Surfaces */
+  --os-surface: #141416;
+  --os-surface-hover: #18181b;
+  --os-surface-active: #1e1e22;
+  --os-surface-elevated: #18181b;
+  --os-surface-secondary: #101012;
 
   /* Restrained Translucent Dark Glass */
   --os-glass: rgba(255, 255, 255, 0.04);
   --os-glass-hover: rgba(255, 255, 255, 0.07);
-  --os-glass-elevated: rgba(20, 20, 24, 0.78);
-  --os-glass-dock: rgba(18, 18, 22, 0.80);
+  --os-glass-elevated: rgba(20, 20, 24, 0.85);
+  --os-glass-dock: rgba(18, 18, 22, 0.82);
   --os-glass-border: rgba(255, 255, 255, 0.08);
   --os-glass-blur: blur(28px) saturate(180%);
   --os-glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
-  /* Subtle Hairline Borders & Dividers */
+  /* Hairline Borders & Dividers */
   --os-border: rgba(255, 255, 255, 0.08);
-  --os-border-subtle: rgba(255, 255, 255, 0.04);
+  --os-border-subtle: rgba(255, 255, 255, 0.05);
   --os-border-hover: rgba(255, 255, 255, 0.16);
-  --os-border-focus: #0A84FF;
+  --os-border-focus: #0071E3;
   --os-divider: rgba(255, 255, 255, 0.06);
 
-  /* Typography Colors */
-  --os-text: #F5F5F7;
-  --os-text-secondary: #A1A1A6;
-  --os-text-tertiary: #6E6E73;
-  --os-text-disabled: #48484A;
+  /* High-Contrast Text Hierarchy (Pure White & Muted Silver Opacity) */
+  --os-text: #FFFFFF;
+  --os-text-secondary: rgba(235, 235, 245, 0.65);
+  --os-text-tertiary: rgba(235, 235, 245, 0.35);
+  --os-text-disabled: rgba(235, 235, 245, 0.20);
 
-  /* Restrained Semantic Accents */
-  --os-accent: #0A84FF;
-  --os-accent-hover: #0071E3;
-  --os-accent-subtle: rgba(10, 132, 255, 0.12);
+  /* Single Primary Apple System Tint (Classic Apple Blue) */
+  --os-accent: #0071E3;
+  --os-accent-hover: #0A84FF;
+  --os-accent-subtle: rgba(0, 113, 227, 0.15);
   --os-success: #30D158;
   --os-success-subtle: rgba(48, 209, 88, 0.12);
   --os-warning: #FF9F0A;
@@ -58,12 +58,12 @@
   --os-indigo: #5E5CE6;
   --os-teal: #64D2FF;
 
-  /* Radii Scale */
+  /* Apple Continuous Squircle Scale */
   --os-radius-xs: 6px;
-  --os-radius-sm: 10px;
-  --os-radius-md: 16px;
-  --os-radius-lg: 22px;
-  --os-radius-xl: 28px;
+  --os-radius-sm: 8px;
+  --os-radius-md: 12px;
+  --os-radius-lg: 24px;
+  --os-radius-xl: 24px;
   --os-radius-pill: 9999px;
 
   /* Spacing Scale */
@@ -89,8 +89,8 @@
   --os-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Inter", "Segoe UI", sans-serif;
   --os-font-code: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 
-  /* Fluid Spring Physics */
-  --os-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Tactile Spring Physics */
+  --os-ease-spring: cubic-bezier(0.28, 0.11, 0.32, 1);
   --os-ease-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);
   --os-ease-fast: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -225,7 +225,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--os-font);
-  background-color: var(--os-bg);
+  background-color: #000000;
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
+  background-attachment: fixed;
   color: var(--os-text);
   line-height: 1.5;
   font-size: 14px;
@@ -290,47 +292,50 @@ a:hover {
 }
 
 /* ===================================================================
-   3. GLOBAL BUTTONS, CONTROLS & INPUTS
+   3. GLOBAL BUTTONS, CONTROLS & INPUTS (44pt Touch & Continuous Squircles)
    =================================================================== */
 
-/* Primary Button (Apple Glass Tint Aesthetic) */
+/* Base Button (Apple Pill Squircle with 44pt Minimum Ergonomics) */
 button,
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-height: 44px;
+  min-width: 44px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   color: #FFFFFF;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: var(--os-radius-sm);
-  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--os-radius-pill);
+  padding: 0 20px;
   font-size: 0.88rem;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: all 180ms var(--os-ease-spring);
+  transition: transform 180ms var(--os-ease-spring), background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 2px 8px rgba(0, 0, 0, 0.3);
   user-select: none;
+  box-sizing: border-box;
 }
 button:hover,
 .btn:hover {
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.24);
   transform: translateY(-1px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 6px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 button:active,
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.32);
 }
 button:disabled,
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
 }
@@ -349,25 +354,72 @@ button:disabled,
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Primary CTA Button (Classic Apple Blue System Tint) */
+button.primary,
+.btn-primary,
+.btn-apple-primary,
+#task-form button[type="submit"],
+.auth-submit-btn,
+.cloud-submit-btn,
+.cal-new-event-btn,
+#startTimerBtn {
+  background: #0071E3 !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+  font-weight: 600 !important;
+}
+button.primary:hover,
+.btn-primary:hover,
+.btn-apple-primary:hover,
+#task-form button[type="submit"]:hover,
+.auth-submit-btn:hover,
+.cloud-submit-btn:hover,
+.cal-new-event-btn:hover,
+#startTimerBtn:hover {
+  background: #0A84FF !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 4px 18px rgba(10, 132, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+button.primary:active,
+.btn-primary:active,
+.btn-apple-primary:active,
+#task-form button[type="submit"]:active,
+.auth-submit-btn:active,
+.cloud-submit-btn:active,
+.cal-new-event-btn:active,
+#startTimerBtn:active {
+  transform: scale(0.97) !important;
+}
+
 /* Secondary Button (Matte Glass Neutral) */
 button.secondary,
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.04) !important;
+.btn-secondary,
+.btn-apple-secondary,
+.cal-agenda-btn-secondary {
+  background: rgba(255, 255, 255, 0.06) !important;
   color: var(--os-text-secondary) !important;
   border: 1px solid var(--os-border) !important;
   box-shadow: none !important;
   font-weight: 500;
+  border-radius: var(--os-radius-pill) !important;
 }
 button.secondary:hover,
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.09) !important;
+.btn-secondary:hover,
+.btn-apple-secondary:hover,
+.cal-agenda-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #FFFFFF !important;
   border-color: var(--os-border-hover) !important;
   transform: translateY(-1px);
   box-shadow: var(--os-shadow-xs) !important;
 }
 button.secondary:active,
-.btn-secondary:active {
-  transform: scale(0.98);
+.btn-secondary:active,
+.btn-apple-secondary:active,
+.cal-agenda-btn-secondary:active {
+  transform: scale(0.97) !important;
 }
 [data-theme="light"] button.secondary,
 [data-theme="light"] .btn-secondary {
@@ -385,6 +437,7 @@ button.danger,
   background: rgba(255, 69, 58, 0.12) !important;
   color: var(--os-danger) !important;
   border: 1px solid rgba(255, 69, 58, 0.25) !important;
+  border-radius: var(--os-radius-pill) !important;
 }
 button.danger:hover,
 .card-btn.delete:hover {
@@ -392,8 +445,12 @@ button.danger:hover,
   border-color: rgba(255, 69, 58, 0.45) !important;
   transform: translateY(-1px);
 }
+button.danger:active,
+.card-btn.delete:active {
+  transform: scale(0.97) !important;
+}
 
-/* Inputs, Textareas, Selects */
+/* Inputs, Textareas, Selects (12px Squircle Radius & 44pt Touch Height) */
 input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="hidden"]):not([type="file"]):not([type="range"]),
 input[type="text"],
 input[type="date"],
@@ -411,13 +468,14 @@ select,
 .subtask-quick-input,
 .auth-otp-field {
   width: 100%;
+  min-height: 44px;
   background: rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color: var(--os-text) !important;
   border: 1px solid var(--os-border) !important;
-  border-radius: var(--os-radius-sm);
-  padding: 8px 12px;
+  border-radius: var(--os-radius-md) !important;
+  padding: 10px 14px;
   font-size: 0.88rem;
   font-family: inherit;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
@@ -442,7 +500,7 @@ select:focus,
 .subtask-quick-input:focus,
 .auth-otp-field:focus {
   border-color: var(--os-accent) !important;
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.18) !important;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.22) !important;
   background: rgba(255, 255, 255, 0.09) !important;
 }
 
@@ -471,12 +529,12 @@ textarea::placeholder {
 [data-theme="light"] textarea:focus,
 [data-theme="light"] select:focus {
   border-color: var(--os-accent) !important;
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12) !important;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15) !important;
 }
 
 select option {
   background: #141416;
-  color: #F5F5F7;
+  color: #FFFFFF;
 }
 
 [data-theme="light"] select option {
@@ -501,11 +559,12 @@ select option {
 input[type="file"] {
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid var(--os-border) !important;
-  border-radius: var(--os-radius-sm);
+  border-radius: var(--os-radius-md);
   color: var(--os-text) !important;
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 0.85rem;
   cursor: pointer;
+  min-height: 44px;
 }
 
 input[type="file"]::file-selector-button,
@@ -513,13 +572,14 @@ input[type="file"]::-webkit-file-upload-button {
   background: rgba(255, 255, 255, 0.08) !important;
   color: var(--os-text) !important;
   border: 1px solid var(--os-border) !important;
-  border-radius: 6px;
-  padding: 5px 12px;
+  border-radius: var(--os-radius-pill);
+  padding: 6px 14px;
   font-size: 0.82rem;
   font-weight: 500;
   margin-right: 10px;
   cursor: pointer;
   transition: all 150ms ease;
+  min-height: 32px;
 }
 
 input[type="file"]::file-selector-button:hover,
@@ -545,12 +605,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
 input[type="checkbox"] {
   appearance: none !important;
   -webkit-appearance: none !important;
-  width: 18px !important;
-  height: 18px !important;
-  min-width: 18px !important;
-  min-height: 18px !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
   border: 1.5px solid var(--os-text-tertiary) !important;
-  border-radius: 5px !important;
+  border-radius: 6px !important;
   background-color: rgba(255, 255, 255, 0.05) !important;
   background-image: none !important;
   cursor: pointer !important;
@@ -586,6 +646,7 @@ input[type="checkbox"]:disabled {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
   font-size: 0.86rem;
   color: var(--os-text-secondary);
   cursor: pointer;
@@ -613,7 +674,7 @@ input[type="checkbox"]:disabled {
 }
 
 /* ===================================================================
-   4. SOLID CHARCOAL PANELS & SELECTIVE GLASS CARDS
+   4. SOLID CHARCOAL PANELS & SELECTIVE GLASS CARDS (24px Continuous Squircles)
    =================================================================== */
 
 .panel,
@@ -622,8 +683,8 @@ input[type="checkbox"]:disabled {
 .heatmap-card {
   background: var(--os-surface);
   border: 1px solid var(--os-border);
-  border-radius: var(--os-radius-md);
-  padding: 20px 22px;
+  border-radius: var(--os-radius-lg);
+  padding: 22px 24px;
   box-shadow: var(--os-shadow-sm);
   position: relative;
   overflow: hidden;
@@ -655,15 +716,15 @@ input[type="checkbox"]:disabled {
   letter-spacing: -0.01em;
 }
 
-/* Badges & Status Chips */
+/* Badges & Status Chips (8px Squircle Scale) */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 0.74rem;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: var(--os-radius-pill);
+  padding: 4px 10px;
+  border-radius: var(--os-radius-sm);
   background: rgba(255, 255, 255, 0.06);
   color: var(--os-text-secondary);
   border: 1px solid var(--os-border-subtle);
@@ -677,8 +738,8 @@ input[type="checkbox"]:disabled {
   gap: 4px;
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: var(--os-radius-pill);
+  padding: 3px 8px;
+  border-radius: var(--os-radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -716,46 +777,68 @@ input[type="checkbox"]:disabled {
   transition: width 350ms var(--os-ease-smooth);
 }
 
-/* Segmented Control / Tabs */
+/* iOS Segmented Controls (Recessed Track & Active Sliding Pill) */
 .editor-modes,
 .cal-view-switcher,
-.tab-group {
+.tab-group,
+.planner-segmented-control,
+.auth-mode-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--os-border);
-  border-radius: var(--os-radius-sm);
-  padding: 3px;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 4px;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 .mode-btn,
 .cal-view-btn,
-.tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--os-text-secondary);
-  border-radius: 6px;
-  padding: 5px 12px;
-  font-size: 0.8rem;
+.tab-btn,
+.planner-tab-btn,
+.auth-mode-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  color: var(--os-text-secondary) !important;
+  border-radius: 8px !important;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: none;
-  transition: all 150ms ease;
+  box-shadow: none !important;
+  transition: all 180ms var(--os-ease-spring);
+  white-space: nowrap;
 }
 .mode-btn:hover,
 .cal-view-btn:hover,
-.tab-btn:hover {
-  color: var(--os-text);
-  background: rgba(255, 255, 255, 0.04);
-  transform: none;
-  box-shadow: none;
+.tab-btn:hover,
+.planner-tab-btn:hover,
+.auth-mode-toggle button:hover {
+  color: var(--os-text) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: none !important;
+}
+.mode-btn:active,
+.cal-view-btn:active,
+.tab-btn:active,
+.planner-tab-btn:active,
+.auth-mode-toggle button:active {
+  transform: scale(0.97) !important;
 }
 .mode-btn.active,
 .cal-view-btn.active,
-.tab-btn.active {
-  background: rgba(255, 255, 255, 0.12) !important;
+.tab-btn.active,
+.planner-tab-btn.active,
+.auth-mode-toggle button.active {
+  background: rgba(255, 255, 255, 0.16) !important;
   color: #FFFFFF !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
   transform: none !important;
 }
 
@@ -2024,19 +2107,21 @@ input[type="checkbox"]:disabled {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--os-border);
-  border-radius: var(--os-radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
   padding: 4px;
-  flex-wrap: wrap;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .planner-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
-  border-radius: 8px;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--os-text-secondary);
@@ -2044,20 +2129,25 @@ input[type="checkbox"]:disabled {
   border: none !important;
   cursor: pointer;
   box-shadow: none !important;
-  transition: all 150ms ease;
+  transition: all 180ms var(--os-ease-spring);
   white-space: nowrap;
 }
 
 .planner-tab-btn:hover {
-  color: var(--os-text);
-  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--os-text) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   transform: none !important;
 }
 
+.planner-tab-btn:active {
+  transform: scale(0.97) !important;
+}
+
 .planner-tab-btn.active {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   color: #FFFFFF !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
   transform: none !important;
 }
 
@@ -2105,9 +2195,10 @@ input[type="checkbox"]:disabled {
 input.planner-search-input,
 input[type="text"].planner-search-input {
   width: 100% !important;
-  height: 40px !important;
+  height: 44px !important;
+  min-height: 44px !important;
   padding-left: 42px !important;
-  padding-right: 36px !important;
+  padding-right: 38px !important;
   padding-top: 8px !important;
   padding-bottom: 8px !important;
   background: var(--os-surface-secondary) !important;
@@ -2124,14 +2215,14 @@ input.planner-search-input:focus,
 input[type="text"].planner-search-input:focus {
   background: var(--os-surface) !important;
   border-color: var(--os-accent) !important;
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2) !important;
 }
 
 .planner-search-clear-btn {
   position: absolute;
-  right: 10px;
-  width: 22px;
-  height: 22px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -2160,8 +2251,8 @@ input[type="text"].planner-search-input:focus {
 .planner-progress-card {
   background: var(--os-surface);
   border: 1px solid var(--os-border);
-  border-radius: var(--os-radius-md);
-  padding: 18px 24px;
+  border-radius: var(--os-radius-lg);
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2491,26 +2582,28 @@ input[type="text"].planner-search-input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
+  padding: 14px 20px;
   background: var(--os-surface);
   border: 1px solid var(--os-border);
   border-radius: var(--os-radius-lg);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
   box-shadow: var(--os-shadow-sm);
 }
 
 .cal-toolbar-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cal-nav-btn {
-  width: 32px !important;
-  height: 32px !important;
-  border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  border-radius: var(--os-radius-pill) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid var(--os-border) !important;
   color: var(--os-text) !important;
   display: inline-flex !important;
@@ -2518,74 +2611,89 @@ input[type="text"].planner-search-input:focus {
   justify-content: center !important;
   padding: 0 !important;
   cursor: pointer;
-  transition: all 140ms ease;
+  transition: transform 180ms var(--os-ease-spring), background 180ms ease, border-color 180ms ease;
   box-shadow: none !important;
 }
 
 .cal-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   border-color: var(--os-border-hover) !important;
+}
+.cal-nav-btn:active {
+  transform: scale(0.97) !important;
 }
 
 .cal-today-btn {
-  height: 32px !important;
-  padding: 0 14px !important;
-  border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 18px !important;
+  border-radius: var(--os-radius-pill) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   border: 1px solid var(--os-border) !important;
   color: var(--os-text) !important;
-  font-size: 0.82rem !important;
+  font-size: 0.84rem !important;
   font-weight: 600 !important;
   cursor: pointer;
-  transition: all 140ms ease;
+  transition: transform 180ms var(--os-ease-spring), background 180ms ease, border-color 180ms ease;
   box-shadow: none !important;
 }
 
 .cal-today-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
   border-color: var(--os-border-hover) !important;
+}
+.cal-today-btn:active {
+  transform: scale(0.97) !important;
 }
 
 .cal-month-heading {
   margin: 0 0 0 12px;
   font-size: 1.45rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--os-text);
   line-height: 1.2;
 }
 
-/* View Switcher */
+/* View Switcher (iOS Segmented Control) */
 .cal-view-switcher {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--os-border);
-  border-radius: 9px;
-  padding: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 4px;
   display: inline-flex;
-  gap: 2px;
+  gap: 4px;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .cal-view-btn {
-  padding: 5px 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border-radius: 6px;
+  min-height: 36px !important;
+  padding: 0 16px !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 8px !important;
   color: var(--os-text-secondary);
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer;
-  transition: all 140ms ease;
+  transition: all 180ms var(--os-ease-spring);
 }
 
 .cal-view-btn:hover {
   color: var(--os-text);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.cal-view-btn:active {
+  transform: scale(0.97);
 }
 
 .cal-view-btn.active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #FFFFFF !important;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
 }
 
 .cal-search-wrapper {
@@ -2596,58 +2704,64 @@ input[type="text"].planner-search-input:focus {
 
 .cal-search-icon {
   position: absolute;
-  left: 10px;
+  left: 14px;
   color: var(--os-text-tertiary);
   pointer-events: none;
 }
 
 .cal-search-input {
-  height: 34px !important;
-  padding: 0 12px 0 30px !important;
-  font-size: 0.82rem !important;
-  width: 140px;
-  border-radius: 8px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 14px 0 38px !important;
+  font-size: 0.84rem !important;
+  width: 150px;
+  border-radius: var(--os-radius-pill) !important;
   transition: width 180ms ease !important;
 }
 
 .cal-search-input:focus {
-  width: 180px;
+  width: 190px;
 }
 
 .cal-category-select {
-  height: 34px !important;
-  padding: 0 10px !important;
-  font-size: 0.82rem !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 14px !important;
+  font-size: 0.84rem !important;
   width: auto !important;
-  border-radius: 8px !important;
+  border-radius: var(--os-radius-pill) !important;
 }
 
 .cal-new-event-btn {
-  height: 34px !important;
-  padding: 0 14px !important;
-  border-radius: 8px !important;
-  background: var(--os-accent) !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 20px !important;
+  border-radius: var(--os-radius-pill) !important;
+  background: #0071E3 !important;
   color: #FFFFFF !important;
-  font-size: 0.82rem !important;
+  font-size: 0.86rem !important;
   font-weight: 600 !important;
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.25) !important;
+  gap: 8px !important;
+  box-shadow: 0 2px 10px rgba(0, 113, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
   cursor: pointer !important;
-  transition: all 140ms ease !important;
+  transition: transform 180ms var(--os-ease-spring), background 180ms ease !important;
 }
 
 .cal-new-event-btn:hover {
-  background: #0071E3 !important;
+  background: #0A84FF !important;
   transform: translateY(-1px);
+}
+.cal-new-event-btn:active {
+  transform: scale(0.97) !important;
 }
 
 /* Layout */
 .cal-main-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 270px 1fr;
   gap: 24px;
   align-items: start;
   position: relative;
@@ -2657,12 +2771,12 @@ input[type="text"].planner-search-input:focus {
 .cal-sidebar {
   background: var(--os-surface);
   border: 1px solid var(--os-border);
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: var(--os-radius-lg);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: 260px;
+  gap: 18px;
+  width: 270px;
   box-sizing: border-box;
 }
 
@@ -4771,22 +4885,24 @@ dialog::backdrop {
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.28) !important;
-  transition: all 160ms ease !important;
+  box-shadow: 0 4px 16px rgba(0, 113, 227, 0.35) !important;
+  transition: transform 180ms var(--os-ease-spring), background 180ms ease !important;
   cursor: pointer !important;
   margin-top: 2px;
+  min-height: 44px !important;
+  border-radius: var(--os-radius-pill) !important;
 }
 
 .cloud-primary-sync-btn:hover,
 .cloud-primary-btn:hover {
-  background: #0071E3 !important;
-  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4) !important;
+  background: #0A84FF !important;
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.45) !important;
   transform: translateY(-1px) !important;
 }
 
 .cloud-primary-sync-btn:active,
 .cloud-primary-btn:active {
-  transform: translateY(0) !important;
+  transform: scale(0.97) !important;
 }
 
 /* Custom Supabase Credentials */
@@ -4796,7 +4912,7 @@ dialog::backdrop {
 
 .cloud-creds-details {
   border: 1px solid var(--os-border);
-  border-radius: 12px;
+  border-radius: var(--os-radius-md);
   background: rgba(255, 255, 255, 0.03);
   overflow: hidden;
   transition: border-color 160ms ease, background 160ms ease;
@@ -4804,7 +4920,8 @@ dialog::backdrop {
 
 .cloud-creds-summary {
   list-style: none !important;
-  padding: 12px 14px;
+  padding: 12px 16px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4814,6 +4931,7 @@ dialog::backdrop {
   font-weight: 500;
   color: var(--os-text-secondary);
   transition: background 150ms ease, color 150ms ease;
+  box-sizing: border-box;
 }
 
 .cloud-creds-summary::-webkit-details-marker {
@@ -4842,31 +4960,34 @@ dialog::backdrop {
 }
 
 .cloud-creds-body {
-  padding: 14px;
+  padding: 16px;
   border-top: 1px solid var(--os-border);
   background: rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cloud-save-creds-btn {
   margin-top: 6px;
-  height: 38px;
-  border-radius: 8px;
+  min-height: 44px;
+  border-radius: var(--os-radius-pill) !important;
   background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid var(--os-border) !important;
   color: var(--os-text) !important;
-  font-size: 0.84rem !important;
+  font-size: 0.86rem !important;
   font-weight: 600 !important;
   cursor: pointer;
-  transition: all 160ms ease;
+  transition: transform 180ms var(--os-ease-spring), background 160ms ease;
   width: 100%;
 }
 
 .cloud-save-creds-btn:hover {
   background: rgba(255, 255, 255, 0.14) !important;
   border-color: var(--os-border-hover) !important;
+}
+.cloud-save-creds-btn:active {
+  transform: scale(0.97) !important;
 }
 
 /* Sign Out Section (Restrained Destructive) */
@@ -4876,14 +4997,14 @@ dialog::backdrop {
 
 .cloud-modal-divider {
   height: 1px;
-  background: var(--os-border);
+  background: var(--os-divider);
   margin-bottom: 12px;
 }
 
 .cloud-signout-btn {
   width: 100% !important;
-  height: 40px !important;
-  border-radius: 10px !important;
+  min-height: 44px !important;
+  border-radius: var(--os-radius-pill) !important;
   background: rgba(255, 69, 58, 0.08) !important;
   color: #FF453A !important;
   border: 1px solid rgba(255, 69, 58, 0.22) !important;
@@ -4894,7 +5015,7 @@ dialog::backdrop {
   justify-content: center !important;
   gap: 6px !important;
   cursor: pointer !important;
-  transition: all 160ms ease !important;
+  transition: transform 180ms var(--os-ease-spring), background 160ms ease !important;
   box-shadow: none !important;
 }
 
@@ -4902,16 +5023,21 @@ dialog::backdrop {
   background: rgba(255, 69, 58, 0.16) !important;
   border-color: rgba(255, 69, 58, 0.45) !important;
 }
+.cloud-signout-btn:active {
+  transform: scale(0.97) !important;
+}
 
 /* Auth Mode Toggle & Social Login (For Login / Signup / OTP) */
 .auth-mode-toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--os-border);
-  border-radius: 10px;
-  padding: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 4px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 2px;
+  gap: 4px;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .auth-mode-toggle button {
@@ -4920,22 +5046,28 @@ dialog::backdrop {
   color: var(--os-text-secondary) !important;
   font-size: 0.82rem !important;
   font-weight: 500 !important;
-  padding: 6px 10px !important;
-  border-radius: 7px !important;
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
   cursor: pointer !important;
   box-shadow: none !important;
-  transition: all 140ms ease !important;
+  transition: all 180ms var(--os-ease-spring) !important;
 }
 
 .auth-mode-toggle button:hover {
   color: var(--os-text) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.auth-mode-toggle button:active {
+  transform: scale(0.97) !important;
 }
 
 .auth-mode-toggle button.active {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
   color: #FFFFFF !important;
   font-weight: 600 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
 }
 
 .cloud-input-wrapper {
@@ -4946,27 +5078,32 @@ dialog::backdrop {
 
 .cloud-field-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   color: var(--os-text-tertiary);
   pointer-events: none;
   z-index: 1;
 }
 
 .cloud-input-wrapper input {
-  padding-left: 36px !important;
+  padding-left: 40px !important;
 }
 
 .auth-password-toggle {
   position: absolute;
-  right: 10px;
+  right: 8px;
   background: transparent !important;
   border: none !important;
   color: var(--os-text-tertiary) !important;
   font-size: 0.78rem !important;
   font-weight: 600 !important;
   cursor: pointer;
-  padding: 4px 6px !important;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 4px 8px !important;
   box-shadow: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-password-toggle:hover {
@@ -4977,9 +5114,12 @@ dialog::backdrop {
   background: transparent !important;
   border: none !important;
   color: var(--os-accent) !important;
-  font-size: 0.78rem !important;
+  font-size: 0.8rem !important;
   cursor: pointer;
-  padding: 0 !important;
+  padding: 4px 0 !important;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
   box-shadow: none !important;
 }
 
@@ -4990,10 +5130,10 @@ dialog::backdrop {
 .auth-error-banner {
   background: rgba(255, 69, 58, 0.12);
   border: 1px solid rgba(255, 69, 58, 0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
+  border-radius: var(--os-radius-md);
+  padding: 12px 16px;
   color: #FF453A;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -5007,14 +5147,14 @@ dialog::backdrop {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.05em;
-  margin: 6px 0;
+  margin: 8px 0;
 }
 
 .cloud-divider::before,
 .cloud-divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid var(--os-border);
+  border-bottom: 1px solid var(--os-divider);
 }
 
 .cloud-divider::before { margin-right: 10px; }
@@ -5022,19 +5162,19 @@ dialog::backdrop {
 
 .cloud-google-btn {
   width: 100% !important;
-  height: 42px !important;
-  border-radius: 10px !important;
+  min-height: 44px !important;
+  border-radius: var(--os-radius-pill) !important;
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid var(--os-border) !important;
   color: var(--os-text) !important;
-  font-size: 0.86rem !important;
+  font-size: 0.88rem !important;
   font-weight: 500 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
   cursor: pointer !important;
-  transition: all 160ms ease !important;
+  transition: transform 180ms var(--os-ease-spring), background 160ms ease !important;
   box-shadow: none !important;
 }
 
@@ -5042,12 +5182,15 @@ dialog::backdrop {
   background: rgba(255, 255, 255, 0.1) !important;
   border-color: var(--os-border-hover) !important;
 }
+.cloud-google-btn:active {
+  transform: scale(0.97) !important;
+}
 
 .auth-otp-info-card {
-  background: rgba(10, 132, 255, 0.08);
-  border: 1px solid rgba(10, 132, 255, 0.2);
-  border-radius: 10px;
-  padding: 12px 14px;
+  background: rgba(0, 113, 227, 0.08);
+  border: 1px solid rgba(0, 113, 227, 0.2);
+  border-radius: var(--os-radius-md);
+  padding: 12px 16px;
   font-size: 0.84rem;
   color: var(--os-text-secondary);
 }
@@ -5060,8 +5203,11 @@ dialog::backdrop {
   background: transparent !important;
   border: none !important;
   color: var(--os-text-secondary) !important;
-  font-size: 0.8rem !important;
+  font-size: 0.82rem !important;
   cursor: pointer;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
   box-shadow: none !important;
 }
 
@@ -5097,16 +5243,16 @@ dialog::backdrop {
   }
   .macos-dock-container {
     bottom: 14px;
-    padding: 6px 10px;
+    padding: 6px 8px;
     gap: 6px;
   }
   .dock-item {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
   }
   .macos-app-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
   .cal-grid {
     gap: 1px;
