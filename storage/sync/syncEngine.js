@@ -1,4 +1,4 @@
-/* Productive OS - Robust Bi-Directional Cloud Sync Engine (10/10 Production-Grade) */
+/* Productive OS - Robust Bi-Directional Cloud Sync Engine (10/10 Production-Grade LWW) */
 
 function isValidUuid(id) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ""));
@@ -54,22 +54,6 @@ function clearDeletedRecordIds(storeName, idsToClear = []) {
     }
   } catch (e) {}
 }
-
-const ConflictResolver = {
-  resolve(localRecord, remoteRecord) {
-    if (!remoteRecord) return localRecord;
-    if (!localRecord) return remoteRecord;
-    const localDeleted = localRecord.deletedAt ? new Date(localRecord.deletedAt).getTime() : 0;
-    const remoteDeleted = (remoteRecord.deleted_at || remoteRecord.deletedAt) ? new Date(remoteRecord.deleted_at || remoteRecord.deletedAt).getTime() : 0;
-    const localUpdated = new Date(localRecord.updatedAt || localRecord.created_at || 0).getTime();
-    const remoteUpdated = new Date(remoteRecord.updated_at || remoteRecord.updatedAt || remoteRecord.created_at || 0).getTime();
-    const localMax = Math.max(localDeleted, localUpdated);
-    const remoteMax = Math.max(remoteDeleted, remoteUpdated);
-    if (localMax > remoteMax) return localRecord;
-    if (remoteMax > localMax) return remoteRecord;
-    return String(localRecord.id || "").localeCompare(String(remoteRecord.id || "")) >= 0 ? localRecord : remoteRecord;
-  }
-};
 
 let syncBroadcastChannel = null;
 if (typeof BroadcastChannel !== "undefined") {
@@ -183,7 +167,7 @@ const SyncEngine = {
     }
   },
 
-  scheduleBackgroundSync(delay = 1200) {
+  scheduleBackgroundSync(delay = 400) {
     if (this.backgroundSyncTimer) {
       clearTimeout(this.backgroundSyncTimer);
     }
@@ -198,7 +182,7 @@ const SyncEngine = {
     }, delay);
   },
 
-  scheduleBackgroundPull(delay = 600) {
+  scheduleBackgroundPull(delay = 400) {
     if (this.backgroundPullTimer) {
       clearTimeout(this.backgroundPullTimer);
     }
@@ -250,7 +234,7 @@ const SyncEngine = {
           { event: "*", schema: "public", table: tableName, filter: `user_id=eq.${user.id}` },
           (payload) => {
             console.log(`📡 [Realtime] Live event on '${tableName}':`, payload.eventType);
-            this.scheduleBackgroundPull(500);
+            this.scheduleBackgroundPull(300);
           }
         );
       });
@@ -303,12 +287,16 @@ const SyncEngine = {
       let existingObj = {};
       if (typeof combinedNotes === "string" && combinedNotes.startsWith("{") && combinedNotes.includes('"__streak"')) {
         existingObj = JSON.parse(combinedNotes);
+      } else if (typeof combinedNotes === "string" && combinedNotes.trim()) {
+        existingObj.description = combinedNotes;
       }
       existingObj.__streak = parseInt(task.streak, 10) || 0;
       existingObj.__lastCompletedDate = task.lastCompletedDate || null;
       if (Array.isArray(task.completedDates)) existingObj.completedDates = task.completedDates;
       if (Array.isArray(task.subtasks)) existingObj.subtasks = task.subtasks;
-      if (task.description) existingObj.description = task.description;
+      if (task.calendarId) existingObj.calendarId = task.calendarId;
+      if (task.projectId) existingObj.projectId = task.projectId;
+      if (task.goalId) existingObj.goalId = task.goalId;
       combinedNotes = JSON.stringify(existingObj);
     } catch (e) {}
 
@@ -317,7 +305,7 @@ const SyncEngine = {
       user_id: userId,
       title: task.title || "Untitled Task",
       notes: combinedNotes || null,
-      category: task.category || "work",
+      category: task.calendarId || task.category || "work",
       priority: (task.priority || "MED").toUpperCase(),
       due_date: task.dueDate || task.due_date || null,
       is_daily: isDaily,
@@ -326,6 +314,64 @@ const SyncEngine = {
       created_at: task.createdAt || task.created_at || new Date().toISOString(),
       updated_at: task.updatedAt || task.updated_at || new Date().toISOString(),
       deleted_at: task.deletedAt || task.deleted_at || null
+    };
+  },
+
+  parseRemoteTask(t) {
+    const todayIso = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
+    let streak = 0;
+    let lastCompletedDate = null;
+    let notesText = t.notes || null;
+    let subtasks = [];
+    let completedDates = [];
+    let calendarId = t.category || "work";
+    let projectId = "";
+    let goalId = "";
+
+    if (notesText && typeof notesText === "string" && notesText.startsWith("{") && notesText.includes('"__streak"')) {
+      try {
+        const parsed = JSON.parse(notesText);
+        streak = parseInt(parsed.__streak, 10) || 0;
+        lastCompletedDate = parsed.__lastCompletedDate || null;
+        if (Array.isArray(parsed.completedDates)) completedDates = parsed.completedDates;
+        if (Array.isArray(parsed.subtasks)) subtasks = parsed.subtasks;
+        if (parsed.calendarId) calendarId = parsed.calendarId;
+        if (parsed.projectId) projectId = parsed.projectId;
+        if (parsed.goalId) goalId = parsed.goalId;
+        notesText = parsed.description || null;
+      } catch (e) {}
+    }
+
+    const isDaily = Boolean(t.is_daily);
+    let isCompletedToday = false;
+    if (isDaily) {
+      isCompletedToday = completedDates.includes(todayIso) || (lastCompletedDate === todayIso) || Boolean(t.completed);
+      if (isCompletedToday && !completedDates.includes(todayIso)) {
+        completedDates.push(todayIso);
+      }
+    } else {
+      isCompletedToday = Boolean(t.completed);
+    }
+
+    return {
+      id: t.id,
+      title: t.title,
+      notes: notesText,
+      category: calendarId,
+      calendarId: calendarId,
+      priority: t.priority || "MED",
+      dueDate: t.due_date || null,
+      isDaily: isDaily,
+      completed: isCompletedToday,
+      streak: streak,
+      lastCompletedDate: lastCompletedDate || (isCompletedToday ? todayIso : null),
+      completedDates: completedDates,
+      subtasks: subtasks,
+      projectId: projectId,
+      goalId: goalId,
+      estimateMins: t.estimate_mins || 30,
+      createdAt: t.created_at || new Date().toISOString(),
+      updatedAt: t.updated_at || new Date().toISOString()
     };
   },
 
@@ -342,6 +388,22 @@ const SyncEngine = {
       created_at: note.createdAt || note.created_at || new Date().toISOString(),
       updated_at: note.updatedAt || note.updated_at || new Date().toISOString(),
       deleted_at: note.deletedAt || note.deleted_at || null
+    };
+  },
+
+  parseRemoteNote(n) {
+    return {
+      id: n.id,
+      title: n.title || "Untitled Note",
+      topic: n.title || "Untitled Note",
+      content: n.content || "",
+      takeaway: n.content || "",
+      category: n.category || "General",
+      tags: Array.isArray(n.tags) ? n.tags : [],
+      isPinned: Boolean(n.is_pinned),
+      isVault: false,
+      createdAt: n.created_at || new Date().toISOString(),
+      updatedAt: n.updated_at || new Date().toISOString()
     };
   },
 
@@ -370,6 +432,24 @@ const SyncEngine = {
     };
   },
 
+  parseRemoteVaultNote(n) {
+    let encrypted = null;
+    if (n.content && n.content.startsWith("{")) {
+      try { encrypted = JSON.parse(n.content); } catch (e) {}
+    }
+    if (!encrypted) {
+      encrypted = { iv: "", cipherText: n.content || "" };
+    }
+    return {
+      id: n.id,
+      title: n.title || "Encrypted Secret",
+      category: n.category || "JOURNAL",
+      encrypted: encrypted,
+      createdAt: n.created_at || new Date().toISOString(),
+      updatedAt: n.updated_at || new Date().toISOString()
+    };
+  },
+
   formatProjectForCloud(proj, userId) {
     let taskListStr = null;
     if (Array.isArray(proj.taskList)) {
@@ -385,6 +465,26 @@ const SyncEngine = {
       created_at: proj.createdAt || proj.created_at || new Date().toISOString(),
       updated_at: proj.updatedAt || proj.updated_at || new Date().toISOString(),
       deleted_at: proj.deletedAt || proj.deleted_at || null
+    };
+  },
+
+  parseRemoteProject(p) {
+    let taskList = [];
+    if (p.description && p.description.startsWith("[")) {
+      try { taskList = JSON.parse(p.description); } catch (e) {}
+    }
+    return {
+      id: p.id,
+      title: p.name || p.title || "Untitled Project",
+      name: p.name || p.title || "Untitled Project",
+      cat: "Work",
+      category: "Work",
+      description: p.description || null,
+      color: p.color || "#38BDF8",
+      status: p.status || "ACTIVE",
+      taskList: taskList,
+      createdAt: p.created_at || new Date().toISOString(),
+      updatedAt: p.updated_at || new Date().toISOString()
     };
   },
 
@@ -408,6 +508,20 @@ const SyncEngine = {
       created_at: tb.createdAt || tb.created_at || new Date().toISOString(),
       updated_at: tb.updatedAt || tb.updated_at || new Date().toISOString(),
       deleted_at: tb.deletedAt || tb.deleted_at || null
+    };
+  },
+
+  parseRemoteTimeBlock(tb) {
+    return {
+      id: tb.id,
+      title: tb.title || "Focus Session",
+      date: tb.date,
+      startTime: tb.start_time ? tb.start_time.slice(0, 5) : "09:00",
+      durationMinutes: tb.duration_minutes || 60,
+      category: tb.category || "Deep Work",
+      completed: Boolean(tb.completed),
+      createdAt: tb.created_at || new Date().toISOString(),
+      updatedAt: tb.updated_at || new Date().toISOString()
     };
   },
 
@@ -454,9 +568,11 @@ const SyncEngine = {
     this.updateState("syncing");
 
     try {
-      console.log("⚡ Executing Full 2-Way Cloud Sync for User:", user.email || user.id);
+      console.log("⚡ Executing 2-Way LWW Sync for User:", user.email || user.id);
 
-      // 1. Sync Tasks (Push & Pull with Multi-Device Deletion Sync)
+      // ==========================================
+      // 1. Sync Tasks (Bi-Directional LWW Merge)
+      // ==========================================
       if (typeof TasksRepository !== "undefined") {
         try {
           const deletedTaskIds = getDeletedRecordIds("tasks");
@@ -470,69 +586,57 @@ const SyncEngine = {
           const localTasks = await TasksRepository.getAll();
           const activeLocal = (localTasks || []).filter(t => !deletedTaskIds.includes(t.id));
 
-          // Push active local modifications to Cloud FIRST
-          if (activeLocal.length > 0) {
-            const formatted = activeLocal.map(t => this.formatTaskForCloud(t, user.id));
-            await client.from("tasks").upsert(formatted, { onConflict: "id" });
-          }
-
-          // Pull latest state from Cloud AFTER push
+          // Fetch remote from cloud
           const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id);
           const activeRemote = (remoteTasks || []).filter(t => !t.deleted_at && !deletedTaskIds.includes(t.id));
 
-          if (activeRemote.length === 0) {
-            await TasksRepository.clear();
-          } else {
-            const todayIso = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
-            const localFormatted = activeRemote.map(t => {
-              let streak = 0;
-              let lastCompletedDate = null;
-              let notesText = t.notes || null;
-              let subtasks = [];
-              let completedDates = [];
-              if (notesText && typeof notesText === "string" && notesText.startsWith("{") && notesText.includes('"__streak"')) {
-                try {
-                  const parsed = JSON.parse(notesText);
-                  streak = parseInt(parsed.__streak, 10) || 0;
-                  lastCompletedDate = parsed.__lastCompletedDate || null;
-                  if (Array.isArray(parsed.completedDates)) completedDates = parsed.completedDates;
-                  if (Array.isArray(parsed.subtasks)) subtasks = parsed.subtasks;
-                  notesText = parsed.description || null;
-                } catch (e) {}
-              }
-              const isDaily = Boolean(t.is_daily);
-              let isCompletedToday = false;
-              if (isDaily) {
-                isCompletedToday = completedDates.includes(todayIso) || (lastCompletedDate === todayIso);
+          const localMap = new Map(activeLocal.map(t => [t.id, t]));
+          const remoteMap = new Map(activeRemote.map(t => [t.id, t]));
+          const allIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+
+          const tasksToPush = [];
+          const tasksToSaveLocally = [];
+
+          for (const id of allIds) {
+            const local = localMap.get(id);
+            const remote = remoteMap.get(id);
+
+            if (local && !remote) {
+              tasksToPush.push(this.formatTaskForCloud(local, user.id));
+              tasksToSaveLocally.push(local);
+            } else if (!local && remote) {
+              tasksToSaveLocally.push(this.parseRemoteTask(remote));
+            } else if (local && remote) {
+              const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+              const remoteTime = new Date(remote.updated_at || remote.created_at || 0).getTime();
+
+              if (localTime > remoteTime) {
+                // Local is newer -> push to cloud, keep local
+                tasksToPush.push(this.formatTaskForCloud(local, user.id));
+                tasksToSaveLocally.push(local);
+              } else if (remoteTime > localTime) {
+                // Remote is newer -> adopt remote locally
+                tasksToSaveLocally.push(this.parseRemoteTask(remote));
               } else {
-                isCompletedToday = Boolean(t.completed);
+                // Equal timestamp -> keep local
+                tasksToSaveLocally.push(local);
               }
-              return {
-                id: t.id,
-                title: t.title,
-                notes: notesText,
-                category: t.category || "work",
-                priority: t.priority || "MED",
-                dueDate: t.due_date || null,
-                isDaily: isDaily,
-                completed: isCompletedToday,
-                streak: streak,
-                lastCompletedDate: lastCompletedDate,
-                completedDates: completedDates,
-                subtasks: subtasks,
-                estimateMins: t.estimate_mins || 30,
-                createdAt: t.created_at,
-                updatedAt: t.updated_at
-              };
-            });
-            await TasksRepository.clearAndPut(localFormatted);
+            }
           }
+
+          if (tasksToPush.length > 0) {
+            await client.from("tasks").upsert(tasksToPush, { onConflict: "id" });
+          }
+
+          await TasksRepository.clearAndPut(tasksToSaveLocally);
         } catch (taskErr) {
           console.warn("Task sync notice:", taskErr);
         }
       }
 
-      // 2. Sync Standard Notes & Encrypted Vault Notes (Zero-Knowledge AES Cloud Sync)
+      // ===================================================================
+      // 2. Sync Standard Notes & Vault Notes (Zero-Knowledge AES LWW Merge)
+      // ===================================================================
       try {
         const deletedNoteIds = getDeletedRecordIds("notes");
         const deletedVaultIds = getDeletedRecordIds("vaultNotes");
@@ -546,86 +650,103 @@ const SyncEngine = {
           if (deletedVaultIds.length) clearDeletedRecordIds("vaultNotes", deletedVaultIds);
         }
 
-        // Push standard notes
-        if (typeof NotesRepository !== "undefined") {
-          const localNotes = await NotesRepository.getAll();
-          const activeLocalNotes = (localNotes || []).filter(n => !allDeletedNoteIds.includes(n.id));
-          if (activeLocalNotes.length > 0) {
-            const formatted = activeLocalNotes.map(n => this.formatNoteForCloud(n, user.id));
-            await client.from("notes").upsert(formatted, { onConflict: "id" });
-          }
-        }
-
-        // Push encrypted vault notes (Zero-Knowledge: only ciphertext & IV uploaded)
-        if (typeof VaultNotesRepository !== "undefined") {
-          const localVault = await VaultNotesRepository.getAll();
-          const activeLocalVault = (localVault || []).filter(v => !allDeletedNoteIds.includes(v.id));
-          if (activeLocalVault.length > 0) {
-            const formattedVault = activeLocalVault.map(v => this.formatVaultNoteForCloud(v, user.id));
-            await client.from("notes").upsert(formattedVault, { onConflict: "id" });
-          }
-        }
-
-        // Pull combined notes table from Cloud
         const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id);
         const activeRemoteNotes = (remoteNotes || []).filter(n => !n.deleted_at && !allDeletedNoteIds.includes(n.id));
 
-        // Separate standard notes vs vault notes
-        const remoteStandard = activeRemoteNotes.filter(n => !n.is_vault);
-        const remoteVault = activeRemoteNotes.filter(n => n.is_vault);
-
-        // Update local NotesRepository
+        // 2A. Standard Notes
         if (typeof NotesRepository !== "undefined") {
-          if (remoteStandard.length === 0) {
-            await NotesRepository.clear();
-          } else {
-            const localFormatted = remoteStandard.map(n => ({
-              id: n.id,
-              title: n.title || "Untitled Note",
-              topic: n.title || "Untitled Note",
-              content: n.content || "",
-              takeaway: n.content || "",
-              category: n.category || "General",
-              tags: Array.isArray(n.tags) ? n.tags : [],
-              isPinned: Boolean(n.is_pinned),
-              isVault: false,
-              createdAt: n.created_at,
-              updatedAt: n.updated_at
-            }));
-            await NotesRepository.clearAndPut(localFormatted);
+          const localNotes = await NotesRepository.getAll();
+          const activeLocalNotes = (localNotes || []).filter(n => !allDeletedNoteIds.includes(n.id));
+          const remoteStandard = activeRemoteNotes.filter(n => !n.is_vault);
+
+          const localMap = new Map(activeLocalNotes.map(n => [n.id, n]));
+          const remoteMap = new Map(remoteStandard.map(n => [n.id, n]));
+          const allIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+
+          const notesToPush = [];
+          const notesToSaveLocally = [];
+
+          for (const id of allIds) {
+            const local = localMap.get(id);
+            const remote = remoteMap.get(id);
+
+            if (local && !remote) {
+              notesToPush.push(this.formatNoteForCloud(local, user.id));
+              notesToSaveLocally.push(local);
+            } else if (!local && remote) {
+              notesToSaveLocally.push(this.parseRemoteNote(remote));
+            } else if (local && remote) {
+              const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+              const remoteTime = new Date(remote.updated_at || remote.created_at || 0).getTime();
+
+              if (localTime > remoteTime) {
+                notesToPush.push(this.formatNoteForCloud(local, user.id));
+                notesToSaveLocally.push(local);
+              } else if (remoteTime > localTime) {
+                notesToSaveLocally.push(this.parseRemoteNote(remote));
+              } else {
+                notesToSaveLocally.push(local);
+              }
+            }
           }
+
+          if (notesToPush.length > 0) {
+            await client.from("notes").upsert(notesToPush, { onConflict: "id" });
+          }
+
+          await NotesRepository.clearAndPut(notesToSaveLocally);
         }
 
-        // Update local VaultNotesRepository
+        // 2B. Vault Notes (Encrypted Zero-Knowledge)
         if (typeof VaultNotesRepository !== "undefined") {
-          if (remoteVault.length === 0) {
-            await VaultNotesRepository.clear();
-          } else {
-            const vaultFormatted = remoteVault.map(n => {
-              let encrypted = null;
-              if (n.content && n.content.startsWith("{")) {
-                try { encrypted = JSON.parse(n.content); } catch (e) {}
+          const localVault = await VaultNotesRepository.getAll();
+          const activeLocalVault = (localVault || []).filter(v => !allDeletedNoteIds.includes(v.id));
+          const remoteVault = activeRemoteNotes.filter(n => n.is_vault);
+
+          const localVaultMap = new Map(activeLocalVault.map(v => [v.id, v]));
+          const remoteVaultMap = new Map(remoteVault.map(v => [v.id, v]));
+          const allVaultIds = new Set([...localVaultMap.keys(), ...remoteVaultMap.keys()]);
+
+          const vaultToPush = [];
+          const vaultToSaveLocally = [];
+
+          for (const id of allVaultIds) {
+            const local = localVaultMap.get(id);
+            const remote = remoteVaultMap.get(id);
+
+            if (local && !remote) {
+              vaultToPush.push(this.formatVaultNoteForCloud(local, user.id));
+              vaultToSaveLocally.push(local);
+            } else if (!local && remote) {
+              vaultToSaveLocally.push(this.parseRemoteVaultNote(remote));
+            } else if (local && remote) {
+              const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+              const remoteTime = new Date(remote.updated_at || remote.created_at || 0).getTime();
+
+              if (localTime > remoteTime) {
+                vaultToPush.push(this.formatVaultNoteForCloud(local, user.id));
+                vaultToSaveLocally.push(local);
+              } else if (remoteTime > localTime) {
+                vaultToSaveLocally.push(this.parseRemoteVaultNote(remote));
+              } else {
+                vaultToSaveLocally.push(local);
               }
-              if (!encrypted) {
-                encrypted = { iv: "", cipherText: n.content || "" };
-              }
-              return {
-                id: n.id,
-                title: n.title || "Encrypted Secret",
-                category: n.category || "JOURNAL",
-                encrypted: encrypted,
-                createdAt: n.created_at,
-                updatedAt: n.updated_at
-              };
-            });
-            await VaultNotesRepository.clearAndPut(vaultFormatted);
+            }
           }
+
+          if (vaultToPush.length > 0) {
+            await client.from("notes").upsert(vaultToPush, { onConflict: "id" });
+          }
+
+          await VaultNotesRepository.clearAndPut(vaultToSaveLocally);
         }
       } catch (notesErr) {
         console.warn("Notes & Vault sync notice:", notesErr);
       }
 
-      // 3. Sync Projects (Push & Pull with Multi-Device Deletion Sync)
+      // ==========================================
+      // 3. Sync Projects (Bi-Directional LWW Merge)
+      // ==========================================
       if (typeof ProjectsRepository !== "undefined") {
         try {
           const deletedProjIds = getDeletedRecordIds("projects");
@@ -639,44 +760,53 @@ const SyncEngine = {
           const localProjects = await ProjectsRepository.getAll();
           const activeLocal = (localProjects || []).filter(p => !deletedProjIds.includes(p.id));
 
-          if (activeLocal.length > 0) {
-            const formatted = activeLocal.map(p => this.formatProjectForCloud(p, user.id));
-            await client.from("projects").upsert(formatted, { onConflict: "id" });
-          }
-
           const { data: remoteProjects } = await client.from("projects").select("*").eq("user_id", user.id);
           const activeRemote = (remoteProjects || []).filter(p => !p.deleted_at && !deletedProjIds.includes(p.id));
 
-          if (activeRemote.length === 0) {
-            await ProjectsRepository.clear();
-          } else {
-            const localFormatted = activeRemote.map(p => {
-              let taskList = [];
-              if (p.description && p.description.startsWith("[")) {
-                try { taskList = JSON.parse(p.description); } catch(e){}
+          const localMap = new Map(activeLocal.map(p => [p.id, p]));
+          const remoteMap = new Map(activeRemote.map(p => [p.id, p]));
+          const allIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+
+          const projToPush = [];
+          const projToSaveLocally = [];
+
+          for (const id of allIds) {
+            const local = localMap.get(id);
+            const remote = remoteMap.get(id);
+
+            if (local && !remote) {
+              projToPush.push(this.formatProjectForCloud(local, user.id));
+              projToSaveLocally.push(local);
+            } else if (!local && remote) {
+              projToSaveLocally.push(this.parseRemoteProject(remote));
+            } else if (local && remote) {
+              const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+              const remoteTime = new Date(remote.updated_at || remote.created_at || 0).getTime();
+
+              if (localTime > remoteTime) {
+                projToPush.push(this.formatProjectForCloud(local, user.id));
+                projToSaveLocally.push(local);
+              } else if (remoteTime > localTime) {
+                projToSaveLocally.push(this.parseRemoteProject(remote));
+              } else {
+                projToSaveLocally.push(local);
               }
-              return {
-                id: p.id,
-                title: p.name || p.title,
-                name: p.name || p.title,
-                cat: "Work",
-                category: "Work",
-                description: p.description || null,
-                color: p.color || "#38BDF8",
-                status: p.status || "ACTIVE",
-                taskList: taskList,
-                createdAt: p.created_at,
-                updatedAt: p.updated_at
-              };
-            });
-            await ProjectsRepository.clearAndPut(localFormatted);
+            }
           }
+
+          if (projToPush.length > 0) {
+            await client.from("projects").upsert(projToPush, { onConflict: "id" });
+          }
+
+          await ProjectsRepository.clearAndPut(projToSaveLocally);
         } catch (projErr) {
           console.warn("Project sync notice:", projErr);
         }
       }
 
-      // 4. Sync Time Blocks (Push & Pull with Multi-Device Deletion Sync)
+      // =============================================
+      // 4. Sync Time Blocks (Bi-Directional LWW Merge)
+      // =============================================
       if (typeof TimeBlocksRepository !== "undefined") {
         try {
           const deletedTbIds = getDeletedRecordIds("time_blocks");
@@ -690,36 +820,53 @@ const SyncEngine = {
           const localBlocks = await TimeBlocksRepository.getAll();
           const activeLocal = (localBlocks || []).filter(tb => !deletedTbIds.includes(tb.id));
 
-          if (activeLocal.length > 0) {
-            const formatted = activeLocal.map(tb => this.formatTimeBlockForCloud(tb, user.id));
-            await client.from("time_blocks").upsert(formatted, { onConflict: "id" });
-          }
-
           const { data: remoteBlocks } = await client.from("time_blocks").select("*").eq("user_id", user.id);
           const activeRemote = (remoteBlocks || []).filter(tb => !tb.deleted_at && !deletedTbIds.includes(tb.id));
 
-          if (activeRemote.length === 0) {
-            await TimeBlocksRepository.clear();
-          } else {
-            const localFormatted = activeRemote.map(tb => ({
-              id: tb.id,
-              title: tb.title,
-              date: tb.date,
-              startTime: tb.start_time ? tb.start_time.slice(0, 5) : "09:00",
-              durationMinutes: tb.duration_minutes || 60,
-              category: tb.category || "Deep Work",
-              completed: Boolean(tb.completed),
-              createdAt: tb.created_at,
-              updatedAt: tb.updated_at
-            }));
-            await TimeBlocksRepository.clearAndPut(localFormatted);
+          const localMap = new Map(activeLocal.map(tb => [tb.id, tb]));
+          const remoteMap = new Map(activeRemote.map(tb => [tb.id, tb]));
+          const allIds = new Set([...localMap.keys(), ...remoteMap.keys()]);
+
+          const tbToPush = [];
+          const tbToSaveLocally = [];
+
+          for (const id of allIds) {
+            const local = localMap.get(id);
+            const remote = remoteMap.get(id);
+
+            if (local && !remote) {
+              tbToPush.push(this.formatTimeBlockForCloud(local, user.id));
+              tbToSaveLocally.push(local);
+            } else if (!local && remote) {
+              tbToSaveLocally.push(this.parseRemoteTimeBlock(remote));
+            } else if (local && remote) {
+              const localTime = new Date(local.updatedAt || local.createdAt || 0).getTime();
+              const remoteTime = new Date(remote.updated_at || remote.created_at || 0).getTime();
+
+              if (localTime > remoteTime) {
+                tbToPush.push(this.formatTimeBlockForCloud(local, user.id));
+                tbToSaveLocally.push(local);
+              } else if (remoteTime > localTime) {
+                tbToSaveLocally.push(this.parseRemoteTimeBlock(remote));
+              } else {
+                tbToSaveLocally.push(local);
+              }
+            }
           }
+
+          if (tbToPush.length > 0) {
+            await client.from("time_blocks").upsert(tbToPush, { onConflict: "id" });
+          }
+
+          await TimeBlocksRepository.clearAndPut(tbToSaveLocally);
         } catch (tbErr) {
           console.warn("TimeBlock sync notice:", tbErr);
         }
       }
 
+      // =============================================
       // 5. Reload memory cache and refresh UI
+      // =============================================
       if (typeof loadAllFromRepositoriesIntoMemory === "function") {
         await loadAllFromRepositoriesIntoMemory();
       }
@@ -780,7 +927,7 @@ if (typeof window !== "undefined") {
     if (now - SyncEngine.lastFocusSync > 10000 && navigator.onLine) {
       SyncEngine.lastFocusSync = now;
       console.log("👁️ App focused/visible. Triggering background sync...");
-      SyncEngine.scheduleBackgroundSync(400);
+      SyncEngine.scheduleBackgroundSync(300);
     }
   };
 
