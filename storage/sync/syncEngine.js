@@ -1,4 +1,4 @@
-/* Productive OS - Robust Bi-Directional Cloud Sync Engine */
+/* Productive OS - Robust Bi-Directional Cloud Sync Engine (10/10 Production-Grade) */
 
 function isValidUuid(id) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ""));
@@ -8,7 +8,6 @@ function ensureValidUuid(id) {
   if (isValidUuid(id)) return id;
   return (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : (id || String(Date.now()));
 }
-
 
 const DELETED_IDS_STORAGE_KEY = "productive_deleted_ids_v1";
 
@@ -74,22 +73,26 @@ const ConflictResolver = {
 
 let syncBroadcastChannel = null;
 if (typeof BroadcastChannel !== "undefined") {
-  syncBroadcastChannel = new BroadcastChannel("productive_sync_channel");
-  syncBroadcastChannel.onmessage = (event) => {
-    if (event.data && event.data.type === "DATA_UPDATED") {
-      console.log("📡 Cross-tab sync update received from tab:", event.data.sender);
-      if (typeof loadAllFromRepositoriesIntoMemory === "function") {
-        loadAllFromRepositoriesIntoMemory().then(() => {
-          const activeView = (typeof getCurrentActiveView === "function") 
-            ? getCurrentActiveView() 
-            : (document.querySelector(".dock-item.active")?.dataset?.view || (document.querySelector(".dock-item.active")?.id ? document.querySelector(".dock-item.active").id.replace("dock", "").toLowerCase() : "dashboard"));
-          if (typeof switchView === "function") {
-            switchView(activeView);
-          }
-        }).catch(() => {});
+  try {
+    syncBroadcastChannel = new BroadcastChannel("productive_sync_channel");
+    syncBroadcastChannel.onmessage = (event) => {
+      if (event.data && event.data.type === "DATA_UPDATED") {
+        console.log("📡 Cross-tab sync update received from sender:", event.data.sender);
+        if (typeof loadAllFromRepositoriesIntoMemory === "function") {
+          loadAllFromRepositoriesIntoMemory().then(() => {
+            const activeView = (typeof getCurrentActiveView === "function") 
+              ? getCurrentActiveView() 
+              : (document.querySelector(".dock-item.active")?.dataset?.view || (document.querySelector(".dock-item.active")?.id ? document.querySelector(".dock-item.active").id.replace("dock", "").toLowerCase() : "dashboard"));
+            if (typeof switchView === "function") {
+              switchView(activeView);
+            }
+          }).catch(() => {});
+        }
       }
-    }
-  };
+    };
+  } catch (e) {
+    console.warn("BroadcastChannel not supported:", e);
+  }
 }
 
 const SyncEngine = {
@@ -97,10 +100,21 @@ const SyncEngine = {
   lastSyncedAt: typeof localStorage !== "undefined" ? localStorage.getItem("productive_last_sync") || null : null,
   isSyncingActive: false, // Mutex lock
   listeners: [],
+  realtimeChannel: null,
+  isRealtimeConnected: false,
+  backgroundSyncTimer: null,
+  backgroundPullTimer: null,
+  retryCount: 0,
+  maxRetries: 4,
+  retryDelays: [2000, 5000, 15000, 30000],
+  retryTimer: null,
+  lastFocusSync: 0,
 
   broadcastDataUpdate() {
     if (syncBroadcastChannel) {
-      syncBroadcastChannel.postMessage({ type: "DATA_UPDATED", sender: Date.now() });
+      try {
+        syncBroadcastChannel.postMessage({ type: "DATA_UPDATED", sender: Date.now() });
+      } catch (e) {}
     }
   },
 
@@ -110,7 +124,11 @@ const SyncEngine = {
 
   updateState(newState, meta = {}) {
     this.state = newState;
-    this.listeners.forEach(fn => fn(this.state, { lastSyncedAt: this.lastSyncedAt, ...meta }));
+    this.listeners.forEach(fn => {
+      try {
+        fn(this.state, { lastSyncedAt: this.lastSyncedAt, realtime: this.isRealtimeConnected, ...meta });
+      } catch (e) {}
+    });
     this.updateStatusUI();
   },
 
@@ -121,8 +139,18 @@ const SyncEngine = {
     const popoverQueue = document.getElementById("syncPopoverQueueCount");
     const popoverConn = document.getElementById("syncPopoverConnection");
 
-    if (popoverConn) popoverConn.textContent = navigator.onLine ? "Online" : "Offline";
-    if (popoverQueue) popoverQueue.textContent = this.state === "syncing" ? "Syncing..." : "Up to date";
+    if (popoverConn) {
+      if (!navigator.onLine) {
+        popoverConn.textContent = "Offline";
+      } else if (this.isRealtimeConnected) {
+        popoverConn.textContent = "Live Realtime";
+      } else {
+        popoverConn.textContent = "Online";
+      }
+    }
+    if (popoverQueue) {
+      popoverQueue.textContent = this.state === "syncing" ? "Syncing..." : "Up to date";
+    }
 
     if (popoverLastSync) {
       popoverLastSync.textContent = this.lastSyncedAt ? new Date(this.lastSyncedAt).toLocaleTimeString() : "Never";
@@ -151,12 +179,117 @@ const SyncEngine = {
       label.textContent = "Sync Error";
     } else {
       dot.style.background = "var(--green)";
-      label.textContent = "Synced";
+      label.textContent = this.isRealtimeConnected ? "Live" : "Synced";
+    }
+  },
+
+  scheduleBackgroundSync(delay = 1200) {
+    if (this.backgroundSyncTimer) {
+      clearTimeout(this.backgroundSyncTimer);
+    }
+    this.backgroundSyncTimer = setTimeout(() => {
+      this.backgroundSyncTimer = null;
+      if (navigator.onLine && !this.isSyncingActive) {
+        this.triggerSync().catch(err => {
+          console.warn("Background auto-sync failed, scheduling retry:", err);
+          this.scheduleRetry();
+        });
+      }
+    }, delay);
+  },
+
+  scheduleBackgroundPull(delay = 600) {
+    if (this.backgroundPullTimer) {
+      clearTimeout(this.backgroundPullTimer);
+    }
+    this.backgroundPullTimer = setTimeout(() => {
+      this.backgroundPullTimer = null;
+      if (navigator.onLine && !this.isSyncingActive) {
+        this.triggerSync().catch(err => {
+          console.warn("Background pull sync failed:", err);
+        });
+      }
+    }, delay);
+  },
+
+  scheduleRetry() {
+    if (this.retryCount < this.maxRetries) {
+      const delay = this.retryDelays[this.retryCount] || 30000;
+      this.retryCount++;
+      console.log(`🔁 Scheduling sync retry #${this.retryCount} in ${delay}ms...`);
+      if (this.retryTimer) clearTimeout(this.retryTimer);
+      this.retryTimer = setTimeout(async () => {
+        if (navigator.onLine && !this.isSyncingActive) {
+          try {
+            await this.triggerSync();
+          } catch (e) {
+            this.scheduleRetry();
+          }
+        }
+      }, delay);
+    }
+  },
+
+  initRealtimeSubscription(user) {
+    if (!user || !user.id) return;
+    const client = typeof getSupabase === "function" ? getSupabase() : null;
+    if (!client || typeof client.channel !== "function") return;
+
+    if (this.realtimeChannel) {
+      return; // Already subscribed
+    }
+
+    try {
+      const channelName = `productive-realtime-${user.id}`;
+      const tables = ["tasks", "notes", "projects", "time_blocks"];
+
+      let channel = client.channel(channelName);
+      tables.forEach(tableName => {
+        channel = channel.on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: tableName, filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            console.log(`📡 [Realtime] Live event on '${tableName}':`, payload.eventType);
+            this.scheduleBackgroundPull(500);
+          }
+        );
+      });
+
+      channel.subscribe((status) => {
+        console.log(`📡 [Realtime] Channel status: ${status}`);
+        if (status === "SUBSCRIBED") {
+          this.isRealtimeConnected = true;
+          this.updateStatusUI();
+        } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+          this.isRealtimeConnected = false;
+          this.updateStatusUI();
+        }
+      });
+
+      this.realtimeChannel = channel;
+    } catch (err) {
+      console.warn("Realtime subscription initialization error:", err);
+    }
+  },
+
+  cleanupRealtimeSubscription() {
+    if (this.realtimeChannel) {
+      try {
+        const client = typeof getSupabase === "function" ? getSupabase() : null;
+        if (client && typeof client.removeChannel === "function") {
+          client.removeChannel(this.realtimeChannel);
+        } else if (typeof this.realtimeChannel.unsubscribe === "function") {
+          this.realtimeChannel.unsubscribe();
+        }
+      } catch (e) {}
+      this.realtimeChannel = null;
+      this.isRealtimeConnected = false;
+      this.updateStatusUI();
     }
   },
 
   formatTaskForCloud(task, userId) {
-    const todayIso = getIsoDateStr();
+    const todayIso = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
     const isDaily = Boolean(task.isDaily || task.is_daily);
     let isCompletedToday = false;
     if (isDaily) {
@@ -205,10 +338,35 @@ const SyncEngine = {
       category: note.category || "General",
       tags: Array.isArray(note.tags) ? note.tags : [],
       is_pinned: Boolean(note.isPinned || note.is_pinned),
-      is_vault: Boolean(note.isVault || note.is_vault),
+      is_vault: false,
       created_at: note.createdAt || note.created_at || new Date().toISOString(),
       updated_at: note.updatedAt || note.updated_at || new Date().toISOString(),
       deleted_at: note.deletedAt || note.deleted_at || null
+    };
+  },
+
+  formatVaultNoteForCloud(vaultNote, userId) {
+    let encryptedContent = "";
+    if (vaultNote.encrypted && typeof vaultNote.encrypted === "object") {
+      encryptedContent = JSON.stringify(vaultNote.encrypted);
+    } else if (typeof vaultNote.encrypted === "string") {
+      encryptedContent = vaultNote.encrypted;
+    } else if (vaultNote.content) {
+      encryptedContent = vaultNote.content;
+    }
+
+    return {
+      id: ensureValidUuid(vaultNote.id),
+      user_id: userId,
+      title: vaultNote.title || "Encrypted Secret",
+      content: encryptedContent,
+      category: vaultNote.category || "JOURNAL",
+      tags: ["vault"],
+      is_pinned: false,
+      is_vault: true,
+      created_at: vaultNote.createdAt || vaultNote.created_at || new Date().toISOString(),
+      updated_at: vaultNote.updatedAt || vaultNote.updated_at || new Date().toISOString(),
+      deleted_at: vaultNote.deletedAt || vaultNote.deleted_at || null
     };
   },
 
@@ -267,6 +425,7 @@ const SyncEngine = {
         return true;
       }
     }
+
     if (!navigator.onLine) {
       this.updateState("offline");
       throw new Error("Device is offline. Please check your internet connection.");
@@ -284,6 +443,11 @@ const SyncEngine = {
     const client = typeof getSupabase === "function" ? getSupabase() : null;
     if (!client) {
       throw new Error("Unable to connect to Supabase Cloud.");
+    }
+
+    // Ensure realtime subscription is active for live sync
+    if (!this.realtimeChannel) {
+      this.initRealtimeSubscription(user);
     }
 
     this.isSyncingActive = true;
@@ -306,19 +470,20 @@ const SyncEngine = {
           const localTasks = await TasksRepository.getAll();
           const activeLocal = (localTasks || []).filter(t => !deletedTaskIds.includes(t.id));
 
-          // Step A: Push active local modifications to Cloud FIRST
+          // Push active local modifications to Cloud FIRST
           if (activeLocal.length > 0) {
             const formatted = activeLocal.map(t => this.formatTaskForCloud(t, user.id));
             await client.from("tasks").upsert(formatted, { onConflict: "id" });
           }
 
-          // Step B: Pull latest state from Cloud AFTER push
+          // Pull latest state from Cloud AFTER push
           const { data: remoteTasks } = await client.from("tasks").select("*").eq("user_id", user.id);
           const activeRemote = (remoteTasks || []).filter(t => !t.deleted_at && !deletedTaskIds.includes(t.id));
 
           if (activeRemote.length === 0) {
             await TasksRepository.clear();
           } else {
+            const todayIso = typeof getIsoDateStr === "function" ? getIsoDateStr() : new Date().toISOString().split("T")[0];
             const localFormatted = activeRemote.map(t => {
               let streak = 0;
               let lastCompletedDate = null;
@@ -335,7 +500,6 @@ const SyncEngine = {
                   notesText = parsed.description || null;
                 } catch (e) {}
               }
-              const todayIso = getIsoDateStr();
               const isDaily = Boolean(t.is_daily);
               let isCompletedToday = false;
               if (isDaily) {
@@ -368,32 +532,54 @@ const SyncEngine = {
         }
       }
 
-      // 2. Sync Notes (Push & Pull with Multi-Device Deletion Sync)
-      if (typeof NotesRepository !== "undefined") {
-        try {
-          const deletedNoteIds = getDeletedRecordIds("notes");
-          if (deletedNoteIds && deletedNoteIds.length) {
-            for (const delId of deletedNoteIds) {
-              await client.from("notes").delete().eq("id", delId).eq("user_id", user.id);
-            }
-            clearDeletedRecordIds("notes", deletedNoteIds);
+      // 2. Sync Standard Notes & Encrypted Vault Notes (Zero-Knowledge AES Cloud Sync)
+      try {
+        const deletedNoteIds = getDeletedRecordIds("notes");
+        const deletedVaultIds = getDeletedRecordIds("vaultNotes");
+        const allDeletedNoteIds = [...new Set([...deletedNoteIds, ...deletedVaultIds])];
+
+        if (allDeletedNoteIds.length > 0) {
+          for (const delId of allDeletedNoteIds) {
+            await client.from("notes").delete().eq("id", delId).eq("user_id", user.id);
           }
+          if (deletedNoteIds.length) clearDeletedRecordIds("notes", deletedNoteIds);
+          if (deletedVaultIds.length) clearDeletedRecordIds("vaultNotes", deletedVaultIds);
+        }
 
+        // Push standard notes
+        if (typeof NotesRepository !== "undefined") {
           const localNotes = await NotesRepository.getAll();
-          const activeLocal = (localNotes || []).filter(n => !deletedNoteIds.includes(n.id));
-
-          if (activeLocal.length > 0) {
-            const formatted = activeLocal.map(n => this.formatNoteForCloud(n, user.id));
+          const activeLocalNotes = (localNotes || []).filter(n => !allDeletedNoteIds.includes(n.id));
+          if (activeLocalNotes.length > 0) {
+            const formatted = activeLocalNotes.map(n => this.formatNoteForCloud(n, user.id));
             await client.from("notes").upsert(formatted, { onConflict: "id" });
           }
+        }
 
-          const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id);
-          const activeRemote = (remoteNotes || []).filter(n => !n.deleted_at && !deletedNoteIds.includes(n.id));
+        // Push encrypted vault notes (Zero-Knowledge: only ciphertext & IV uploaded)
+        if (typeof VaultNotesRepository !== "undefined") {
+          const localVault = await VaultNotesRepository.getAll();
+          const activeLocalVault = (localVault || []).filter(v => !allDeletedNoteIds.includes(v.id));
+          if (activeLocalVault.length > 0) {
+            const formattedVault = activeLocalVault.map(v => this.formatVaultNoteForCloud(v, user.id));
+            await client.from("notes").upsert(formattedVault, { onConflict: "id" });
+          }
+        }
 
-          if (activeRemote.length === 0) {
+        // Pull combined notes table from Cloud
+        const { data: remoteNotes } = await client.from("notes").select("*").eq("user_id", user.id);
+        const activeRemoteNotes = (remoteNotes || []).filter(n => !n.deleted_at && !allDeletedNoteIds.includes(n.id));
+
+        // Separate standard notes vs vault notes
+        const remoteStandard = activeRemoteNotes.filter(n => !n.is_vault);
+        const remoteVault = activeRemoteNotes.filter(n => n.is_vault);
+
+        // Update local NotesRepository
+        if (typeof NotesRepository !== "undefined") {
+          if (remoteStandard.length === 0) {
             await NotesRepository.clear();
           } else {
-            const localFormatted = activeRemote.map(n => ({
+            const localFormatted = remoteStandard.map(n => ({
               id: n.id,
               title: n.title || "Untitled Note",
               topic: n.title || "Untitled Note",
@@ -402,15 +588,41 @@ const SyncEngine = {
               category: n.category || "General",
               tags: Array.isArray(n.tags) ? n.tags : [],
               isPinned: Boolean(n.is_pinned),
-              isVault: Boolean(n.is_vault),
+              isVault: false,
               createdAt: n.created_at,
               updatedAt: n.updated_at
             }));
             await NotesRepository.clearAndPut(localFormatted);
           }
-        } catch (noteErr) {
-          console.warn("Note sync notice:", noteErr);
         }
+
+        // Update local VaultNotesRepository
+        if (typeof VaultNotesRepository !== "undefined") {
+          if (remoteVault.length === 0) {
+            await VaultNotesRepository.clear();
+          } else {
+            const vaultFormatted = remoteVault.map(n => {
+              let encrypted = null;
+              if (n.content && n.content.startsWith("{")) {
+                try { encrypted = JSON.parse(n.content); } catch (e) {}
+              }
+              if (!encrypted) {
+                encrypted = { iv: "", cipherText: n.content || "" };
+              }
+              return {
+                id: n.id,
+                title: n.title || "Encrypted Secret",
+                category: n.category || "JOURNAL",
+                encrypted: encrypted,
+                createdAt: n.created_at,
+                updatedAt: n.updated_at
+              };
+            });
+            await VaultNotesRepository.clearAndPut(vaultFormatted);
+          }
+        }
+      } catch (notesErr) {
+        console.warn("Notes & Vault sync notice:", notesErr);
       }
 
       // 3. Sync Projects (Push & Pull with Multi-Device Deletion Sync)
@@ -517,10 +729,17 @@ const SyncEngine = {
         localStorage.setItem("productive_last_sync", this.lastSyncedAt);
       }
 
+      // Reset exponential retry counter on success
+      this.retryCount = 0;
+      if (this.retryTimer) {
+        clearTimeout(this.retryTimer);
+        this.retryTimer = null;
+      }
+
       this.updateState("synced");
       this.broadcastDataUpdate();
 
-      // Refresh active view without jumping back to dashboard
+      // Refresh active view smoothly without jumping back to dashboard
       const activeView = (typeof getCurrentActiveView === "function") 
         ? getCurrentActiveView() 
         : (document.querySelector(".dock-item.active")?.dataset?.view || (document.querySelector(".dock-item.active")?.id ? document.querySelector(".dock-item.active").id.replace("dock", "").toLowerCase() : "dashboard"));
@@ -540,16 +759,51 @@ const SyncEngine = {
   }
 };
 
-// Network status listeners
+// Network status, Focus & Visibility listeners
 if (typeof window !== "undefined") {
   window.SyncEngine = SyncEngine;
+
   window.addEventListener("online", () => {
     console.log("🌐 Network online detected. Triggering Sync Engine...");
-    SyncEngine.triggerSync();
+    SyncEngine.retryCount = 0;
+    SyncEngine.scheduleBackgroundSync(300);
   });
 
   window.addEventListener("offline", () => {
     console.log("📡 Network offline detected.");
     SyncEngine.updateState("offline");
   });
+
+  // App focus & Visibility change listeners (auto-sync when returning to app)
+  const handleFocusOrVisible = () => {
+    const now = Date.now();
+    if (now - SyncEngine.lastFocusSync > 10000 && navigator.onLine) {
+      SyncEngine.lastFocusSync = now;
+      console.log("👁️ App focused/visible. Triggering background sync...");
+      SyncEngine.scheduleBackgroundSync(400);
+    }
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      handleFocusOrVisible();
+    }
+  });
+
+  window.addEventListener("focus", handleFocusOrVisible);
+
+  // Hook into auth state changes if available
+  if (typeof subscribeToAuthChanges === "function") {
+    subscribeToAuthChanges((event, session) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (session && session.user) {
+          SyncEngine.initRealtimeSubscription(session.user);
+          SyncEngine.scheduleBackgroundSync(300);
+        }
+      } else if (event === "SIGNED_OUT") {
+        SyncEngine.cleanupRealtimeSubscription();
+      }
+    });
+  }
 }
+

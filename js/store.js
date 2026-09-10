@@ -174,6 +174,9 @@ function saveTasks(tasks) {
   if (typeof TasksRepository !== "undefined") {
     TasksRepository.bulkPut(tasks).catch(err => console.error("Tasks Repository save error:", err));
   }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
+  }
 }
 
 async function saveTaskSingle(task) {
@@ -189,6 +192,9 @@ async function saveTaskSingle(task) {
   memoryCache.tasks = tasks;
   if (typeof TasksRepository !== "undefined") {
     await TasksRepository.create(task);
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
   }
 }
 
@@ -207,6 +213,9 @@ async function deleteTaskSingle(id) {
   if (client && user && user.id) {
     client.from("tasks").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(800);
+  }
 }
 
 function loadNotes() {
@@ -217,6 +226,9 @@ function saveNotes(notes) {
   memoryCache.notes = notes;
   if (typeof NotesRepository !== "undefined") {
     NotesRepository.bulkPut(notes).catch(err => console.error("Notes Repository save error:", err));
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
   }
 }
 
@@ -233,6 +245,9 @@ async function saveNoteSingle(note) {
   memoryCache.notes = notes;
   if (typeof NotesRepository !== "undefined") {
     await NotesRepository.create(note);
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
   }
 }
 
@@ -251,6 +266,9 @@ async function deleteNoteSingle(id) {
   if (client && user && user.id) {
     client.from("notes").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(800);
+  }
 }
 
 function loadTimeBlocks() {
@@ -261,6 +279,9 @@ function saveTimeBlocks(blocks) {
   memoryCache.timeBlocks = blocks;
   if (typeof TimeBlocksRepository !== "undefined") {
     TimeBlocksRepository.saveAll(blocks).catch(err => console.error("TimeBlocks persist error:", err));
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
   }
 }
 
@@ -273,6 +294,9 @@ function saveGoals(goals) {
   if (typeof GoalsRepository !== "undefined") {
     GoalsRepository.saveAll(goals).catch(err => console.error("Goals persist error:", err));
   }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
+  }
 }
 
 function loadProjects() {
@@ -284,6 +308,9 @@ function saveProjects(projects) {
   if (typeof ProjectsRepository !== "undefined") {
     ProjectsRepository.saveAll(projects).catch(err => console.error("Projects persist error:", err));
   }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
+  }
 }
 
 function loadVaultNotes() {
@@ -294,6 +321,9 @@ function persistVaultNotes(notes) {
   memoryCache.vaultNotes = notes;
   if (typeof VaultNotesRepository !== "undefined") {
     VaultNotesRepository.saveAll(notes).catch(err => console.error("VaultNotes persist error:", err));
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(1200);
   }
 }
 
