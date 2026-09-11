@@ -724,9 +724,9 @@ function renderPlanner() {
             </span>
             <span class="task-meta-item">${TASK_SVGS.calendar} <span>${dateLabel}</span></span>
             ${t.isDaily ? `
-              <span class="badge" style="${t.isFrozen ? 'background:rgba(10, 132, 255, 0.15); color:var(--os-accent, #0A84FF); border:1px solid rgba(10, 132, 255, 0.3);' : 'background:rgba(255, 159, 10, 0.15); color:var(--os-warning, #FF9F0A); border:1px solid rgba(255, 159, 10, 0.3);'}" title="${t.isFrozen ? `❄️ Streak Frozen (${t.freezeDaysRemaining ?? 1} freeze day left) - Complete today to maintain streak!` : '🔥 Active Streak (Protected by 2-Day Streak Freeze)'}">
+              <span class="badge" style="${t.isFrozen ? 'background:rgba(10, 132, 255, 0.15); color:var(--os-accent, #0A84FF); border:1px solid rgba(10, 132, 255, 0.3);' : 'background:rgba(255, 159, 10, 0.15); color:var(--os-warning, #FF9F0A); border:1px solid rgba(255, 159, 10, 0.3);'}" title="${t.isFrozen ? `❄️ Streak Frozen (${t.freezeDaysRemaining ?? 1} freeze day left) - Complete today to maintain streak!` : 'Active Streak (Protected by Streak Freeze)'}">
                 ${t.isFrozen ? '❄️' : TASK_SVGS.flame} <span>${t.streak || 0}d ${t.isFrozen ? 'frozen' : 'streak'}</span>
-                ${!t.isFrozen && (t.streak || 0) > 0 ? `<span style="font-size:0.65rem; opacity:0.8; margin-left:2px;" title="2-Day Streak Freeze Protection Active">❄️2d</span>` : ''}
+                ${!t.isFrozen && (t.streak || 0) > 0 ? `<span style="font-size:0.65rem; opacity:0.8; margin-left:2px;" title="Streak Freeze Protection Active">❄️</span>` : ''}
               </span>
             ` : ''}
             <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to cycle priority">

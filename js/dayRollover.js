@@ -201,7 +201,7 @@ const DayRolloverEngine = {
       if (freezeConsumedCount > 0) {
         showToast(`🛡️ STREAK PROTECTED: Streak freeze consumed (${streakState.availableFreezes} remaining).`, "info");
       } else if (streakBroken) {
-        showToast("🔥 Streak ended. Complete a task today to start a new streak!", "warning");
+        showToast("Streak ended. Complete a task today to start a new streak!", "warning");
       } else if (prevDayIso && prevDayIso < todayIso) {
         showToast(`New Day (${todayIso})! Habits reset with Streak Freeze protection.`, "info");
       }
