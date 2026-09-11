@@ -175,7 +175,7 @@ function saveTasks(tasks) {
     TasksRepository.bulkPut(tasks).catch(err => console.error("Tasks Repository save error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -194,7 +194,7 @@ async function saveTaskSingle(task) {
     await TasksRepository.create(task);
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -214,7 +214,7 @@ async function deleteTaskSingle(id) {
     client.from("tasks").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(800);
+    SyncEngine.scheduleBackgroundSync(300);
   }
 }
 
@@ -228,7 +228,7 @@ function saveNotes(notes) {
     NotesRepository.bulkPut(notes).catch(err => console.error("Notes Repository save error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -247,7 +247,7 @@ async function saveNoteSingle(note) {
     await NotesRepository.create(note);
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -267,7 +267,7 @@ async function deleteNoteSingle(id) {
     client.from("notes").delete().eq("id", id).eq("user_id", user.id).catch(() => {});
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(800);
+    SyncEngine.scheduleBackgroundSync(300);
   }
 }
 
@@ -281,7 +281,7 @@ function saveTimeBlocks(blocks) {
     TimeBlocksRepository.saveAll(blocks).catch(err => console.error("TimeBlocks persist error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -295,7 +295,7 @@ function saveGoals(goals) {
     GoalsRepository.saveAll(goals).catch(err => console.error("Goals persist error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -309,7 +309,7 @@ function saveProjects(projects) {
     ProjectsRepository.saveAll(projects).catch(err => console.error("Projects persist error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
@@ -323,7 +323,7 @@ function persistVaultNotes(notes) {
     VaultNotesRepository.saveAll(notes).catch(err => console.error("VaultNotes persist error:", err));
   }
   if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
-    SyncEngine.scheduleBackgroundSync(1200);
+    SyncEngine.scheduleBackgroundSync(400);
   }
 }
 
