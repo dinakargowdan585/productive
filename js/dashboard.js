@@ -141,7 +141,7 @@ function renderStreakFreezeWidget() {
       shieldsHTML += `
         <div class="streak-shield-item ${isReady ? 'shield-ready' : 'shield-spent'}" title="${isReady ? 'Streak Freeze Ready: Automatically protects missed days' : 'Streak Freeze Used: Earn back with 7 consecutive productive days'}">
           <div class="shield-icon-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? '#38BDF8' : 'none'}" stroke="${isReady ? '#38BDF8' : 'var(--muted)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
@@ -151,6 +151,102 @@ function renderStreakFreezeWidget() {
     }
     shieldsGridEl.innerHTML = shieldsHTML;
   }
+}
+
+function openStreakFreezeModal() {
+  const modal = document.getElementById("streakFreezeModal");
+  if (!modal) return;
+  renderStreakFreezeModalContent();
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  }
+}
+
+function closeStreakFreezeModal() {
+  const modal = document.getElementById("streakFreezeModal");
+  if (modal && typeof modal.close === "function") {
+    modal.close();
+  }
+}
+
+function renderStreakFreezeModalContent() {
+  const body = document.getElementById("streakFreezeModalBody");
+  if (!body) return;
+
+  const state = (typeof getGlobalStreakState === "function")
+    ? getGlobalStreakState()
+    : { currentStreak: 0, bestStreak: 0, availableFreezes: 2, maxFreezes: 2, protectedDates: [], consecutiveProductiveDays: 0 };
+
+  const current = state.currentStreak || 0;
+  const best = Math.max(state.bestStreak || 0, current);
+  const available = typeof state.availableFreezes === "number" ? state.availableFreezes : 2;
+  const max = state.maxFreezes || 2;
+  const consec = state.consecutiveProductiveDays || 0;
+  const protectedList = Array.isArray(state.protectedDates) ? state.protectedDates : [];
+
+  body.innerHTML = `
+    <!-- Top Highlights Grid -->
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+      <div style="background:var(--os-surface); border:1px solid var(--os-border); border-radius:var(--os-radius-md); padding:12px; text-align:center;">
+        <div style="font-size:1.45rem; font-weight:800; color:var(--os-warning);">${current}</div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--os-text-secondary); text-transform:uppercase; margin-top:2px; letter-spacing:0.5px;">Current Streak</div>
+      </div>
+      <div style="background:var(--os-surface); border:1px solid var(--os-border); border-radius:var(--os-radius-md); padding:12px; text-align:center;">
+        <div style="font-size:1.45rem; font-weight:800; color:var(--os-text);">${best}</div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--os-text-secondary); text-transform:uppercase; margin-top:2px; letter-spacing:0.5px;">Best Streak</div>
+      </div>
+      <div style="background:var(--os-surface); border:1px solid var(--os-border); border-radius:var(--os-radius-md); padding:12px; text-align:center;">
+        <div style="font-size:1.45rem; font-weight:800; color:var(--os-teal);">${available} / ${max}</div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--os-text-secondary); text-transform:uppercase; margin-top:2px; letter-spacing:0.5px;">Shields Ready</div>
+      </div>
+    </div>
+
+    <!-- Inventory & Progress Card -->
+    <div style="background:var(--os-surface); border:1px solid var(--os-border); border-radius:var(--os-radius-md); padding:14px 16px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.82rem; font-weight:700; color:var(--os-text);">Shield Inventory</span>
+        <span style="font-size:0.75rem; font-family:var(--os-font-code); color:var(--os-teal); font-weight:700;">${available} of ${max} available</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        ${Array.from({ length: max }).map((_, i) => {
+          const isReady = i < available;
+          return `
+            <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:var(--os-radius-sm); background:${isReady ? 'rgba(100, 210, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'}; border:1px ${isReady ? 'solid rgba(100, 210, 255, 0.25)' : 'dashed var(--os-border-subtle)'};">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span style="font-size:0.75rem; font-weight:700; color:${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'};">${isReady ? 'Armed & Ready' : 'Used'}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; font-size:0.74rem; color:var(--os-text-secondary); margin-bottom:5px;">
+          <span>7-Day Bonus Progression</span>
+          <span style="font-family:var(--os-font-code); font-weight:600;">${available >= max ? 'Inventory Full (2/2)' : `${consec} / 7 Productive Days`}</span>
+        </div>
+        <div style="width:100%; height:6px; border-radius:var(--os-radius-pill); background:rgba(255,255,255,0.06); overflow:hidden;">
+          <div style="height:100%; width:${available >= max ? 100 : Math.round((consec / 7) * 100)}%; background:${available >= max ? 'var(--os-teal)' : 'var(--os-accent)'}; border-radius:var(--os-radius-pill); transition:width 200ms ease;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How it works bullet points -->
+    <div style="display:flex; flex-direction:column; gap:10px; font-size:0.8rem; color:var(--os-text-secondary); line-height:1.45; padding:0 2px;">
+      <div style="display:flex; gap:10px; align-items:flex-start;">
+        <span style="font-size:1.05rem; line-height:1;">🛡️</span>
+        <div><strong style="color:var(--os-text);">Automatic Protection:</strong> When you miss a day, 1 Streak Freeze is automatically consumed at midnight rollover to keep your streak intact.</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:flex-start;">
+        <span style="font-size:1.05rem; line-height:1;">⭐</span>
+        <div><strong style="color:var(--os-text);">Earn Freezes:</strong> Complete 7 consecutive productive days to earn +1 Streak Freeze (stored up to 2).</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:flex-start;">
+        <span style="font-size:1.05rem; line-height:1;">🧊</span>
+        <div><strong style="color:var(--os-text);">Protected Dates:</strong> ${protectedList.length > 0 ? `Saved ${protectedList.length} missed day${protectedList.length === 1 ? '' : 's'} (${protectedList.join(', ')})` : 'All past days productive! No freezes used.'}</div>
+      </div>
+    </div>
+  `;
 }
 
 function renderProductivityHeatmap() {
@@ -442,4 +538,9 @@ function renderDashboard() {
       </div>
     `).join('');
   }
+}
+
+if (typeof window !== "undefined") {
+  window.openStreakFreezeModal = openStreakFreezeModal;
+  window.closeStreakFreezeModal = closeStreakFreezeModal;
 }
