@@ -101,7 +101,7 @@ function renderStreakFreezeWidget() {
   const shieldCountEl = document.getElementById("dashboardStreakShieldCount");
   const flameWrap = document.getElementById("streakFlameWrapper");
 
-  if (!streakCountEl && !shieldsGridEl) return;
+  if (!streakCountEl && !shieldCountEl) return;
 
   const state = (typeof getGlobalStreakState === "function")
     ? getGlobalStreakState()
