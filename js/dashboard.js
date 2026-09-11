@@ -117,7 +117,7 @@ function renderStreakFreezeWidget() {
   if (streakBestEl) streakBestEl.textContent = `Best: ${best}`;
   if (streakProgressEl) {
     if (available >= max) {
-      streakProgressEl.textContent = `🛡️ Freezes full (${max}/${max})`;
+      streakProgressEl.textContent = `Freezes full (${max}/${max})`;
     } else {
       streakProgressEl.textContent = `${consec}/7 productive days to next freeze`;
     }
@@ -233,15 +233,24 @@ function renderStreakFreezeModalContent() {
     <!-- How it works bullet points -->
     <div style="display:flex; flex-direction:column; gap:10px; font-size:0.8rem; color:var(--os-text-secondary); line-height:1.45; padding:0 2px;">
       <div style="display:flex; gap:10px; align-items:flex-start;">
-        <span style="font-size:1.05rem; line-height:1;">🛡️</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--os-teal)" stroke="var(--os-teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
         <div><strong style="color:var(--os-text);">Automatic Protection:</strong> When you miss a day, 1 Streak Freeze is automatically consumed at midnight rollover to keep your streak intact.</div>
       </div>
       <div style="display:flex; gap:10px; align-items:flex-start;">
-        <span style="font-size:1.05rem; line-height:1;">⭐</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--os-warning)" stroke="var(--os-warning)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
         <div><strong style="color:var(--os-text);">Earn Freezes:</strong> Complete 7 consecutive productive days to earn +1 Streak Freeze (stored up to 2).</div>
       </div>
       <div style="display:flex; gap:10px; align-items:flex-start;">
-        <span style="font-size:1.05rem; line-height:1;">🧊</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--os-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+          <line x1="12" y1="2" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          <line x1="4.93" y1="19.07" x2="19.07" y2="4.93"/>
+        </svg>
         <div><strong style="color:var(--os-text);">Protected Dates:</strong> ${protectedList.length > 0 ? `Saved ${protectedList.length} missed day${protectedList.length === 1 ? '' : 's'} (${protectedList.join(', ')})` : 'All past days productive! No freezes used.'}</div>
       </div>
     </div>
@@ -319,7 +328,7 @@ function renderProductivityHeatmap() {
     const formattedDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     let tip = `${formattedDate}: ${count} task${count === 1 ? '' : 's'} completed`;
     if (isFrozen) {
-      tip = `${formattedDate}: 🛡️ Frozen Day (Streak Freeze Applied)`;
+      tip = `${formattedDate}: Frozen Day (Streak Freeze Applied)`;
     }
 
     return `<div class="heatmap-cell ${isFrozen ? 'is-frozen' : ''}" data-level="${level}" ${isFrozen ? 'data-frozen="true"' : ''} title="${tip}" onclick="if(typeof showToast === 'function') showToast('${tip}', 'info');"></div>`;

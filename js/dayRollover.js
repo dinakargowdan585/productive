@@ -196,10 +196,10 @@ const DayRolloverEngine = {
     // Toasts for rollover actions
     if (typeof showToast === "function") {
       if (freezesEarnedCount > 0) {
-        showToast(`🛡️ Streak Milestone! Earned +${freezesEarnedCount} Streak Freeze for 7 productive days! (${streakState.availableFreezes}/${streakState.maxFreezes})`, "success");
+        showToast(`Streak Milestone: Earned +${freezesEarnedCount} Streak Freeze for 7 productive days! (${streakState.availableFreezes}/${streakState.maxFreezes})`, "success");
       }
       if (freezeConsumedCount > 0) {
-        showToast(`🛡️ STREAK PROTECTED: Streak freeze consumed (${streakState.availableFreezes} remaining).`, "info");
+        showToast(`Streak Protected: Streak freeze consumed (${streakState.availableFreezes} remaining).`, "info");
       } else if (streakBroken) {
         showToast("Streak ended. Complete a task today to start a new streak!", "warning");
       } else if (prevDayIso && prevDayIso < todayIso) {

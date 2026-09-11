@@ -379,7 +379,7 @@ function renderMonthView(grid, canvasHeader, tasks) {
           <span class="cal-day-number ${isToday ? 'today-pill' : ''}">${day}</span>
           <div class="cal-cell-meta">
             ${isToday ? `<span class="cal-today-badge">TODAY</span>` : ''}
-            ${isProtected ? `<span class="cal-frozen-badge" title="Protected by Streak Freeze">🛡️ Frozen</span>` : ''}
+            ${isProtected ? `<span class="cal-frozen-badge" title="Protected by Streak Freeze"><svg width="10" height="10" viewBox="0 0 24 24" fill="var(--os-teal)" stroke="var(--os-teal)" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Frozen</span>` : ''}
             ${dayTasks.length > 0 ? `<span class="cal-task-count-badge">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
           </div>
         </div>
@@ -426,7 +426,7 @@ function renderDayDetailPanel(panel, dateStr, tasks) {
           <div class="cal-detail-date-row">
             <h3 class="cal-detail-title">${formattedDate}</h3>
             ${isToday ? `<span class="cal-badge-pill today">Today</span>` : ''}
-            ${isProtected ? `<span class="cal-badge-pill frozen">🛡️ Streak Protected</span>` : ''}
+            ${isProtected ? `<span class="cal-badge-pill frozen"><svg width="10" height="10" viewBox="0 0 24 24" fill="var(--os-teal)" stroke="var(--os-teal)" stroke-width="2" style="vertical-align:middle; margin-right:3px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Streak Protected</span>` : ''}
             ${isPast ? `<span class="cal-badge-pill locked">Locked</span>` : ''}
             ${isFuture ? `<span class="cal-badge-pill upcoming">Upcoming</span>` : ''}
           </div>
