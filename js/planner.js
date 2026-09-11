@@ -216,6 +216,11 @@ function toggleTask(id, dateStr) {
   t.updatedAt = new Date().toISOString();
   saveTasks(tasks);
 
+  // Synchronize live global streak
+  if (typeof syncLiveGlobalStreak === "function") {
+    syncLiveGlobalStreak(tasks, todayIso);
+  }
+
   if (isNowCompleted) {
     if (typeof FX !== "undefined") {
       FX.playChime();

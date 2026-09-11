@@ -93,6 +93,66 @@ function generateExecutiveInsights() {
   return insights.slice(0, 4);
 }
 
+function renderStreakFreezeWidget() {
+  const streakCountEl = document.getElementById("dashboardStreakCount");
+  const streakBestEl = document.getElementById("dashboardStreakBest");
+  const streakProgressEl = document.getElementById("dashboardStreakBonusProgress");
+  const shieldsGridEl = document.getElementById("dashboardStreakShieldsGrid");
+  const shieldCountEl = document.getElementById("dashboardStreakShieldCount");
+  const flameWrap = document.getElementById("streakFlameWrapper");
+
+  if (!streakCountEl && !shieldsGridEl) return;
+
+  const state = (typeof getGlobalStreakState === "function")
+    ? getGlobalStreakState()
+    : { currentStreak: 0, bestStreak: 0, availableFreezes: 2, maxFreezes: 2, consecutiveProductiveDays: 0 };
+
+  const current = state.currentStreak || 0;
+  const best = Math.max(state.bestStreak || 0, current);
+  const available = typeof state.availableFreezes === "number" ? state.availableFreezes : 2;
+  const max = state.maxFreezes || 2;
+  const consec = state.consecutiveProductiveDays || 0;
+
+  if (streakCountEl) streakCountEl.textContent = `${current}`;
+  if (streakBestEl) streakBestEl.textContent = `Best: ${best}`;
+  if (streakProgressEl) {
+    if (available >= max) {
+      streakProgressEl.textContent = `🛡️ Freezes full (${max}/${max})`;
+    } else {
+      streakProgressEl.textContent = `${consec}/7 productive days to next freeze`;
+    }
+  }
+  if (shieldCountEl) {
+    shieldCountEl.textContent = `${available} / ${max}`;
+  }
+
+  if (flameWrap) {
+    if (current > 0) {
+      flameWrap.classList.add("flame-active");
+    } else {
+      flameWrap.classList.remove("flame-active");
+    }
+  }
+
+  if (shieldsGridEl) {
+    let shieldsHTML = "";
+    for (let i = 1; i <= max; i++) {
+      const isReady = i <= available;
+      shieldsHTML += `
+        <div class="streak-shield-item ${isReady ? 'shield-ready' : 'shield-spent'}" title="${isReady ? 'Streak Freeze Ready: Automatically protects missed days' : 'Streak Freeze Used: Earn back with 7 consecutive productive days'}">
+          <div class="shield-icon-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? '#38BDF8' : 'none'}" stroke="${isReady ? '#38BDF8' : 'var(--muted)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <span class="shield-status-tag">${isReady ? 'READY' : 'USED'}</span>
+        </div>
+      `;
+    }
+    shieldsGridEl.innerHTML = shieldsHTML;
+  }
+}
+
 function renderProductivityHeatmap() {
   const grid = document.getElementById("productivityHeatmapGrid");
   const monthsContainer = document.getElementById("heatmapMonthsLabels");
@@ -100,6 +160,9 @@ function renderProductivityHeatmap() {
   if (!grid) return;
 
   const tasks = loadTasks();
+  const globalStreak = (typeof getGlobalStreakState === "function") ? getGlobalStreakState() : null;
+  const protectedDates = new Set((globalStreak && globalStreak.protectedDates) || []);
+
   const countByDate = {};
   let totalYearCompleted = 0;
 
@@ -115,6 +178,13 @@ function renderProductivityHeatmap() {
         countByDate[dateKey] = (countByDate[dateKey] || 0) + 1;
         totalYearCompleted++;
       }
+    }
+    if (Array.isArray(t.completedDates)) {
+      t.completedDates.forEach(cd => {
+        if (cd && cd !== (t.lastCompletedDate || '')) {
+          countByDate[cd] = (countByDate[cd] || 0) + 1;
+        }
+      });
     }
   });
 
@@ -144,6 +214,7 @@ function renderProductivityHeatmap() {
   grid.innerHTML = days.map(d => {
     const dateStr = getIsoDateStr(d);
     const count = countByDate[dateStr] || 0;
+    const isFrozen = count === 0 && protectedDates.has(dateStr);
     let level = 0;
     if (count === 1) level = 1;
     else if (count === 2) level = 2;
@@ -151,9 +222,12 @@ function renderProductivityHeatmap() {
     else if (count >= 5) level = 4;
 
     const formattedDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-    const tip = `${formattedDate}: ${count} task${count === 1 ? '' : 's'} completed`;
+    let tip = `${formattedDate}: ${count} task${count === 1 ? '' : 's'} completed`;
+    if (isFrozen) {
+      tip = `${formattedDate}: 🛡️ Frozen Day (Streak Freeze Applied)`;
+    }
 
-    return `<div class="heatmap-cell" data-level="${level}" title="${tip}" onclick="if(typeof showToast === 'function') showToast('${tip}', 'info');"></div>`;
+    return `<div class="heatmap-cell ${isFrozen ? 'is-frozen' : ''}" data-level="${level}" ${isFrozen ? 'data-frozen="true"' : ''} title="${tip}" onclick="if(typeof showToast === 'function') showToast('${tip}', 'info');"></div>`;
   }).join('');
 }
 
@@ -264,6 +338,7 @@ function renderDashboard() {
   }
 
   renderProductivitySummary();
+  renderStreakFreezeWidget();
   renderProductivityHeatmap();
 
   const tasks = loadTasks();

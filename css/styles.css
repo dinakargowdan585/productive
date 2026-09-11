@@ -1003,6 +1003,187 @@ input[type="checkbox"]:disabled {
 }
 
 /* ===================================================================
+   Duolingo-Style Executive Streak & Shield Inventory Card
+   =================================================================== */
+.streak-freeze-panel {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.08) 0%, rgba(20, 20, 25, 0.6) 100%);
+  border: 1px solid rgba(255, 107, 0, 0.22);
+  border-radius: var(--os-radius-md);
+  padding: 16px 22px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="light"] .streak-freeze-panel {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.08) 0%, rgba(248, 249, 250, 0.95) 100%);
+  border-color: rgba(255, 107, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.streak-freeze-panel:hover {
+  border-color: rgba(255, 107, 0, 0.4);
+  box-shadow: 0 6px 28px rgba(255, 107, 0, 0.12);
+}
+.streak-freeze-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.streak-left-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.streak-flame-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 107, 0, 0.12);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  transition: all 240ms ease;
+  flex-shrink: 0;
+}
+.streak-flame-wrapper.flame-active {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.25) 0%, rgba(245, 158, 11, 0.2) 100%);
+  border-color: #ff6b00;
+  box-shadow: 0 0 16px rgba(255, 107, 0, 0.35);
+  animation: streakFlamePulse 2.4s ease-in-out infinite alternate;
+}
+@keyframes streakFlamePulse {
+  0% { transform: scale(1); box-shadow: 0 0 12px rgba(255, 107, 0, 0.25); }
+  100% { transform: scale(1.06); box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); }
+}
+.streak-details-column {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.streak-primary-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.streak-number-display {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ff8533;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+[data-theme="light"] .streak-number-display {
+  color: #d95300;
+}
+.streak-label-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--os-text);
+}
+.streak-secondary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--os-text-secondary);
+}
+.streak-best-badge {
+  font-weight: 600;
+  color: var(--os-text);
+}
+.streak-meta-separator {
+  opacity: 0.4;
+}
+.streak-milestone-text {
+  font-family: var(--os-font-code);
+  font-size: 0.75rem;
+  color: var(--os-text-secondary);
+}
+.streak-right-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+@media (max-width: 640px) {
+  .streak-right-section {
+    align-items: flex-start;
+    width: 100%;
+  }
+}
+.streak-shield-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.streak-shield-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--os-text-secondary);
+}
+.streak-shield-counter {
+  font-family: var(--os-font-code);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 7px;
+  border-radius: var(--os-radius-pill);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.streak-shields-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.streak-shield-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--os-radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--os-border-subtle);
+  transition: all 180ms ease;
+  user-select: none;
+}
+.streak-shield-item.shield-ready {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.06) 100%);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.15);
+}
+.streak-shield-item.shield-spent {
+  opacity: 0.55;
+  border-style: dashed;
+}
+.shield-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shield-status-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.shield-ready .shield-status-tag {
+  color: #38bdf8;
+}
+.shield-spent .shield-status-tag {
+  color: var(--os-text-tertiary);
+}
+
+/* ===================================================================
    Productivity Summary (Apple-Style System Status)
    =================================================================== */
 .prod-summary-panel {
@@ -1275,6 +1456,12 @@ input[type="checkbox"]:disabled {
 .heatmap-cell[data-level="4"] {
   background: #0A84FF;
   box-shadow: 0 0 5px rgba(10, 132, 255, 0.4);
+}
+
+.heatmap-cell[data-frozen="true"],
+.heatmap-cell.is-frozen {
+  background: #38BDF8 !important;
+  box-shadow: 0 0 7px rgba(56, 189, 248, 0.7) !important;
 }
 
 /* ===================================================================
@@ -3680,6 +3867,12 @@ input[type="text"].planner-search-input:focus {
   color: var(--os-accent);
 }
 
+.cal-badge-pill.frozen {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
 .cal-badge-pill.locked {
   background: rgba(255, 69, 58, 0.15);
   color: #FF453A;
@@ -3689,6 +3882,24 @@ input[type="text"].planner-search-input:focus {
 .cal-badge-pill.upcoming {
   background: rgba(255, 255, 255, 0.08);
   color: var(--os-text-secondary);
+}
+
+.cal-frozen-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--os-radius-pill);
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cal-day-cell.is-frozen-day {
+  border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
 .cal-detail-close-btn {

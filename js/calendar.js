@@ -358,6 +358,8 @@ function renderMonthView(grid, canvasHeader, tasks) {
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const startingOffset = (firstDay + 6) % 7;
   const todayIso = getIsoDateStr();
+  const globalStreak = (typeof getGlobalStreakState === "function") ? getGlobalStreakState() : null;
+  const protectedDates = new Set((globalStreak && globalStreak.protectedDates) || []);
 
   for (let i = 0; i < startingOffset; i++) {
     grid.innerHTML += `<div class="cal-day-cell other-month"></div>`;
@@ -368,14 +370,16 @@ function renderMonthView(grid, canvasHeader, tasks) {
     const isToday = curDateStr === todayIso;
     const isPast = curDateStr < todayIso;
     const isSelected = curDateStr === selectedCalDateStr;
+    const isProtected = protectedDates.has(curDateStr);
     const dayTasks = tasks.filter(t => isTaskForDate(t, curDateStr));
 
     grid.innerHTML += `
-      <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalDate('${curDateStr}')">
+      <div class="cal-day-cell ${isToday ? 'is-today' : ''} ${isPast ? 'is-past' : ''} ${isSelected ? 'selected' : ''} ${isProtected ? 'is-frozen-day' : ''}" onclick="selectCalDate('${curDateStr}')">
         <div class="cal-cell-header">
           <span class="cal-day-number ${isToday ? 'today-pill' : ''}">${day}</span>
           <div class="cal-cell-meta">
             ${isToday ? `<span class="cal-today-badge">TODAY</span>` : ''}
+            ${isProtected ? `<span class="cal-frozen-badge" title="Protected by Streak Freeze">🛡️ Frozen</span>` : ''}
             ${dayTasks.length > 0 ? `<span class="cal-task-count-badge">${dayTasks.length} task${dayTasks.length === 1 ? '' : 's'}</span>` : ''}
           </div>
         </div>
@@ -407,6 +411,8 @@ function renderDayDetailPanel(panel, dateStr, tasks) {
   const isToday = (dateStr === todayIso);
   const isPast = (dateStr < todayIso);
   const isFuture = (dateStr > todayIso);
+  const globalStreak = (typeof getGlobalStreakState === "function") ? getGlobalStreakState() : null;
+  const isProtected = Boolean(globalStreak && Array.isArray(globalStreak.protectedDates) && globalStreak.protectedDates.includes(dateStr));
 
   let summaryText = `${dayTasks.length} Task${dayTasks.length === 1 ? '' : 's'}`;
   if (dayBlocks.length > 0) {
@@ -420,6 +426,7 @@ function renderDayDetailPanel(panel, dateStr, tasks) {
           <div class="cal-detail-date-row">
             <h3 class="cal-detail-title">${formattedDate}</h3>
             ${isToday ? `<span class="cal-badge-pill today">Today</span>` : ''}
+            ${isProtected ? `<span class="cal-badge-pill frozen">🛡️ Streak Protected</span>` : ''}
             ${isPast ? `<span class="cal-badge-pill locked">Locked</span>` : ''}
             ${isFuture ? `<span class="cal-badge-pill upcoming">Upcoming</span>` : ''}
           </div>

@@ -166,6 +166,38 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
 
+        <!-- Section: Duolingo-Style Executive Streak & Shield Inventory Card -->
+        <div class="streak-freeze-panel" id="dashboardStreakFreezePanel">
+          <div class="streak-freeze-content">
+            <div class="streak-left-section">
+              <div class="streak-flame-wrapper" id="streakFlameWrapper">
+                <span class="streak-flame-symbol" id="streakFlameSymbol">🔥</span>
+              </div>
+              <div class="streak-details-column">
+                <div class="streak-primary-badge">
+                  <span class="streak-number-display" id="dashboardStreakCount">0</span>
+                  <span class="streak-label-text">DAY STREAK</span>
+                </div>
+                <div class="streak-secondary-row">
+                  <span class="streak-best-badge" id="dashboardStreakBest">Best: 0</span>
+                  <span class="streak-meta-separator">•</span>
+                  <span class="streak-milestone-text" id="dashboardStreakBonusProgress">0/7 productive days to next freeze</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="streak-right-section">
+              <div class="streak-shield-header">
+                <span class="streak-shield-title">STREAK FREEZES</span>
+                <span class="streak-shield-counter" id="dashboardStreakShieldCount">2 / 2</span>
+              </div>
+              <div class="streak-shields-grid" id="dashboardStreakShieldsGrid">
+                <!-- Dynamically populated 2 shields -->
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Section: Productivity Summary -->
         <div class="prod-summary-panel" id="dashboardProductivitySummary">
           <div class="prod-summary-top">

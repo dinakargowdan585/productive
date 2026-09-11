@@ -3,6 +3,7 @@
 const STORAGE_DASHBOARD_CARDS = "learningDashboardVisibleCards";
 const DATA_SCHEMA_VERSION_KEY = "PRODUCTIVE_SCHEMA_VERSION";
 const CURRENT_SCHEMA_VERSION = 4;
+const GLOBAL_STREAK_STORAGE_KEY = "productive_global_streak_v1";
 
 // Cache in memory for instantaneous sync reads across feature modules
 let memoryCache = {
@@ -12,7 +13,8 @@ let memoryCache = {
   goals: null,
   vaultNotes: null,
   timeBlocks: null,
-  calendars: null
+  calendars: null,
+  globalStreak: null
 };
 
 function uuid() {
@@ -43,6 +45,138 @@ function getYesterdayIsoDateStr() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
   return getIsoDateStr(d);
+}
+
+function addDaysIso(isoStr, numDays) {
+  const d = new Date(isoStr + "T00:00:00");
+  d.setDate(d.getDate() + numDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDefaultGlobalStreakState() {
+  return {
+    id: GLOBAL_STREAK_STORAGE_KEY,
+    currentStreak: 0,
+    bestStreak: 0,
+    availableFreezes: 2,
+    maxFreezes: 2,
+    protectedDates: [],
+    consecutiveProductiveDays: 0,
+    lastEarnedAtStreak: 0,
+    lastRolloverEvaluatedDate: null,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function getGlobalStreakState() {
+  if (memoryCache.globalStreak) {
+    return memoryCache.globalStreak;
+  }
+  try {
+    const raw = localStorage.getItem(GLOBAL_STREAK_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        memoryCache.globalStreak = {
+          ...getDefaultGlobalStreakState(),
+          ...parsed
+        };
+        return memoryCache.globalStreak;
+      }
+    }
+  } catch {}
+  const def = getDefaultGlobalStreakState();
+  memoryCache.globalStreak = def;
+  return def;
+}
+
+function saveGlobalStreakState(state, persistToRepo = true) {
+  if (!state || typeof state !== "object") return;
+  state.updatedAt = new Date().toISOString();
+  memoryCache.globalStreak = state;
+  try {
+    localStorage.setItem(GLOBAL_STREAK_STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+  if (persistToRepo && typeof SettingsRepository !== "undefined") {
+    SettingsRepository.create(state).catch(err => console.error("Global Streak Settings persist error:", err));
+  }
+  if (typeof SyncEngine !== "undefined" && typeof SyncEngine.scheduleBackgroundSync === "function") {
+    SyncEngine.scheduleBackgroundSync(400);
+  }
+}
+
+function isDateProductive(dateStr, tasks = null) {
+  const taskList = tasks || (typeof loadTasks === "function" ? loadTasks() : (memoryCache.tasks || []));
+  if (!Array.isArray(taskList) || !taskList.length) return false;
+  return taskList.some(t => {
+    const isDaily = Boolean(t.isDaily || t.is_daily);
+    if (isDaily) {
+      if (Array.isArray(t.completedDates) && t.completedDates.includes(dateStr)) return true;
+      if (t.lastCompletedDate === dateStr && t.completed) return true;
+      return false;
+    }
+    if (t.completed) {
+      if (t.lastCompletedDate === dateStr) return true;
+      if (t.updatedAt && t.updatedAt.slice(0, 10) === dateStr) return true;
+      if (t.dueDate === dateStr) return true;
+      if (t.createdAt && t.createdAt.slice(0, 10) === dateStr) return true;
+    }
+    return false;
+  });
+}
+
+function calculateActiveStreak(tasks, streakState, referenceDateIso) {
+  const protectedSet = new Set((streakState && streakState.protectedDates) || []);
+  const todayIso = referenceDateIso || getIsoDateStr();
+  const isTodayProductive = isDateProductive(todayIso, tasks);
+
+  let streak = 0;
+  let checkDate = todayIso;
+
+  if (isTodayProductive) {
+    streak++;
+    checkDate = addDaysIso(checkDate, -1);
+  } else {
+    // Today is in progress; verify backwards starting from yesterday
+    checkDate = addDaysIso(checkDate, -1);
+  }
+
+  const lookbackLimit = 3650;
+  let daysWalked = 0;
+
+  while (daysWalked < lookbackLimit) {
+    const productive = isDateProductive(checkDate, tasks);
+    const isProtected = protectedSet.has(checkDate);
+
+    if (productive) {
+      streak++;
+    } else if (isProtected) {
+      // Protected freeze day preserves streak continuity
+    } else {
+      // Unprotected missed day breaks streak
+      break;
+    }
+
+    checkDate = addDaysIso(checkDate, -1);
+    daysWalked++;
+  }
+
+  return streak;
+}
+
+function syncLiveGlobalStreak(tasks = null, todayIso = getIsoDateStr()) {
+  const currentTasks = tasks || (typeof loadTasks === "function" ? loadTasks() : (memoryCache.tasks || []));
+  const state = getGlobalStreakState();
+  const calculatedStreak = calculateActiveStreak(currentTasks, state, todayIso);
+  state.currentStreak = calculatedStreak;
+  if (calculatedStreak > (state.bestStreak || 0)) {
+    state.bestStreak = calculatedStreak;
+  }
+  saveGlobalStreakState(state);
+  return state;
 }
 
 function isTaskCompletedOnDate(t, dateStr) {
@@ -130,6 +264,31 @@ async function loadAllFromRepositoriesIntoMemory() {
         req.onerror = () => res([]);
       });
     } catch {}
+
+    // Global Streak State
+    try {
+      if (typeof SettingsRepository !== "undefined") {
+        const storedStreak = await SettingsRepository.getById(GLOBAL_STREAK_STORAGE_KEY);
+        if (storedStreak && typeof storedStreak === "object") {
+          memoryCache.globalStreak = {
+            ...getDefaultGlobalStreakState(),
+            ...storedStreak
+          };
+          try {
+            localStorage.setItem(GLOBAL_STREAK_STORAGE_KEY, JSON.stringify(memoryCache.globalStreak));
+          } catch {}
+        } else {
+          // Initialize streak from tasks history and seed 2 freezes
+          const state = getGlobalStreakState();
+          state.currentStreak = calculateActiveStreak(memoryCache.tasks || [], state, getIsoDateStr());
+          state.bestStreak = Math.max(state.bestStreak || 0, state.currentStreak);
+          memoryCache.globalStreak = state;
+          await SettingsRepository.create(state).catch(() => {});
+        }
+      }
+    } catch (streakErr) {
+      console.warn("Global streak repository load warning:", streakErr);
+    }
 
     console.log("[Store] Memory cache initialized from IndexedDB repositories.");
     if (typeof DayRolloverEngine !== "undefined" && typeof DayRolloverEngine.runAutomatedResetCheck === "function") {
@@ -352,8 +511,9 @@ function exportFullDataBackup() {
     projects: loadProjects(),
     vaultNotes: loadVaultNotes(),
     timeBlocks: loadTimeBlocks(),
+    globalStreak: getGlobalStreakState(),
     exportedAt: new Date().toISOString(),
-    version: "2.5.0"
+    version: "2.6.0"
   };
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -379,6 +539,7 @@ function importAppDataJSON(file) {
       if (imported.projects) saveProjects(imported.projects);
       if (imported.vaultNotes) persistVaultNotes(imported.vaultNotes);
       if (imported.timeBlocks) saveTimeBlocks(imported.timeBlocks);
+      if (imported.globalStreak) saveGlobalStreakState(imported.globalStreak);
 
       if (typeof showToast === "function") showToast("Data Restored Successfully!", "success");
       setTimeout(() => location.reload(), 1000);
