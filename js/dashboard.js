@@ -139,13 +139,12 @@ function renderStreakFreezeWidget() {
     for (let i = 1; i <= max; i++) {
       const isReady = i <= available;
       shieldsHTML += `
-        <div class="streak-shield-item ${isReady ? 'shield-ready' : 'shield-spent'}" title="${isReady ? 'Streak Freeze Ready: Automatically protects missed days' : 'Streak Freeze Used: Earn back with 7 consecutive productive days'}">
+        <div class="streak-shield-item ${isReady ? 'shield-ready' : 'shield-spent'}" title="${isReady ? 'Streak Freeze Available: Automatically protects missed days' : 'Streak Freeze Used: Earn back with 7 consecutive productive days'}">
           <div class="shield-icon-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
           </div>
-          <span class="shield-status-tag">${isReady ? 'READY' : 'USED'}</span>
         </div>
       `;
     }
@@ -197,7 +196,7 @@ function renderStreakFreezeModalContent() {
       </div>
       <div style="background:var(--os-surface); border:1px solid var(--os-border); border-radius:var(--os-radius-md); padding:12px; text-align:center;">
         <div style="font-size:1.45rem; font-weight:800; color:var(--os-teal);">${available} / ${max}</div>
-        <div style="font-size:0.7rem; font-weight:700; color:var(--os-text-secondary); text-transform:uppercase; margin-top:2px; letter-spacing:0.5px;">Shields Ready</div>
+        <div style="font-size:0.7rem; font-weight:700; color:var(--os-text-secondary); text-transform:uppercase; margin-top:2px; letter-spacing:0.5px;">Available Shields</div>
       </div>
     </div>
 
@@ -211,11 +210,11 @@ function renderStreakFreezeModalContent() {
         ${Array.from({ length: max }).map((_, i) => {
           const isReady = i < available;
           return `
-            <div style="flex:1; display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:var(--os-radius-sm); background:${isReady ? 'rgba(100, 210, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'}; border:1px ${isReady ? 'solid rgba(100, 210, 255, 0.25)' : 'dashed var(--os-border-subtle)'};">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:var(--os-radius-sm); background:${isReady ? 'rgba(100, 210, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'}; border:1px ${isReady ? 'solid rgba(100, 210, 255, 0.25)' : 'dashed var(--os-border-subtle)'};">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="${isReady ? 'var(--os-teal)' : 'none'}" stroke="${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
-              <span style="font-size:0.75rem; font-weight:700; color:${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'};">${isReady ? 'Armed & Ready' : 'Used'}</span>
+              <span style="font-size:0.75rem; font-weight:700; color:${isReady ? 'var(--os-teal)' : 'var(--os-text-tertiary)'};">Shield Slot ${i + 1}</span>
             </div>
           `;
         }).join('')}

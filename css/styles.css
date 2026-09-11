@@ -1159,8 +1159,8 @@ input[type="checkbox"]:disabled {
 .streak-shield-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  justify-content: center;
+  padding: 8px 10px;
   border-radius: var(--os-radius-sm);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--os-border-subtle);
@@ -1183,17 +1183,6 @@ input[type="checkbox"]:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.shield-status-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-.shield-ready .shield-status-tag {
-  color: var(--os-teal);
-}
-.shield-spent .shield-status-tag {
-  color: var(--os-text-tertiary);
 }
 
 /* ===================================================================
