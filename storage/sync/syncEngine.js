@@ -344,10 +344,19 @@ const SyncEngine = {
 
     const isDaily = Boolean(t.is_daily);
     let isCompletedToday = false;
+    let isFrozen = false;
+    let freezeDaysRemaining = 2;
+
     if (isDaily) {
       isCompletedToday = completedDates.includes(todayIso) || (lastCompletedDate === todayIso) || Boolean(t.completed);
       if (isCompletedToday && !completedDates.includes(todayIso)) {
         completedDates.push(todayIso);
+      }
+      if (typeof calculateStreakWithFreeze === "function") {
+        const streakInfo = calculateStreakWithFreeze(completedDates, 2);
+        streak = streakInfo.streak;
+        isFrozen = streakInfo.isFrozen;
+        freezeDaysRemaining = streakInfo.freezeDaysRemaining;
       }
     } else {
       isCompletedToday = Boolean(t.completed);
@@ -364,6 +373,8 @@ const SyncEngine = {
       isDaily: isDaily,
       completed: isCompletedToday,
       streak: streak,
+      isFrozen: isFrozen,
+      freezeDaysRemaining: freezeDaysRemaining,
       lastCompletedDate: lastCompletedDate || (isCompletedToday ? todayIso : null),
       completedDates: completedDates,
       subtasks: subtasks,

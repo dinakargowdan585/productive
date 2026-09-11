@@ -197,17 +197,14 @@ function toggleTask(id, dateStr) {
     t.completed = isNowCompleted;
     t.lastCompletedDate = isNowCompleted ? todayIso : (t.completedDates[t.completedDates.length - 1] || null);
 
-    // Calculate real streak from completedDates
-    let currentStreak = 0;
-    let checkDate = new Date();
-    if (!t.completedDates.includes(getIsoDateStr(checkDate))) {
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    while (t.completedDates.includes(getIsoDateStr(checkDate))) {
-      currentStreak++;
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    t.streak = currentStreak;
+    // Calculate real streak with 2-day streak freeze buffer
+    const streakInfo = (typeof calculateStreakWithFreeze === "function")
+      ? calculateStreakWithFreeze(t.completedDates, 2)
+      : { streak: isNowCompleted ? 1 : 0, isFrozen: false, freezeDaysRemaining: 2 };
+
+    t.streak = streakInfo.streak;
+    t.isFrozen = streakInfo.isFrozen;
+    t.freezeDaysRemaining = streakInfo.freezeDaysRemaining;
   } else {
     t.completed = !t.completed;
     isNowCompleted = t.completed;
@@ -721,7 +718,12 @@ function renderPlanner() {
               ${catSvg} <span>${escapeHTML(cal.name)}</span>
             </span>
             <span class="task-meta-item">${TASK_SVGS.calendar} <span>${dateLabel}</span></span>
-            ${t.isDaily ? `<span class="badge" style="background:rgba(255, 159, 10, 0.15); color:var(--os-warning, #FF9F0A); border:1px solid rgba(255, 159, 10, 0.3);">${TASK_SVGS.flame} <span>${t.streak || 0}d streak</span></span>` : ''}
+            ${t.isDaily ? `
+              <span class="badge" style="${t.isFrozen ? 'background:rgba(10, 132, 255, 0.15); color:var(--os-accent, #0A84FF); border:1px solid rgba(10, 132, 255, 0.3);' : 'background:rgba(255, 159, 10, 0.15); color:var(--os-warning, #FF9F0A); border:1px solid rgba(255, 159, 10, 0.3);'}" title="${t.isFrozen ? `❄️ Streak Frozen (${t.freezeDaysRemaining ?? 1} freeze day left) - Complete today to maintain streak!` : '🔥 Active Streak (Protected by 2-Day Streak Freeze)'}">
+                ${t.isFrozen ? '❄️' : TASK_SVGS.flame} <span>${t.streak || 0}d ${t.isFrozen ? 'frozen' : 'streak'}</span>
+                ${!t.isFrozen && (t.streak || 0) > 0 ? `<span style="font-size:0.65rem; opacity:0.8; margin-left:2px;" title="2-Day Streak Freeze Protection Active">❄️2d</span>` : ''}
+              </span>
+            ` : ''}
             <span class="priority-pill priority-${(t.priority || 'HIGH').toLowerCase()}" onclick="cycleTaskPriority('${t.id}')" style="cursor:pointer;" title="Click to cycle priority">
               ${priorityDot}
             </span>
@@ -767,6 +769,11 @@ function renderPlanner() {
         <div style="font-size:0.8rem; color:var(--os-text-secondary); margin-bottom:6px;">
           <strong>Time Stats:</strong> ${timeStats.blockCount} Session(s) Scheduled • ${timeStats.efficiency}% Efficiency Rating
         </div>
+        ${t.isDaily ? `
+          <div style="font-size:0.78rem; color:var(--os-text-secondary); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>❄️ <strong>2-Day Streak Freeze:</strong> ${t.isFrozen ? `Active (${t.freezeDaysRemaining ?? 1}d remaining)` : 'Ready (2-Day Protection)'}</span>
+          </div>
+        ` : ''}
         ${relationshipChipsHTML}
       </div>
     `;
