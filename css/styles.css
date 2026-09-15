@@ -3272,6 +3272,92 @@ input[type="text"].planner-search-input:focus {
 }
 
 /* ===================================================================
+   APPLE / GOOGLE CALENDAR WEEK VIEW
+   =================================================================== */
+.cal-week-grid {
+  display: grid !important;
+  grid-template-columns: 60px repeat(7, minmax(130px, 1fr)) !important;
+  overflow-x: auto !important;
+  gap: 4px !important;
+  padding: 16px !important;
+  border-radius: var(--os-radius-md);
+  background: var(--os-surface);
+  border: 1px solid var(--os-border);
+}
+
+.cal-week-slot {
+  min-height: 56px;
+  padding: 5px;
+  position: relative;
+  border-radius: var(--os-radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--os-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background var(--os-ease-fast), border-color var(--os-ease-fast);
+}
+
+.cal-week-slot:hover {
+  background: var(--os-surface-hover);
+  border-color: var(--os-border);
+}
+
+[data-theme="light"] .cal-week-slot {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.cal-week-event-card {
+  border-radius: var(--os-radius-sm);
+  padding: 5px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: transform var(--os-ease-fast), box-shadow var(--os-ease-fast);
+  cursor: pointer;
+  user-select: none;
+}
+
+.cal-week-event-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.cal-now-indicator-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--os-danger);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.cal-now-indicator-row::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--os-danger);
+  box-shadow: 0 0 6px rgba(255, 69, 58, 0.6);
+}
+
+.cal-now-time-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: var(--os-danger);
+  padding: 1px 5px;
+  border-radius: var(--os-radius-pill);
+  margin-top: 2px;
+}
+
+/* ===================================================================
    APPLE CALENDAR AGENDA & TIMELINE HORIZON (FREE / SPACIOUS)
    =================================================================== */
 

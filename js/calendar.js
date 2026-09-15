@@ -224,8 +224,20 @@ function renderCalendar() {
 
   const monthTitle = document.getElementById("calMonthTitle") || document.getElementById("calendarMonthTitle");
   if (monthTitle) {
-    const d = new Date(calYear, calMonth, 1);
-    monthTitle.textContent = d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    if (currentCalViewMode === "week") {
+      const weekDates = getWeekDates(calYear, calMonth, selectedCalDateStr);
+      const startD = weekDates[0];
+      const endD = weekDates[6];
+      const startStr = startD.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const endStr = endD.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      monthTitle.textContent = `${startStr} – ${endStr}`;
+    } else if (currentCalViewMode === "day") {
+      const d = new Date((selectedCalDateStr || todayIso) + "T00:00:00");
+      monthTitle.textContent = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    } else {
+      const d = new Date(calYear, calMonth, 1);
+      monthTitle.textContent = d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    }
   }
 
   const miniTitle = document.getElementById("miniCalTitle");
@@ -557,9 +569,9 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
   if (canvasHeader) canvasHeader.style.display = "none";
   grid.className = "cal-grid cal-week-grid";
   grid.style.display = "grid";
-  grid.style.gridTemplateColumns = "65px repeat(7, 1fr)";
-  grid.style.flexDirection = "";
-  grid.style.gap = "6px";
+  grid.style.gridTemplateColumns = "60px repeat(7, minmax(130px, 1fr))";
+  grid.style.overflowX = "auto";
+  grid.style.gap = "4px";
   grid.style.padding = "16px";
   grid.innerHTML = "";
 
@@ -572,7 +584,7 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
   const curMin = now.getMinutes();
   const nowTimeString = `${curHr % 12 || 12}:${String(curMin).padStart(2, '0')} ${curHr >= 12 ? 'PM' : 'AM'}`;
 
-  grid.innerHTML += `<div style="font-weight:700; font-size:0.75rem; color:var(--os-text-tertiary); padding:8px 0; text-align:center; font-family:var(--font-code);">Time</div>`;
+  grid.innerHTML += `<div style="font-weight:700; font-size:0.75rem; color:var(--os-text-tertiary); padding:10px 0; text-align:center; font-family:var(--os-font-code); border-bottom:1px solid var(--os-border);">Time</div>`;
   const daysHeader = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   weekDates.forEach((d, idx) => {
@@ -581,21 +593,23 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     const isToday = dateStr === todayIso;
     const isSelected = dateStr === selectedCalDateStr;
     grid.innerHTML += `
-      <div onclick="selectCalDate('${dateStr}')" style="text-align:center; font-weight:700; font-size:0.78rem; color:${isToday ? 'var(--os-accent)' : 'var(--os-text)'}; padding:6px 0; font-family:var(--font-code); border-bottom:1px solid var(--os-border); cursor:pointer; ${isSelected ? 'background:rgba(10,132,255,0.12); border-radius:6px;' : ''}">
-        ${daysHeader[idx]} <span style="font-size:0.7rem; opacity:0.8;">${d.getMonth() + 1}/${dayNum}</span>
+      <div onclick="selectCalDate('${dateStr}')" style="text-align:center; padding:8px 4px; border-bottom:1px solid var(--os-border); cursor:pointer; ${isSelected ? 'background:rgba(10,132,255,0.12); border-radius:8px;' : ''}">
+        <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:${isToday ? 'var(--os-accent)' : 'var(--os-text-secondary)'}; letter-spacing:0.5px;">${daysHeader[idx]}</div>
+        <div style="font-size:1.1rem; font-weight:800; color:${isToday ? 'var(--os-accent)' : 'var(--os-text)'}; margin-top:2px;">${dayNum}</div>
       </div>
     `;
   });
 
-  const hours = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
+  const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
   hours.forEach(hr => {
     const hr12 = hr % 12 || 12;
     const ampm = hr >= 12 ? 'PM' : 'AM';
     const timeLabel = `${hr12}:00 ${ampm}`;
     const isCurrentHour = curHr === hr;
+    const hrStartMins = hr * 60;
 
-    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--os-text-tertiary); font-family:var(--font-code); text-align:right; padding-right:8px; padding-top:6px; position:relative;">
+    grid.innerHTML += `<div style="font-size:0.72rem; color:var(--os-text-tertiary); font-family:var(--os-font-code); text-align:right; padding-right:8px; padding-top:6px; position:relative; user-select:none;">
       ${timeLabel}
       ${isCurrentHour ? `<div class="cal-now-time-badge">${nowTimeString}</div>` : ''}
     </div>`;
@@ -603,22 +617,58 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
     weekDates.forEach(d => {
       const curDateStr = getIsoDateStr(d);
       const isTodayCol = curDateStr === todayIso;
-      const hrBlocks = allTimeBlocks.filter(b => {
+      
+      // Blocks starting in this hour (e.g. 09:00, 11:15, 12:15, 14:15)
+      const startingBlocks = allTimeBlocks.filter(b => {
         if (!isBlockForDate(b, curDateStr)) return false;
-        const bStartHr = Math.floor(parseTimeToMinutes(b.startTime) / 60);
-        return bStartHr === hr;
+        const bStartMins = parseTimeToMinutes(b.startTime);
+        return Math.floor(bStartMins / 60) === hr;
+      });
+
+      // Blocks that started earlier and span through this hour (e.g. 3-hour lab)
+      const spanningBlocks = allTimeBlocks.filter(b => {
+        if (!isBlockForDate(b, curDateStr)) return false;
+        const bStartMins = parseTimeToMinutes(b.startTime);
+        const bEndMins = parseTimeToMinutes(b.endTime);
+        return bStartMins < hrStartMins && bEndMins > hrStartMins;
+      });
+
+      // Tasks scheduled for this hour slot
+      const hrTasks = tasks.filter(t => {
+        if (!isTaskForDate(t, curDateStr)) return false;
+        if (!t.dueTime) return false;
+        return Math.floor(parseTimeToMinutes(t.dueTime) / 60) === hr;
       });
 
       grid.innerHTML += `
-        <div class="cal-day-cell" style="min-height:46px; padding:4px; position:relative;" onclick="selectCalDate('${curDateStr}')">
+        <div class="cal-day-cell cal-week-slot" onclick="selectCalDate('${curDateStr}')">
           ${isTodayCol && isCurrentHour ? `
             <div class="cal-now-indicator-row" style="top:${Math.round((curMin / 60) * 100)}%;"></div>
           ` : ''}
-          ${hrBlocks.map(b => `
-            <div class="cal-event-card" style="background:${b.color || 'var(--os-accent)'}25; border-left-color:${b.color || 'var(--os-accent)'}; color:var(--os-text);">
-              <span>${escapeHTML(b.taskTitle)}</span>
+          ${startingBlocks.map(b => `
+            <div class="cal-week-event-card" style="background:${b.color || 'var(--os-accent)'}18; border:1px solid ${b.color || 'var(--os-accent)'}35; border-left:3.5px solid ${b.color || 'var(--os-accent)'};" title="${escapeHTML(b.taskTitle)} (${formatTime12Hour(b.startTime)} - ${formatTime12Hour(b.endTime)}, ${b.durationMinutes}m)">
+              <div style="display:flex; justify-content:space-between; align-items:center; line-height:1; margin-bottom:2px;">
+                <span style="font-size:0.68rem; font-family:var(--os-font-code); font-weight:800; color:${b.color || 'var(--os-accent)'};">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
+                <span style="font-size:0.6rem; font-weight:700; color:var(--os-text-tertiary); background:rgba(255,255,255,0.06); padding:1px 4px; border-radius:3px;">${b.durationMinutes}m</span>
+              </div>
+              <div style="font-size:0.75rem; font-weight:700; color:var(--os-text); line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                ${escapeHTML(b.taskTitle)}
+              </div>
             </div>
           `).join('')}
+          ${spanningBlocks.map(b => `
+            <div class="cal-week-event-card spanning" style="background:${b.color || 'var(--os-accent)'}0C; border:1px dashed ${b.color || 'var(--os-accent)'}25; border-left:3.5px solid ${b.color || 'var(--os-accent)'}; opacity:0.85;" title="${escapeHTML(b.taskTitle)} (in progress until ${formatTime12Hour(b.endTime)})">
+              <span style="font-size:0.68rem; color:var(--os-text-secondary); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">↳ ${escapeHTML(b.taskTitle)} (cont.)</span>
+            </div>
+          `).join('')}
+          ${hrTasks.map(t => {
+            const cal = getCalendarById(t.calendarId || t.category || "work");
+            return `
+              <div class="cal-event-pill" style="border-left-color:${cal.color}; font-size:0.72rem; padding:3px 6px;">
+                <span class="${t.completed ? 'is-done' : ''}">${escapeHTML(t.title)}</span>
+              </div>
+            `;
+          }).join('')}
         </div>
       `;
     });
