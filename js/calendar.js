@@ -450,21 +450,26 @@ function renderDayDetailPanel(panel, dateStr, tasks) {
       <div class="cal-detail-body">
         ${dayBlocks.length > 0 ? `
           <div class="cal-detail-section">
-            <span class="cal-detail-section-label">FOCUS BLOCKS</span>
+            <span class="cal-detail-section-label">SCHEDULE & FOCUS BLOCKS</span>
             <div class="cal-detail-list">
-              ${dayBlocks.map(b => `
-                <div class="cal-detail-block-item" style="border-left-color:${b.color || 'var(--os-accent)'};">
-                  <div class="cal-detail-block-copy">
-                    <strong class="cal-detail-item-title">${escapeHTML(b.taskTitle)}</strong>
-                    <span class="cal-detail-item-time">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</span>
+              ${dayBlocks.map(b => {
+                const isTt = Boolean(b.isTimetable || (b.id && String(b.id).startsWith("tt_")));
+                return `
+                  <div class="cal-detail-block-item" style="border-left-color:${b.color || 'var(--os-accent)'};">
+                    <div class="cal-detail-block-copy">
+                      <strong class="cal-detail-item-title">${escapeHTML(b.taskTitle)}</strong>
+                      <span class="cal-detail-item-time">${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)} (${b.durationMinutes}m)</span>
+                    </div>
+                    ${isTt ? `
+                      <span class="cal-detail-done-tag" style="background:rgba(10,132,255,0.1); color:var(--os-accent); border:1px solid rgba(10,132,255,0.25);">Class</span>
+                    ` : (!isPast ? `
+                      <button type="button" class="cal-detail-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">Focus</button>
+                    ` : `
+                      <span class="cal-detail-done-tag">Done</span>
+                    `)}
                   </div>
-                  ${!isPast ? `
-                    <button type="button" class="cal-detail-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">Focus</button>
-                  ` : `
-                    <span class="cal-detail-done-tag">Done</span>
-                  `}
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           </div>
         ` : ''}
@@ -682,33 +687,42 @@ function renderDayView(grid, canvasHeader, dateObj, tasks) {
           </div>
         ` : ''}
 
-        ${dayBlocks.map(b => `
-          <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
-            <div class="cal-agenda-block-left">
-              <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div class="cal-agenda-block-info">
-                <div class="cal-agenda-block-title-row">
-                  <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
-                  <span class="cal-agenda-deepwork-badge">DEEP WORK</span>
+        ${dayBlocks.map(b => {
+          const isTt = Boolean(b.isTimetable || (b.id && String(b.id).startsWith("tt_")));
+          return `
+            <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
+              <div class="cal-agenda-block-left">
+                <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
+                  ${isTt ? `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  ` : `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  `}
                 </div>
-                <div class="cal-agenda-block-time">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
-                  <span class="cal-agenda-duration-dot">•</span>
-                  <span>${b.durationMinutes}m duration</span>
+                <div class="cal-agenda-block-info">
+                  <div class="cal-agenda-block-title-row">
+                    <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
+                    <span class="cal-agenda-deepwork-badge" style="${isTt ? 'background:rgba(10,132,255,0.12); color:var(--os-accent); border:1px solid rgba(10,132,255,0.25);' : ''}">${isTt ? 'CLASS' : 'DEEP WORK'}</span>
+                  </div>
+                  <div class="cal-agenda-block-time">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
+                    <span class="cal-agenda-duration-dot">•</span>
+                    <span>${b.durationMinutes}m duration</span>
+                  </div>
                 </div>
               </div>
+              ${!isTt ? `
+                <div class="cal-agenda-block-right">
+                  <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span>Launch Focus</span>
+                  </button>
+                </div>
+              ` : ''}
             </div>
-            <div class="cal-agenda-block-right">
-              <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>Launch Focus</span>
-              </button>
-            </div>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
 
         ${dayTasks.map(t => {
           const cal = getCalendarById(t.calendarId || t.category || "work");
@@ -919,33 +933,42 @@ function renderAgendaView(grid, canvasHeader, tasks) {
         </div>
 
         <div class="cal-agenda-items-list">
-          ${dayBlocks.map(b => `
-            <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
-              <div class="cal-agenda-block-left">
-                <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div class="cal-agenda-block-info">
-                  <div class="cal-agenda-block-title-row">
-                    <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
-                    <span class="cal-agenda-deepwork-badge">DEEP WORK</span>
+          ${dayBlocks.map(b => {
+            const isTt = Boolean(b.isTimetable || (b.id && String(b.id).startsWith("tt_")));
+            return `
+              <div class="cal-agenda-block-card" style="border-left: 4px solid ${b.color || 'var(--os-accent)'};">
+                <div class="cal-agenda-block-left">
+                  <div class="cal-agenda-block-icon" style="background:${b.color ? b.color + '18' : 'rgba(10, 132, 255, 0.14)'}; color:${b.color || 'var(--os-accent)'};">
+                    ${isTt ? `
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    ` : `
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    `}
                   </div>
-                  <div class="cal-agenda-block-time">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
-                    <span class="cal-agenda-duration-dot">•</span>
-                    <span>${b.durationMinutes}m duration</span>
+                  <div class="cal-agenda-block-info">
+                    <div class="cal-agenda-block-title-row">
+                      <strong class="cal-agenda-block-title">${escapeHTML(b.taskTitle)}</strong>
+                      <span class="cal-agenda-deepwork-badge" style="${isTt ? 'background:rgba(10,132,255,0.12); color:var(--os-accent); border:1px solid rgba(10,132,255,0.25);' : ''}">${isTt ? 'CLASS' : 'DEEP WORK'}</span>
+                    </div>
+                    <div class="cal-agenda-block-time">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>${formatTime12Hour(b.startTime)} – ${formatTime12Hour(b.endTime)}</span>
+                      <span class="cal-agenda-duration-dot">•</span>
+                      <span>${b.durationMinutes}m duration</span>
+                    </div>
                   </div>
                 </div>
+                ${!isTt ? `
+                  <div class="cal-agenda-block-right">
+                    <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      <span>Launch Focus</span>
+                    </button>
+                  </div>
+                ` : ''}
               </div>
-              <div class="cal-agenda-block-right">
-                <button type="button" class="cal-agenda-launch-focus-btn" onclick="startFocusSessionForBlock('${b.id}')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span>Launch Focus</span>
-                </button>
-              </div>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
 
           ${dayTasks.map(t => {
             const cal = getCalendarById(t.calendarId || t.category || "work");
