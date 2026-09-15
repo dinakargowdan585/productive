@@ -625,14 +625,6 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
         return Math.floor(bStartMins / 60) === hr;
       });
 
-      // Blocks that started earlier and span through this hour (e.g. 3-hour lab)
-      const spanningBlocks = allTimeBlocks.filter(b => {
-        if (!isBlockForDate(b, curDateStr)) return false;
-        const bStartMins = parseTimeToMinutes(b.startTime);
-        const bEndMins = parseTimeToMinutes(b.endTime);
-        return bStartMins < hrStartMins && bEndMins > hrStartMins;
-      });
-
       // Tasks scheduled for this hour slot
       const hrTasks = tasks.filter(t => {
         if (!isTaskForDate(t, curDateStr)) return false;
@@ -654,11 +646,6 @@ function renderWeekView(grid, canvasHeader, firstDayDate, tasks) {
               <div style="font-size:0.75rem; font-weight:700; color:var(--os-text); line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                 ${escapeHTML(b.taskTitle)}
               </div>
-            </div>
-          `).join('')}
-          ${spanningBlocks.map(b => `
-            <div class="cal-week-event-card spanning" style="background:${b.color || 'var(--os-accent)'}0C; border:1px dashed ${b.color || 'var(--os-accent)'}25; border-left:3.5px solid ${b.color || 'var(--os-accent)'}; opacity:0.85;" title="${escapeHTML(b.taskTitle)} (in progress until ${formatTime12Hour(b.endTime)})">
-              <span style="font-size:0.68rem; color:var(--os-text-secondary); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">↳ ${escapeHTML(b.taskTitle)} (cont.)</span>
             </div>
           `).join('')}
           ${hrTasks.map(t => {
