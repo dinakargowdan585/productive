@@ -30,8 +30,18 @@ function isTaskForDate(t, dateStr) {
 }
 
 function isBlockForDate(b, dateStr) {
+  if (!b || !dateStr) return false;
+  const targetDateStr = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr.trim();
   const bDate = b.date ? (b.date.includes("T") ? b.date.split("T")[0] : b.date.trim()) : "";
-  return bDate === dateStr;
+  if (bDate && bDate === targetDateStr) return true;
+
+  if (b.isRecurring || typeof b.recurringDay === "number" || Array.isArray(b.recurringDays) || b.isTimetable) {
+    const targetDate = new Date(targetDateStr + "T00:00:00");
+    const dayOfWeek = targetDate.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    if (typeof b.recurringDay === "number" && b.recurringDay === dayOfWeek) return true;
+    if (Array.isArray(b.recurringDays) && b.recurringDays.includes(dayOfWeek)) return true;
+  }
+  return false;
 }
 
 function changeCalMonth(delta) {
@@ -818,10 +828,26 @@ function renderAgendaView(grid, canvasHeader, tasks) {
   });
 
   allBlocks.forEach(b => {
-    const d = (b.date ? (b.date.includes("T") ? b.date.split("T")[0] : b.date.trim()) : todayIso);
-    if (!dateMap[d]) dateMap[d] = { tasks: [], blocks: [] };
-    dateMap[d].blocks.push(b);
+    if (b.date) {
+      const d = b.date.includes("T") ? b.date.split("T")[0] : b.date.trim();
+      if (!dateMap[d]) dateMap[d] = { tasks: [], blocks: [] };
+      dateMap[d].blocks.push(b);
+    }
   });
+
+  // Include recurring weekly timetable blocks for upcoming 7 days
+  for (let i = 0; i < 7; i++) {
+    const curD = addDaysIso(todayIso, i);
+    const dayBlocks = allBlocks.filter(b => isBlockForDate(b, curD));
+    if (dayBlocks.length > 0) {
+      if (!dateMap[curD]) dateMap[curD] = { tasks: [], blocks: [] };
+      dayBlocks.forEach(b => {
+        if (!dateMap[curD].blocks.some(existing => existing.id === b.id)) {
+          dateMap[curD].blocks.push(b);
+        }
+      });
+    }
+  }
 
   const sortedDates = Object.keys(dateMap).sort();
 
@@ -1055,4 +1081,16 @@ if (!calNowInterval) {
     }
   }, 60000);
 }
+
+function toggleOrSyncCollegeTimetable() {
+  if (typeof syncCollegeTimetable === "function") {
+    syncCollegeTimetable();
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.toggleOrSyncCollegeTimetable = toggleOrSyncCollegeTimetable;
+  window.isBlockForDate = isBlockForDate;
+}
+
 

@@ -56,6 +56,59 @@ function addDaysIso(isoStr, numDays) {
   return `${year}-${month}-${day}`;
 }
 
+function isBlockForDate(b, dateStr) {
+  if (!b || !dateStr) return false;
+  const targetDateStr = dateStr.includes("T") ? dateStr.split("T")[0] : dateStr.trim();
+  const bDate = b.date ? (b.date.includes("T") ? b.date.split("T")[0] : b.date.trim()) : "";
+  if (bDate && bDate === targetDateStr) return true;
+
+  if (b.isRecurring || typeof b.recurringDay === "number" || Array.isArray(b.recurringDays) || b.isTimetable) {
+    const targetDate = new Date(targetDateStr + "T00:00:00");
+    const dayOfWeek = targetDate.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    if (typeof b.recurringDay === "number" && b.recurringDay === dayOfWeek) return true;
+    if (Array.isArray(b.recurringDays) && b.recurringDays.includes(dayOfWeek)) return true;
+  }
+  return false;
+}
+
+const DEFAULT_COLLEGE_TIMETABLE = [
+  // Monday (dayOfWeek = 1)
+  { id: "tt_mon_oe", taskId: null, taskTitle: "OE (Open Elective)", startTime: "09:00", endTime: "10:00", durationMinutes: 60, color: "#BF5AF2", isRecurring: true, recurringDay: 1, recurringDays: [1], category: "study", isTimetable: true },
+  { id: "tt_mon_cns", taskId: null, taskTitle: "CNS (Cryptography & Network Security)", startTime: "10:00", endTime: "11:00", durationMinutes: 60, color: "#FF9F0A", isRecurring: true, recurringDay: 1, recurringDays: [1], category: "study", isTimetable: true },
+  { id: "tt_mon_iam", taskId: null, taskTitle: "IAM (Identity & Access Management)", startTime: "11:15", endTime: "12:15", durationMinutes: 60, color: "#30D158", isRecurring: true, recurringDay: 1, recurringDays: [1], category: "study", isTimetable: true },
+  { id: "tt_mon_acn", taskId: null, taskTitle: "ACN (Advanced Computer Networks)", startTime: "12:15", endTime: "13:15", durationMinutes: 60, color: "#0A84FF", isRecurring: true, recurringDay: 1, recurringDays: [1], category: "study", isTimetable: true },
+
+  // Tuesday (dayOfWeek = 2)
+  { id: "tt_tue_oe", taskId: null, taskTitle: "OE (Open Elective)", startTime: "09:00", endTime: "10:00", durationMinutes: 60, color: "#BF5AF2", isRecurring: true, recurringDay: 2, recurringDays: [2], category: "study", isTimetable: true },
+  { id: "tt_tue_acn", taskId: null, taskTitle: "ACN (Advanced Computer Networks)", startTime: "10:00", endTime: "11:00", durationMinutes: 60, color: "#0A84FF", isRecurring: true, recurringDay: 2, recurringDays: [2], category: "study", isTimetable: true },
+  { id: "tt_tue_iam", taskId: null, taskTitle: "IAM (Identity & Access Management)", startTime: "11:15", endTime: "12:15", durationMinutes: 60, color: "#30D158", isRecurring: true, recurringDay: 2, recurringDays: [2], category: "study", isTimetable: true },
+  { id: "tt_tue_cns", taskId: null, taskTitle: "CNS (Cryptography & Network Security)", startTime: "12:15", endTime: "13:15", durationMinutes: 60, color: "#FF9F0A", isRecurring: true, recurringDay: 2, recurringDays: [2], category: "study", isTimetable: true },
+
+  // Wednesday (dayOfWeek = 3)
+  { id: "tt_wed_oe", taskId: null, taskTitle: "OE (Open Elective)", startTime: "09:00", endTime: "10:00", durationMinutes: 60, color: "#BF5AF2", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_acn", taskId: null, taskTitle: "ACN (Advanced Computer Networks)", startTime: "10:00", endTime: "11:00", durationMinutes: 60, color: "#0A84FF", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_iam", taskId: null, taskTitle: "IAM (Identity & Access Management)", startTime: "11:15", endTime: "12:15", durationMinutes: 60, color: "#30D158", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_cnss", taskId: null, taskTitle: "CNS(S) (Seminar / Tutorial)", startTime: "12:15", endTime: "13:15", durationMinutes: 60, color: "#FF9F0A", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_bda", taskId: null, taskTitle: "BDA (Big Data Analytics)", startTime: "14:15", endTime: "15:15", durationMinutes: 60, color: "#64D2FF", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_acns", taskId: null, taskTitle: "ACN(S) (Seminar / Tutorial)", startTime: "15:15", endTime: "16:15", durationMinutes: 60, color: "#0A84FF", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+  { id: "tt_wed_me", taskId: null, taskTitle: "M&E (IE) (Management & Entrepreneurship)", startTime: "16:15", endTime: "17:15", durationMinutes: 60, color: "#FF375F", isRecurring: true, recurringDay: 3, recurringDays: [3], category: "study", isTimetable: true },
+
+  // Thursday (dayOfWeek = 4)
+  { id: "tt_thu_cns", taskId: null, taskTitle: "CNS (Cryptography & Network Security)", startTime: "09:00", endTime: "10:00", durationMinutes: 60, color: "#FF9F0A", isRecurring: true, recurringDay: 4, recurringDays: [4], category: "study", isTimetable: true },
+  { id: "tt_thu_bda1", taskId: null, taskTitle: "BDA (Big Data Analytics)", startTime: "10:00", endTime: "11:00", durationMinutes: 60, color: "#64D2FF", isRecurring: true, recurringDay: 4, recurringDays: [4], category: "study", isTimetable: true },
+  { id: "tt_thu_iams", taskId: null, taskTitle: "IAM(S) (Seminar / Tutorial)", startTime: "11:15", endTime: "12:15", durationMinutes: 60, color: "#30D158", isRecurring: true, recurringDay: 4, recurringDays: [4], category: "study", isTimetable: true },
+  { id: "tt_thu_bda2", taskId: null, taskTitle: "BDA (Big Data Analytics)", startTime: "12:15", endTime: "13:15", durationMinutes: 60, color: "#64D2FF", isRecurring: true, recurringDay: 4, recurringDays: [4], category: "study", isTimetable: true },
+  { id: "tt_thu_eth", taskId: null, taskTitle: "Ethical Hacking Lab (B1 + B2)", startTime: "14:15", endTime: "17:15", durationMinutes: 180, color: "#FF453A", isRecurring: true, recurringDay: 4, recurringDays: [4], category: "study", isTimetable: true },
+
+  // Friday (dayOfWeek = 5)
+  { id: "tt_fri_lab", taskId: null, taskTitle: "CNS / ACN Practical Lab", startTime: "09:00", endTime: "11:00", durationMinutes: 120, color: "#FF9F0A", isRecurring: true, recurringDay: 5, recurringDays: [5], category: "study", isTimetable: true },
+  { id: "tt_fri_bdas", taskId: null, taskTitle: "BDA(S) (Seminar / Tutorial)", startTime: "11:15", endTime: "12:15", durationMinutes: 60, color: "#64D2FF", isRecurring: true, recurringDay: 5, recurringDays: [5], category: "study", isTimetable: true },
+  { id: "tt_fri_me", taskId: null, taskTitle: "M&E (IE) (Management & Entrepreneurship)", startTime: "12:15", endTime: "13:15", durationMinutes: 60, color: "#FF375F", isRecurring: true, recurringDay: 5, recurringDays: [5], category: "study", isTimetable: true },
+
+  // Saturday (dayOfWeek = 6)
+  { id: "tt_sat_lab", taskId: null, taskTitle: "CNS / ACN Practical Lab", startTime: "09:00", endTime: "11:00", durationMinutes: 120, color: "#0A84FF", isRecurring: true, recurringDay: 6, recurringDays: [6], category: "study", isTimetable: true }
+];
+
 function getDefaultGlobalStreakState() {
   return {
     id: GLOBAL_STREAK_STORAGE_KEY,
@@ -241,8 +294,18 @@ async function loadAllFromRepositoriesIntoMemory() {
     }
 
     if (typeof TimeBlocksRepository !== "undefined") {
-      const blocks = await TimeBlocksRepository.getAll();
-      memoryCache.timeBlocks = Array.isArray(blocks) ? blocks : [];
+      let blocks = await TimeBlocksRepository.getAll();
+      if (!blocks || blocks.length === 0) {
+        blocks = DEFAULT_COLLEGE_TIMETABLE;
+        await TimeBlocksRepository.saveAll(blocks).catch(() => {});
+      } else {
+        const hasTimetable = blocks.some(b => b.isTimetable || (b.id && b.id.startsWith("tt_")));
+        if (!hasTimetable) {
+          blocks = [...blocks, ...DEFAULT_COLLEGE_TIMETABLE];
+          await TimeBlocksRepository.saveAll(blocks).catch(() => {});
+        }
+      }
+      memoryCache.timeBlocks = Array.isArray(blocks) ? blocks : DEFAULT_COLLEGE_TIMETABLE;
     }
 
     if (typeof ProjectsRepository !== "undefined") {
@@ -431,7 +494,20 @@ async function deleteNoteSingle(id) {
 }
 
 function loadTimeBlocks() {
-  return memoryCache.timeBlocks || [];
+  if (!memoryCache.timeBlocks || memoryCache.timeBlocks.length === 0) {
+    memoryCache.timeBlocks = Array.isArray(DEFAULT_COLLEGE_TIMETABLE) ? DEFAULT_COLLEGE_TIMETABLE : [];
+  }
+  return memoryCache.timeBlocks;
+}
+
+function syncCollegeTimetable() {
+  const current = (memoryCache.timeBlocks || []).filter(b => !b.isTimetable && !(b.id && String(b.id).startsWith("tt_")));
+  const updated = [...current, ...DEFAULT_COLLEGE_TIMETABLE];
+  saveTimeBlocks(updated);
+  if (typeof renderCalendar === "function") renderCalendar();
+  if (typeof renderDashboard === "function") renderDashboard();
+  if (typeof showToast === "function") showToast("🎓 Permanent College Timetable synced into Calendar!", "success");
+  return updated;
 }
 
 function saveTimeBlocks(blocks) {
@@ -593,6 +669,9 @@ async function initApplicationStorage() {
 }
 
 if (typeof window !== "undefined") {
+  window.isBlockForDate = isBlockForDate;
+  window.DEFAULT_COLLEGE_TIMETABLE = DEFAULT_COLLEGE_TIMETABLE;
+  window.syncCollegeTimetable = syncCollegeTimetable;
   window.addEventListener("DOMContentLoaded", async () => {
     await initApplicationStorage();
   });

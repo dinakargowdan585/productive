@@ -355,7 +355,7 @@ function renderProductivitySummary() {
   const remaining = Math.max(0, total - completed);
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
-  const blocks = loadTimeBlocks().filter(b => b.date === todayIso);
+  const blocks = loadTimeBlocks().filter(b => typeof isBlockForDate === "function" ? isBlockForDate(b, todayIso) : b.date === todayIso);
   const completedFocusMins = blocks.filter(b => b.completed).reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
   const scheduledFocusMins = blocks.reduce((acc, b) => acc + (b.durationMinutes || 0), 0);
   const displayFocusMins = completedFocusMins > 0 ? completedFocusMins : scheduledFocusMins;
@@ -468,7 +468,7 @@ function renderDashboard() {
   }
 
   const todayIso = getIsoDateStr();
-  const blocks = loadTimeBlocks().filter(b => b.date === todayIso);
+  const blocks = loadTimeBlocks().filter(b => typeof isBlockForDate === "function" ? isBlockForDate(b, todayIso) : b.date === todayIso);
   const timelineContainer = document.getElementById("execTimelineContainer");
   if (timelineContainer) {
     if (!blocks.length) {
