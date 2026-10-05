@@ -169,6 +169,7 @@ productive/
 This project is open source and available under the [MIT License](LICENSE).
 
 ---
+[![Architecture diagram of dinakargowdan585/productive](https://gitdiagram.com/dinakargowdan585/productive/diagram.png)](https://gitdiagram.com/dinakargowdan585/productive?utm_source=readme&utm_medium=picture)
 
 <div align="center">
   <sub>Engineered with precision for peak human productivity. Crafted by Dinakar.</sub>
